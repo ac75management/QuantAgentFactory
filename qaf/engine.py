@@ -2,7 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 from .contracts import validate_spec, validate_instrument
-from .costs import execution_cost, financing, price_cash
+from .costs import execution_cost, financing, margin_cash_per_lot, price_cash
 from .signals import atr, generate
 
 
@@ -59,7 +59,7 @@ def simulate(df, spec, instrument, stress=1.0, start_bar=0, signals_override=Non
                 risk_cash = balance * spec.get("risk_fraction", 0.005)
                 roundtrip_estimate = 2 * sum(execution_cost(o[i], 1, c, stress))
                 lots = risk_cash / (price_cash(stop_distance, c) + roundtrip_estimate)
-                margin_lots = balance * c["max_leverage"] / (abs(o[i]) * c["contract_size"] * c["currency_to_account"])
+                margin_lots = balance * c["max_leverage"] / margin_cash_per_lot(o[i], c)
                 lots = min(lots, margin_lots, c["volume_max"])
                 lots = math.floor((lots + 1e-12) / c["volume_step"]) * c["volume_step"]
                 if lots < c["volume_min"]:

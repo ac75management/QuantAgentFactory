@@ -30,8 +30,11 @@ def inspect_frame(df, timeframe, metadata=None):
     if valid_time and unique and len(df) > 1:
         delta = df.time.diff().dt.total_seconds().div(60)
         expected = TIMEFRAMES[timeframe]
-        short = int((delta.dropna() < expected * 0.5).sum())
-        add("frequency", "FAIL" if short else "PASS", {"median_minutes": float(delta.median()), "too_short": short})
+        observed = delta.dropna()
+        nominal = observed[observed <= expected * 1.5]
+        median_minutes = float(nominal.median()) if len(nominal) else None
+        off_frequency = int((~np.isclose(nominal, expected, rtol=0, atol=1/60)).sum())
+        add("frequency", "FAIL" if not len(nominal) or off_frequency else "PASS", {"median_nominal_minutes": median_minutes, "expected_minutes": expected, "off_frequency_intervals": off_frequency})
         gaps = int((delta > expected * 1.5).sum())
         # Without an instrument calendar, never infer that every Friday gap is harmless.
         add("session_calendar", "RESERVE" if gaps or not metadata.get("calendar_verified") else "PASS", {"long_intervals": gaps, "calendar_verified": bool(metadata.get("calendar_verified"))})
@@ -50,15 +53,38 @@ def load_is(symbol, timeframe, root=ROOT):
     path = Path(root) / "data/clean" / symbol / timeframe / "IS.parquet"
     if not path.exists():
         raise FileNotFoundError(f"Sin datos IS: {symbol}/{timeframe}")
-    df = pd.read_parquet(path)
-    info = {"path": str(path.relative_to(root)), "sha256": file_hash(path)}
+    oos_path = Path(root) / "data/clean" / symbol / timeframe / "OOS.parquet"
+    if not oos_path.exists() or oos_path.stat().st_size == 0:
+        raise FileNotFoundError(f"Falta OOS.parquet junto al IS de {symbol}/{timeframe}: la particion no esta completa, no se puede tratar como confiable")
     manifest = Path(root)/'data/clean/manifest.json'
-    if manifest.exists():
-        entries = read_json(manifest).get('symbols',[])
-        cutoffs = [pd.Timestamp(x['is_oos_cutoff_date']) for x in entries if x['symbol']==symbol and x.get('is_oos_cutoff_date')]
-        if cutoffs:
-            cutoff=min(cutoffs)
-            count=len(df)
-            df=df.loc[df.time < cutoff].reset_index(drop=True)
-            info.update(effective_exclusive_cutoff=str(cutoff),rows_removed_to_protect_other_timeframes=count-len(df))
+    if not manifest.exists():
+        raise FileNotFoundError(f"Falta data/clean/manifest.json: no hay registro de que {symbol}/{timeframe} paso por qaf.ingest")
+    entries = read_json(manifest).get('symbols', [])
+    exact = [x for x in entries if x.get('symbol') == symbol and x.get('timeframe') == timeframe]
+    if not exact:
+        raise FileNotFoundError(f"Sin entrada de manifest para {symbol}/{timeframe}: la particion IS/OOS no fue creada por qaf.ingest")
+    if len(exact) != 1:
+        raise ValueError(f"Manifest ambiguo: {len(exact)} entradas para {symbol}/{timeframe}")
+    entry = exact[0]
+    if not entry.get('is_oos_cutoff_date'):
+        raise ValueError(f"Manifest incompleto para {symbol}/{timeframe}: falta is_oos_cutoff_date")
+    try:
+        exact_cutoff = pd.Timestamp(entry['is_oos_cutoff_date'])
+    except (TypeError, ValueError):
+        raise ValueError(f"Manifest invalido para {symbol}/{timeframe}: cutoff no es una fecha")
+    if exact_cutoff.tzinfo is None:
+        raise ValueError(f"Manifest invalido para {symbol}/{timeframe}: cutoff debe incluir zona horaria")
+    for key in ('rows_is', 'rows_oos'):
+        if not isinstance(entry.get(key), int) or isinstance(entry.get(key), bool) or entry[key] <= 0:
+            raise ValueError(f"Manifest incompleto para {symbol}/{timeframe}: {key} debe ser entero positivo")
+    df = pd.read_parquet(path)
+    if len(df) != entry['rows_is']:
+        raise ValueError(f"IS.parquet no coincide con manifest: {len(df)} filas, esperadas {entry['rows_is']}")
+    info = {"path": str(path.relative_to(root)), "sha256": file_hash(path)}
+    cutoffs = [pd.Timestamp(x['is_oos_cutoff_date']) for x in entries if x.get('symbol') == symbol and x.get('is_oos_cutoff_date')]
+    if cutoffs:
+        cutoff=min(cutoffs)
+        count=len(df)
+        df=df.loc[df.time < cutoff].reset_index(drop=True)
+        info.update(effective_exclusive_cutoff=str(cutoff),rows_removed_to_protect_other_timeframes=count-len(df))
     return df, info

@@ -131,8 +131,25 @@ Con confirmación explícita de Alexander en chat, se conectó una vez a la cuen
 
 **Decisión pendiente de Alexander** (no la tomo yo sola porque implica descartar y re-importar particiones que hoy son "inmutables" por diseño): ¿aceptar que EURUSD/USDJPY se quedan en D1/H4 solamente, o reimportar los 3 timeframes de esos dos símbolos desde cero con un corte nuevo compatible con 2010+? Ningún hypothesis registrado usa el corte actual de estos dos símbolos todavía, así que el costo de reimportar hoy es bajo.
 
+## HIPÓTESIS #003 — SPEC GENERADA POR `protocol` (2026-09-22)
+
+`docs/specs/sp500-d1-rsi2-mean-reversion.md` + `.json` escritos, sobre `docs/hypotheses/sp500-d1-rsi2-mean-reversion.md` (hipótesis #003, familia `oscillator_reversion`, primera vez que se especifica formalmente esta familia). Ningún dato de precio tocado, ningún backtest corrido — eso queda para `engine`.
+
+**Valores fijados** (anclados a la fuente, no optimizados): `rsi_period=2`, `entry_threshold=10`, `trend_filter_sma=200` (RSI(2) clásico de Connors, no son parámetros libres de esta spec). **Parámetros libres** (tope de 4, regla 16): `atr_period=14`, `sl_atr=1.5`, `tp_atr=1.0` (1:1, distinto del 2:1 de la hipótesis #001 — razonado por el tipo de edge que reclama Connors: alta tasa de acierto, ganancia modesta), `max_holding=5`. `risk_fraction=0.01`, `direction=both`.
+
+**Costos citados de `config/instruments.json`/`docs/cost_model.md`**: comisión y día de swap triple `CONFIRMED` (viernes ×3 para índices); `spread_points`/`slippage_points_per_side` siguen sin confirmar (mismo techo `APTO_CON_RESERVAS` que el resto del universo). Costo de ejecución round-trip calculado: $9.55/lote (coincide exacto con `scripts/verify_buy_and_hold.py` sobre IS).
+
+**Baseline (sección 9 de la spec)**: B&H neto de SP500 D1 sobre partición **IS** = -24,102.62 (bruto +26,303.00, costos -9.55, financiación -50,396.07 — cifra ya existente de `scripts/verify_buy_and_hold.py`, no recalculada aquí). Es evidencia direccional, no la puerta final — `validator` debe recalcularla sobre `data/clean/SP500/D1/OOS.parquet` específicamente (regla 19), y hoy `scripts/verify_buy_and_hold.py` no expone una ruta OOS todavía.
+
+La spec pide a `engine` dos diagnósticos obligatorios además de las puertas estándar: (a) desempeño por terciles de tendencia/volatilidad, y (b) desempeño por sub-períodos cronológicos del IS (para ver si el edge, si existe, está concentrado en la parte más antigua de la muestra — riesgo de compresión post-publicación que la propia hipótesis ya señala).
+
+## NEXT ACTION (vigente, reemplaza la entrada anterior)
+1. **Invocar `engine` sobre `docs/specs/sp500-d1-rsi2-mean-reversion.json`** — Gate 0 primero (se espera `APTO_CON_RESERVAS` por spread/slippage sin confirmar, igual que el resto del universo; la spec ya lo anticipa y no lo trata como bloqueo duro), luego AED y backtest IS. Primera vez que la familia `oscillator_reversion` corre de punta a punta con el runner real — tratar con el mismo escrutinio que cualquier código nuevo (ver hipótesis, sección de caveats).
+2. Recordar la nota operativa sobre consentimiento entre agentes (arriba): si `engine` se detiene en un punto que exige confirmación explícita de Alexander, esa confirmación tiene que llegar directamente en el hilo de `engine`, no relayada.
+3. Pendiente sin relación directa: decisión de Alexander sobre archivar formalmente la hipótesis #002 (NAS100 turn-of-month) o pasarla igual a `validator` para veredicto formal — no bloquea el avance de #003.
+
 ## LAST UPDATED
-2026-09-22 (extracción H1 real vía MT5 demo + coordinación sobre fanout de investigación y draft VWAP NDX H1 — sesión de escritorio)
+2026-09-22 (spec de hipótesis #003 generada por `protocol` — sp500-d1-rsi2-mean-reversion, familia oscillator_reversion)
 
 ## AUDITORIA METODOLOGICA — FASE 1
 Se aplicaron correcciones críticas sin regenerar datos ni reportes históricos:
@@ -147,3 +164,59 @@ Pendiente de la siguiente fase: formalizar ejecución con gaps, corrección por 
 - El alcance mínimo ahora es H1, H4 y D1; M15/M30 quedan excluidos.
 - `config/runner.json` reemplaza la política de minería automática.
 - La validación final OOS sigue bloqueada de forma deliberada hasta implementar holdout, walk-forward y permutación reproducibles.
+
+## CORRECCIONES DE AUDITORÍA GPT + FAMILIA NUEVA (2026-09-22)
+Segunda auditoría adversarial (ChatGPT, sobre el motor `qaf` real) encontró 7 problemas reproducibles — verifiqué los 7 directamente contra el código antes de corregir, los 7 se confirmaron:
+
+1. **Margen forex roto** (`engine.py`): USDJPY calculaba ~$1,570,000 de margen por lote (157x lo real). Corregido reusando `costs.price_cash` (la misma conversión ya validada para P&L) en vez de una fórmula distinta e inconsistente. **0.00% de cambio para XAUUSD/índices/materias primas** — verificado numéricamente antes y después.
+2. **Puertas aceptaban métricas imposibles**: profit factor infinito, drawdown -1, bootstrap CI invertido pasaban las 7 puertas. `screening_gates` ahora valida finitud/dominio, y `quality.status=FAIL` bloquea el veredicto adentro de la función (antes dependía de que quien llamara ya lo hubiera filtrado).
+3. **Gate 0 no verificaba la frecuencia real** (barras de 2h pasaban como "H4") ni exigía manifiesto/OOS antes de confiar en una partición. Ambos corregidos en `qaf/data.py`.
+4. **Registro con reservas `RUNNING` zombis**: un proceso caído entre `reserve()` y `finish()` bloqueaba ese `run_id` (y su cupo de campaña) para siempre. `qaf/registry.py` ahora recupera reservas `RUNNING` de más de 1 hora.
+
+**Verificación de que nada de esto tocó lo ya decidido**: recorrí la hipótesis 001 (XAUUSD) después de cada tanda de cambios — métricas idénticas hasta 15 decimales, mismo veredicto `DISCARDED_IS`, tres veces seguidas. 24 tests pasan (6 nuevos, uno por cada bug reproducido).
+
+**Familia nueva: `oscillator_reversion`** (`qaf/signals.py`, `qaf/contracts.py`) — RSI(n) Wilder + filtro de tendencia SMA, basado en Larry Connors (RSI(2), ConnorsRSI, R3 — agregado a `docs/author_library.md`, ya citado en hipótesis 001 pero nunca formalizado). Parámetros: `rsi_period`, `entry_threshold`, `trend_filter_sma` + los universales (`atr_period`, `sl_atr`, `tp_atr`, `max_holding`). **Reserva declarada**: la fuente original sale por SMA5 sin stop fijo; este motor siempre usa SL/TP por ATR — es un híbrido, no una réplica exacta, documentado en `protocol.md`. Literatura validada específicamente en índices (S&P 500) — el candidato natural para la próxima hipótesis es NAS100 o SP500, no XAUUSD/forex.
+
+**No construido todavía** (documentado, no descartado): DVO (fuente es un sistema de blog, no paper — confianza sobreestimada), ConnorsRSI completo (compuesto de 3 sub-indicadores, mayor complejidad), DVI (Gemini no dio fórmula exacta, no reproducible en código).
+
+## PARKED IDEAS
+- **Futuros reales (CME) en vez de CFD Darwinex** — Alexander preguntó si convendría migrar para tener mejor calidad de dato (volumen real, libro de órdenes real, sin el proxy CFD que ya limitó VWAP y la hipótesis 003). Decisión: **no ahora** — no es un cambio de fuente de datos, es cambiar de bróker/infraestructura entera (otro modelo de margen, otro modelo de costos, otro feed), y todavía ninguna estrategia sobrevivió IS en el CFD actual como para justificar esa inversión. **Reconsiderar cuando** una hipótesis sobreviva IS+OOS en CFD — ahí futuros sería una etapa de confirmación adicional antes de capital real (encaja con la fase de incubación de la regla 15 de CLAUDE.md), no un reemplazo del pipeline actual.
+
+## COORDINACIÓN #003 (2026-09-22) — ACTUALIZADO: spec entregada
+Hipótesis 003 (SP500/D1, `oscillator_reversion`) escrita por `investigator`; `protocol` ya entregó spec+contrato ejecutable: `docs/specs/sp500-d1-rsi2-mean-reversion.md` + `.json` (ver sección "HIPÓTESIS #003 — SPEC GENERADA POR `protocol`" arriba para el detalle completo de parámetros, costos y baseline). Ya no está pendiente de `protocol` — el siguiente paso es invocar `engine` sobre ese contrato JSON.
+
+## COORDINACIÓN #004 — US30 H1 CHANNEL BREAKOUT (2026-09-22)
+Se registró la hipótesis #005 (`docs/hypotheses/us30-h1-channel-breakout.md`) y
+se entregó su spec narrativa y contrato JSON en `docs/specs/`. Es una hipótesis
+separada de #004: el momentum D1 `trend_cross` no se transformó artificialmente
+en una ruptura de canal H1. Instrumento primario: US30/WS30; NAS100 y SP500
+quedan como alternativas futuras, fuera de esta corrida. Parámetros fijados:
+canal 24 barras, ATR14, SL 1.5 ATR, TP 3 ATR y time stop 24 barras, con riesgo
+del 1%. No se ejecutó backtest ni se abrió OOS. H1 está permitido por
+`CLAUDE.md`, `docs/universe.md` y `config/instruments.json`; quedan declaradas
+las reservas actuales de `price_basis=unknown` y `costs_verified=false`.
+
+## HIPÓTESIS #003 — VEREDICTO FINAL: DESCARTADA EN IS (2026-09-22)
+
+`validator` cerró formalmente la hipótesis 003 (SP500/D1, RSI(2) Connors, familia `oscillator_reversion`) sobre `reports/factory/runs/a543fd86979556de4dfa743b/result.json`. **Decisión: DISCARDED_IS.** OOS no se abrió (nunca correspondía para una estrategia descartada en IS).
+
+Números clave (detalle completo en `docs/hypotheses/_registry.md` fila 003): 148 operaciones, profit factor 1.12 (umbral 1.3, FAIL), P&L neto IS +$5,550 (positivo pero insuficiente), max drawdown 7.8% (única puerta adicional que pasa junto con mínimo de operaciones y net positivo). **Ratio de fricción 0.37 frente a un mínimo de 3.0** — financiación/swap es el 63% de los $14,920 de costos totales pagados, el componente dominante, no spread/slippage/comisión. Estrés de fricción ×2 lleva el resultado a -$9,283 neto (FAIL). Bootstrap de 2000 iteraciones: IC 95% del retorno medio [-6.8%, +14.1%] — **cruza cero**, p unilateral centrado = 0.213, ya por encima del piso mínimo resolvible de la campaña (`minimum_resolvable_adjusted_p`=0.1199) *antes* de corregir por ser la 3ª hipótesis probada (`p_campaign_bonferroni_upper_bound`=1 — cota trivial que no cambia nada). El diagnóstico por terciles temporales muestra el único tramo ganador entre 2012-07 y 2016-09 (PF 1.83); el resto de la muestra (2008-2012 y 2016-2021) es negativo o casi plano.
+
+### Patrón tras 3 hipótesis seguidas descartadas en IS (001, 002, 003)
+
+No hay una causa mecánica única compartida por las tres — no se inventa una donde no se ve:
+- **001** (XAUUSD D1, `streak_reversal`): el edge bruto ya es negativo *antes* de costos (gross_pnl -$2,929). El mecanismo (reversión tras racha de 3 cierres) no está presente en el precio de XAUUSD D1 en esta muestra.
+- **002** (NAS100 D1, calendario turn-of-month): el AED exploratorio (pre-motor real, indicativo no autoritativo) ya mostró que el efecto no aparece en los datos (p=0.633) — tampoco hay edge real, pero por una razón distinta (estacionalidad diluida, no mecánica de precio).
+- **003** (SP500 D1, `oscillator_reversion`): esta sí tiene edge bruto real (+$19,397 antes de costos), pero es débil, temporalmente inestable (concentrado en un tercio de la muestra) y estadísticamente no distinguible de cero.
+
+**Lo único verdaderamente común a las tres**: ninguna se acercó al ratio de fricción mínimo (≥3.0), ni siquiera la única con edge bruto genuino (003 llegó a 0.37, casi un orden de magnitud por debajo). Para operar en este bróker a holding D1, el listón real no parece ser solo "encontrar un edge de precio", sino uno lo bastante grande por operación (o con un patrón de holding que acumule menos financiación/swap) para sobrevivir una barra de costos donde la financiación domina (63% en 003, 32% en 001) muy por encima de spread+slippage+comisión. Segundo patrón parcial, más débil: en las dos hipótesis corridas por el motor real (001, 003), el resultado agregado no es estable en el tiempo — un tercio del período concentra lo mejor (o lo único bueno), los otros dos son negativos o casi nulos.
+
+**Sugerencia para `investigator` antes de continuar con #004/#005** (ambas ya escritas y en estado `pendiente` en el registro — `us30-d1-time-series-momentum` y `us30-h1-channel-breakout` — no hace falta escribir una hipótesis nueva desde cero): antes de que `protocol`/`engine` inviertan un ciclo completo en cualquiera de las dos, conviene que la propia hipótesis razone explícitamente sobre la economía de fricción esperada (frecuencia de operaciones × costo de financiación del holding típico, no solo la lógica de comportamiento) — es el gate que ha reprobado peor las tres veces, independientemente de la familia o de si el edge de precio existe. No hay evidencia todavía de que el problema sea "familia de señal equivocada"; podría ser simplemente que el tamaño de edge necesario para este bróker/timeframe es mayor de lo que las hipótesis probadas hasta ahora asumían.
+
+## NEXT ACTION (vigente, reemplaza la entrada anterior sobre #003)
+1. **Hipótesis #003 cerrada** (`descartada_IS`, ver arriba). Decisión de Alexander: invocar `protocol`/`engine` sobre #004 (`us30-d1-time-series-momentum`) o #005 (`us30-h1-channel-breakout`) — ambas ya tienen spec escrita, ninguna corrida todavía —, o pedirle primero a `investigator` que revise la economía de fricción de ambas contra el patrón de arriba antes de gastar el ciclo completo de nuevo.
+2. Sin relación directa: sigue pendiente la decisión de Alexander sobre archivar formalmente la hipótesis #002 o pasarla a `validator` para veredicto formal (no bloquea el punto 1).
+3. Estado real del proyecto: **3 de 3 hipótesis probadas hasta ahora descartadas en IS, cero estrategias vivas, cero aperturas de OOS.**
+
+## LAST UPDATED
+2026-09-22 (validator cierra veredicto de hipótesis #003 — DISCARDED_IS; registro y nota de patrón de 3 fracasos seguidos agregados)

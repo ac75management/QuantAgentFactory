@@ -10,6 +10,23 @@ def points_cash(points, c, lots=1):
     return price_cash(points * c["point"], c, lots)
 
 
+def margin_cash_per_lot(price, c):
+    """Approximate initial margin notional in account currency for one lot.
+
+    The calculation mode is explicit because P&L tick value is not a universal
+    proxy for margin, particularly for inverse FX pairs such as USDJPY.
+    Leverage is applied by the caller.
+    """
+    mode = c["margin_calc_mode"]
+    if mode == "forex_base_account":
+        return c["contract_size"]
+    if mode == "forex_base_quote":
+        return abs(price) * c["contract_size"]
+    if mode == "cfd_notional":
+        return abs(price) * c["contract_size"] * c["currency_to_account"]
+    raise ValueError(f"margin_calc_mode no soportado: {mode}")
+
+
 def execution_cost(price, lots, c, stress=1.0):
     spread = points_cash(c["spread_points"] / 2, c, lots) * stress
     slippage = points_cash(c["slippage_points_per_side"], c, lots) * stress

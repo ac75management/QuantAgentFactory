@@ -1,0 +1,21 @@
+{
+  "id": "sp500-d1-rsi2-mean-reversion",
+  "family": "oscillator_reversion",
+  "symbol": "SP500",
+  "timeframe": "D1",
+  "parameters": {
+    "rsi_period": 2,
+    "entry_threshold": 10,
+    "trend_filter_sma": 200,
+    "atr_period": 14,
+    "sl_atr": 1.5,
+    "tp_atr": 1.0,
+    "max_holding": 5
+  },
+  "rationale": "Reversion de corto plazo tras sobreventa/sobrecompra extrema (RSI(2) de Wilder < 10 o > 90) con filtro de tendencia SMA200, sobre SP500 D1 (hipotesis 003 del registro, familia oscillator_reversion). rsi_period/entry_threshold/trend_filter_sma fijados a los valores clasicos de Connors (RSI(2), umbral 10, SMA200), no optimizables en esta spec. Salida siempre por SL/TP de ATR14 (1.5/1.0) + time-stop de 5 sesiones -- el motor no replica la salida original por cruce de SMA5 sin stop de Connors (reserva ya declarada en docs/author_library.md para la familia oscillator_reversion). Prueba la version debilitada del mecanismo (reversion de precio, no la mecanica de cierre MOC institucional) declarada explicitamente en docs/hypotheses/sp500-d1-rsi2-mean-reversion.md.",
+  "hypothesis_id": "003",
+  "risk_fraction": 0.01,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}

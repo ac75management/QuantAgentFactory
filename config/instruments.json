@@ -3,6 +3,7 @@
     "status": "research",
     "symbol_mt5": "XAUUSD",
     "asset_class": "commodity_cfd",
+    "margin_calc_mode": "cfd_notional",
     "timeframes": [
       "H1",
       "H4",
@@ -46,6 +47,7 @@
     "status": "research",
     "symbol_mt5": "XAGUSD",
     "asset_class": "commodity_cfd",
+    "margin_calc_mode": "cfd_notional",
     "timeframes": [
       "H1",
       "H4",
@@ -89,6 +91,7 @@
     "status": "research",
     "symbol_mt5": "WS30",
     "asset_class": "index_cfd",
+    "margin_calc_mode": "cfd_notional",
     "timeframes": [
       "H1",
       "H4",
@@ -133,6 +136,7 @@
     "status": "research",
     "symbol_mt5": "NDX",
     "asset_class": "index_cfd",
+    "margin_calc_mode": "cfd_notional",
     "timeframes": [
       "H1",
       "H4",
@@ -177,6 +181,7 @@
     "status": "research",
     "symbol_mt5": "SP500",
     "asset_class": "index_cfd",
+    "margin_calc_mode": "cfd_notional",
     "timeframes": [
       "H1",
       "H4",
@@ -221,6 +226,7 @@
     "status": "research",
     "symbol_mt5": "USDJPY",
     "asset_class": "fx",
+    "margin_calc_mode": "forex_base_account",
     "timeframes": [
       "H1",
       "H4",
@@ -265,6 +271,7 @@
     "status": "research",
     "symbol_mt5": "EURUSD",
     "asset_class": "fx",
+    "margin_calc_mode": "forex_base_quote",
     "timeframes": [
       "H1",
       "H4",
@@ -309,6 +316,7 @@
     "status": "research",
     "symbol_mt5": "GBPUSD",
     "asset_class": "fx",
+    "margin_calc_mode": "forex_base_quote",
     "timeframes": [
       "H1",
       "H4",
@@ -353,6 +361,7 @@
     "status": "research",
     "symbol_mt5": "XTIUSD",
     "asset_class": "commodity_cfd",
+    "margin_calc_mode": "cfd_notional",
     "timeframes": [
       "H1",
       "H4",
@@ -396,6 +405,7 @@
     "status": "research",
     "symbol_mt5": "GDAXI",
     "asset_class": "index_cfd",
+    "margin_calc_mode": "cfd_notional",
     "timeframes": [
       "H1",
       "H4",

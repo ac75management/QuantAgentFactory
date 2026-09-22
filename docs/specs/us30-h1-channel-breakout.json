@@ -1,0 +1,19 @@
+{
+  "id": "us30-h1-channel-breakout",
+  "family": "channel_breakout",
+  "symbol": "US30",
+  "timeframe": "H1",
+  "parameters": {
+    "atr_period": 14,
+    "sl_atr": 1.5,
+    "tp_atr": 3.0,
+    "max_holding": 24,
+    "lookback": 24
+  },
+  "rationale": "Capturar continuación direccional después de que el cierre rompa el máximo o mínimo del canal de las 24 barras H1 previas.",
+  "hypothesis_id": "005",
+  "risk_fraction": 0.01,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}

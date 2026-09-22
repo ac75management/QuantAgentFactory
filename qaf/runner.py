@@ -52,7 +52,7 @@ def run_daily(root=ROOT,limit=None,day=None):
                 try:
                     df,info=load_is(symbol,tf,root)
                     datasets[(symbol,tf)]=(df,info)
-                except FileNotFoundError as error:
+                except (FileNotFoundError, ValueError, KeyError) as error:
                     unavailable.append({'symbol':symbol,'timeframe':tf,'reason':str(error)})
         registered_hypotheses=load_registered_hypothesis_ids(root)
         custom=[]
@@ -94,7 +94,11 @@ def run_daily(root=ROOT,limit=None,day=None):
                 record={'run_id':run_id,'created_at':now.isoformat(),'spec':spec,'decision':'TECHNICAL_ERROR','reserves':[str(error)],'provenance':{'dataset':info,'code_sha256':code}}
                 render_run(folder,record)
                 (folder/'error.txt').write_text(traceback.format_exc(),encoding='utf-8')
-                registry.finish(run_id,'TECHNICAL_ERROR',folder/'result.json',str(error))
+                try:
+                    registry.finish(run_id,'TECHNICAL_ERROR',folder/'result.json',str(error))
+                except RuntimeError as lease_error:
+                    # Un worker recuperado no puede modificar el registro de su reemplazo.
+                    record['reserves'].append(str(lease_error))
                 row={'run_id':run_id,'symbol':spec['symbol'],'timeframe':spec['timeframe'],'family':spec['family'],'decision':'TECHNICAL_ERROR'}
             runs.append(row)
             print(f'  {row["decision"]}',flush=True)
