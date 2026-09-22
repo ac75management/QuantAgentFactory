@@ -90,6 +90,34 @@ def load_cost_key_status():
     return status_by_key
 
 
+def load_symbol_cost_status():
+    """alias -> status, leido de la tabla 'Por símbolo' de docs/cost_model.md.
+    Mas preciso que el cost_key generico -- un simbolo puede estar CONFIRMED
+    ahi aunque su cost_key generico (compartido con otros simbolos) siga
+    SIN_CONFIRMAR."""
+    if not COST_MODEL_PATH.exists():
+        return {}
+    text = COST_MODEL_PATH.read_text(encoding="utf-8")
+    status_by_alias = {}
+    in_table = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("| alias | symbol_mt5 | commission_per_side"):
+            in_table = True
+            continue
+        if in_table:
+            if not stripped.startswith("|"):
+                if status_by_alias:
+                    break
+                continue
+            if set(stripped.replace("|", "").strip()) <= {"-", " "}:
+                continue
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            if len(cells) >= 7:
+                status_by_alias[cells[0]] = cells[-1].replace("*", "").strip()
+    return status_by_alias
+
+
 def check_structural(df):
     issues = []
     required = ["time", "open", "high", "low", "close"]
@@ -154,7 +182,7 @@ def check_gaps(df, tf):
     return notes, weekend_like, feed_holes
 
 
-def evaluate(symbol, tf, is_path, universe, cost_status):
+def evaluate(symbol, tf, is_path, universe, cost_status, symbol_cost_status):
     df = pd.read_parquet(is_path)
     n = len(df)
 
@@ -167,7 +195,13 @@ def evaluate(symbol, tf, is_path, universe, cost_status):
 
     alias_info = universe.get(symbol, {})
     cost_key = alias_info.get("cost_key")
-    cost_conf_status = cost_status.get(cost_key, "DESCONOCIDO") if cost_key else "DESCONOCIDO"
+    # Override por simbolo (tabla "Por simbolo") tiene prioridad sobre el cost_key
+    # generico compartido -- un simbolo puede estar CONFIRMED sin que el resto de
+    # simbolos de su mismo cost_key lo esten.
+    if symbol in symbol_cost_status:
+        cost_conf_status = symbol_cost_status[symbol]
+    else:
+        cost_conf_status = cost_status.get(cost_key, "DESCONOCIDO") if cost_key else "DESCONOCIDO"
 
     hard_failures = list(structural_issues) + list(ohlc_issues)
     if n < MIN_ROWS:
@@ -257,6 +291,7 @@ def update_manifest(reports_by_key):
 def main():
     universe = load_universe()
     cost_status = load_cost_key_status()
+    symbol_cost_status = load_symbol_cost_status()
 
     is_files = sorted(CLEAN_DIR.glob("*/*/IS.parquet"))
     if not is_files:
@@ -268,7 +303,7 @@ def main():
     for is_path in is_files:
         tf = is_path.parent.name
         symbol = is_path.parent.parent.name
-        report = evaluate(symbol, tf, is_path, universe, cost_status)
+        report = evaluate(symbol, tf, is_path, universe, cost_status, symbol_cost_status)
         path = write_report_md(report)
         reports_by_key[(symbol, tf)] = report
         counts[report["verdict"]] += 1
