@@ -1,4 +1,4 @@
-# QuantAgentFactory — CLAUDE.md
+﻿# QuantAgentFactory — CLAUDE.md
 
 ## Propósito
 Repositorio de investigación cuantitativa asistida por agentes. Objetivo: convertir una hipótesis de trading en una estrategia validada, siguiendo el método TIS (hipótesis → AED → reglas → backtest → optimización → robustez → sizing → deploy), documentado en [docs/philosophy.md](docs/philosophy.md).
@@ -7,8 +7,8 @@ Proyecto independiente de ZOO2. No comparte cuenta, capital ni conexión de bró
 
 ## Alcance de mercado y frecuencia
 - Mercados: CFDs (índices, forex, materias primas) y futuros, como foco principal. Ampliable a otros mercados más adelante, uno a la vez, no por defecto.
-- Frecuencia: diario o 4H como mínimo. Nunca por debajo de 4H.
-- Excluido explícitamente: alta frecuencia / scalping, estrategias de rebalanceo de cartera.
+- Frecuencia: H1, H4 o diario como mínimo. Nunca por debajo de H1.
+- Excluido explícitamente: M30/M15, alta frecuencia / scalping, estrategias de rebalanceo de cartera.
 - Motivo: a esta frecuencia, spread/comisión/slippage del bróker quedan como margen operativo menor, no como la causa de pérdida de la cuenta (ver regla dura 11).
 - Los autores citados en docs/philosophy.md (Kaufman, Raschke) son ejemplos ilustrativos de la fuente original del método, no el catálogo de dónde sacar hipótesis. `investigator` busca su propia literatura/patrones dentro de este alcance.
 
@@ -60,3 +60,4 @@ Invocar con la herramienta Agent y el `subagent_type` correspondiente. No dupliq
 
 ## Estado del proyecto
 Ver [PROJECT_STATE.md](PROJECT_STATE.md) antes de asumir nada. Actualizarlo tras cada avance real, no al final de cada mensaje.
+

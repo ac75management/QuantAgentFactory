@@ -1,4 +1,4 @@
-# QuantAgentFactory — Resumen para revisión externa
+﻿# QuantAgentFactory — Resumen para revisión externa
 
 Documento autocontenido para pasar a otra IA/revisor sin más contexto. No es un resultado — es el diseño del proceso, todavía sin ninguna hipótesis corrida.
 
@@ -7,7 +7,7 @@ Sistema de agentes (Claude Code) para investigar, validar y aprobar estrategias 
 
 ## Alcance
 - Mercados: CFDs (índices, forex, materias primas) + futuros.
-- Frecuencia: diario o 4H, nunca menos.
+- Frecuencia: H1, H4 o diario, nunca menos.
 - Excluido explícitamente: scalping, alta frecuencia, rebalanceo de cartera.
 - Por qué: a esa frecuencia, el costo de bróker (spread/comisión/slippage) queda como margen operativo menor, no como causa de pérdida de la cuenta.
 
@@ -76,4 +76,39 @@ Si algo falla en cualquier punto (datos sucios, patrón no confirmado, puerta nu
 2. ¿Las reglas duras alcanzan para evitar sobreajuste y ejecución accidental en vivo, o falta alguna?
 3. ¿Falta algún tipo de prueba de robustez o de chequeo de calidad de datos que sea estándar en la industria?
 4. ¿La división de responsabilidades entre los 4 agentes es clara, o se solapa en algún punto?
-5. ¿El alcance (CFD + futuros, diario/4H, sin scalping/HFT/rebalanceo) es razonable para el objetivo, o es demasiado restrictivo/laxo?
+5. ¿El alcance (CFD + futuros, H1/H4/diario, sin scalping/HFT/rebalanceo) es razonable para el objetivo, o es demasiado restrictivo/laxo?
+
+## Alternativas de validación estadística bajo revisión
+
+Estas alternativas quedan documentadas, pero no están implementadas ni cambian
+todavía ningún veredicto.
+
+### Opción A — walk-forward fijo + Holm-Bonferroni
+
+- Definir antes de mirar resultados ventanas rolling de entrenamiento y prueba.
+- Mantener los parámetros congelados durante cada ventana de prueba.
+- Exigir un mínimo de operaciones por ventana y reportar la degradación entre
+  entrenamiento y prueba.
+- Ajustar los p-valores por el número de hipótesis registradas usando
+  Holm-Bonferroni.
+- Ventaja: es conservadora, interpretable y controla explícitamente errores por
+  múltiples pruebas.
+- Limitación: puede ser demasiado estricta con un registro pequeño o con
+  hipótesis muy correlacionadas.
+
+### Opción B — walk-forward fijo + Deflated Sharpe Ratio
+
+- Mantener las mismas ventanas rolling y parámetros congelados.
+- Ajustar la evidencia del Sharpe observado por número de pruebas, longitud de
+  muestra, asimetría y curtosis.
+- Ventaja: modela mejor el sesgo de selección cuando se comparan muchas
+  variantes de una estrategia.
+- Limitación: requiere definir con precisión el número efectivo de pruebas y
+  depende de supuestos estadísticos más difíciles de auditar.
+
+### Decisión pendiente
+
+Antes de implementar cualquiera de las dos opciones hay que fijar qué cuenta
+como hipótesis, variante y reutilización de OOS. Hasta entonces, el pipeline
+no debe presentar ninguna de ellas como puerta activa de aprobación.
+

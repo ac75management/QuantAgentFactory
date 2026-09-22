@@ -1,4 +1,4 @@
-# Método TIS — Filosofía del proyecto
+﻿# Método TIS — Filosofía del proyecto
 
 Fuente: extracción propia (NotebookLM) del contenido gratuito de una trader algorítmica, 2026-09. Aquí solo se documenta la parte metodológica/técnica — se omite el contenido comercial de su mentoría.
 
@@ -45,3 +45,4 @@ Datos: Norgate Data (pago, institucional). Herramientas: StrategyQuant, MultiCha
 ## Autores citados como fuente de hipótesis
 - **Perry Kaufman** — *Trading Systems and Methods*; modelos adaptativos (KAMA), diseño de sistemas.
 - **Linda Raschke** — patrones de reversión a la media y dinámicas de volatilidad.
+

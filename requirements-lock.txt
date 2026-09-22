@@ -1,0 +1,10 @@
+numpy==2.3.5
+pandas==3.0.1
+scipy==1.18.1
+pyarrow==25.0.1
+pytest==9.1.1
+tzdata==2026.3
+
+# Opcional, solo para qaf/mt5_export.py (lectura del terminal MT5, Windows).
+# No es una dependencia del motor/runner. Instalar con: pip install -e .[mt5]
+# MetaTrader5

@@ -11,17 +11,22 @@ pip install MetaTrader5 pandas pyarrow
 
 1. Abrir el terminal Darwinex MT5 y loguearse en la cuenta (demo o real). Dejarlo abierto — todos los scripts que hablan con MT5 lo necesitan corriendo.
 
-2. Descargar OHLC D1 y H4 del universo activo:
+2. Descargar OHLC H1, H4 y D1 del universo activo:
    ```
    python scripts/extract_darwinex_ohlc.py
    ```
-   Escribe `data/raw/darwinex/<SYMBOL>_<TF>.parquet`. Solo usa los `symbol_mt5` de `docs/universe.md` con `status=active` — `BTCUSD` (blocked) y `DAX` (pending) quedan fuera hasta que se les cambie el status ahí.
+   Escribe `data/raw/darwinex/<SYMBOL>_<TF>.parquet`. Para NAS100/NDX
+   generará también `NAS100_H1.parquet`, usando el histórico del broker
+   Darwinex vía MT5 y la misma normalización UTC. Solo usa los `symbol_mt5`
+   de `docs/universe.md` con `status=active` — `BTCUSD` (blocked) queda fuera.
 
-3. Normalizar y cortar 70/30 IS/OOS:
+3. Normalizar y cortar 70/30 IS/OOS (H1, H4 o D1):
    ```
    python scripts/build_clean_data.py
    ```
    Escribe `data/clean/<SYMBOL>/<TF>/IS.parquet` y `OOS.parquet`, más `data/clean/manifest.json`.
+   No elimina duplicados ni interpola huecos: los conserva para que Gate 0
+   los detecte y los documente.
 
 4. Capturar costos reales de la cuenta (spread, swap, tamaño de contrato — la comisión casi nunca viene, queda para completar a mano):
    ```

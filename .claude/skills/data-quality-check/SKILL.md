@@ -8,6 +8,8 @@ description: Gate 0 obligatorio. Evalúa calidad de datos históricos de broker 
 ## Cuándo correr
 Antes de cualquier cálculo estadístico, indicador o backtest, sobre el archivo IS ya separado. Si el veredicto es RECHAZADO, engine se detiene. Si es APTO_CON_RESERVAS, engine reporta y no avanza sin confirmación explícita de Alexander.
 
+**Nota (2026-09-22): esto ya corre automatizado.** `qaf/data.py::inspect_frame` implementa las secciones A, C, D, F (parcial) y I de este checklist como parte de `qaf.cli run` — su resultado (`PASS`/`RESERVE`/`FAIL` por check, dentro de `result.json`) es la fuente real, no un documento manual aparte en `reports/<slug>/data_quality.md`. El equivalente de `cost_key.status == CONFIRMED` de este documento es el campo `costs_verified` de `config/instruments.json` (hoy `false` para las 10 series activas). Las secciones B (gaps), E (2ª mitad — histórico de spread/slippage), G, H y J de este checklist **no están automatizadas todavía** — siguen siendo trabajo manual de quien corre `engine` hasta que se implementen en `qaf`.
+
 ## Entrada
 - Ruta(s) a serie(s) OHLC (CSV/parquet) del activo y timeframe de la spec.
 - Metadatos del símbolo si existen en `docs/universe.md` (sesión, tipo CFD/futuro, multiplicador, política de rollover).
@@ -21,6 +23,10 @@ Antes de cualquier cálculo estadístico, indicador o backtest, sobre el archivo
 3. Timestamp único, ordenado ascendente, sin duplicados.
 4. Timezone explícita (ideal UTC). Si el broker usa server time (p.ej. GMT+2/+3 con DST), documentarlo y convertir a UTC de forma reproducible.
 5. Frecuencia real de barras coincide con la declarada (diario o 4H). Medir mediana y percentil de gaps entre barras.
+
+Un resultado `PASS` solo puede usarse cuando el check fue ejecutado sobre el
+archivo inspeccionado. Si el control requiere revisión manual, debe figurar
+como `MANUAL_PENDIENTE` o `RESERVA`; nunca como `PASS` narrativo.
 
 ### B. Gaps y agujeros
 Clasificar cada gap > 1.5x el intervalo esperado:

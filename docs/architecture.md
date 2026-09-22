@@ -7,7 +7,7 @@ Una hipótesis no se convierte en estrategia aprobada sin pasar, en orden, por: 
 
 ## Alcance (detalle completo en CLAUDE.md)
 - Mercados: CFDs (índices, forex, materias primas) + futuros.
-- Frecuencia: diario o 4H, nunca menos.
+- Frecuencia: H1, H4 o diario, nunca menos.
 - Excluido explícitamente: scalping, alta frecuencia, rebalanceo de cartera.
 - Filosofía: la IA ejecuta código determinista ("obrero"); no genera ideas de mercado por intuición ("pensador").
 

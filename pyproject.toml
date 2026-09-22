@@ -1,0 +1,12 @@
+[project]
+name = "quantagentfactory"
+version = "2.0.0"
+requires-python = ">=3.12"
+dependencies = ["numpy", "pandas", "scipy", "pyarrow", "tzdata"]
+
+[project.optional-dependencies]
+mt5 = ["MetaTrader5"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

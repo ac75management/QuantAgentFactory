@@ -1,0 +1,19 @@
+{
+  "id": "xauusd-d1-mean-reversion-streak-extension",
+  "family": "streak_reversal",
+  "symbol": "XAUUSD",
+  "timeframe": "D1",
+  "parameters": {
+    "atr_period": 14,
+    "sl_atr": 1.5,
+    "tp_atr": 3.0,
+    "max_holding": 5,
+    "streak": 3
+  },
+  "rationale": "Reversion de corto plazo tras racha de 3 cierres D1 consecutivos en XAUUSD (hipotesis 001 del registro): SL/TP por ATR14, time-stop 5 sesiones, sizing por riesgo fijo.",
+  "hypothesis_id": "001",
+  "risk_fraction": 0.01,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}
