@@ -1,7 +1,7 @@
 import argparse
 import json
 from pathlib import Path
-from .io import ROOT,read_json,digest,write_json
+from .io import ROOT,read_json,digest,write_json,load_registered_hypothesis_ids
 from .runner import run_daily
 from .contracts import validate_spec,validate_instrument
 
@@ -20,6 +20,18 @@ def main():
     freeze.add_argument('run_id')
     validate=sub.add_parser('validate',help='Evaluar una reserva con contrato congelado')
     validate.add_argument('freeze_id')
+    dashboard=sub.add_parser('dashboard',help='Abrir el Centro de Control local')
+    dashboard.add_argument('--port',type=int,default=8765)
+    dashboard.add_argument('--open',action='store_true',help='Abrir el navegador automáticamente')
+    dashboard.add_argument('--snapshot',action='store_true',help='Generar HTML sin iniciar servidor')
+    catalog_add=sub.add_parser('catalog-add',help='Agregar una idea al catálogo y a la cola de investigación')
+    catalog_add.add_argument('path')
+    sub.add_parser('catalog-list',help='Listar ideas catalogadas y su triaje')
+    catalog_review=sub.add_parser('catalog-review',help='Registrar la revisión de evidencia de una idea')
+    catalog_review.add_argument('candidate_id')
+    catalog_review.add_argument('path',help='JSON con la revisión de evidencia')
+    catalog_promote=sub.add_parser('catalog-promote',help='Crear una hipótesis desde una idea elegible')
+    catalog_promote.add_argument('candidate_id')
     args=parser.parse_args()
     if args.command=='run':
         summary,folder=run_daily(limit=args.limit)
@@ -32,6 +44,8 @@ def main():
         spec=validate_spec(read_json(args.path))
         instruments=read_json(ROOT/'config/instruments.json')
         if spec['symbol'] not in instruments:raise ValueError('Registrar primero el instrumento')
+        if spec['hypothesis_id'] not in load_registered_hypothesis_ids(ROOT):
+            raise ValueError(f"hypothesis_id {spec['hypothesis_id']!r} no existe en config/hypotheses.json")
         if args.command=='register':
             path=ROOT/'config/strategies'/f'{digest(spec)[:24]}.json'
             write_json(path,spec);print(f'Registrada: {path}')
@@ -44,6 +58,27 @@ def main():
         from .holdout import validate_final
         record,folder=validate_final(args.freeze_id)
         print(json.dumps({'decision':record['decision'],'report':str(folder/'report.html')}));return 0
+    if args.command=='dashboard':
+        from .dashboard import serve,write_snapshot
+        if args.snapshot:
+            print(write_snapshot());return 0
+        serve(port=args.port,open_browser=args.open);return 0
+    if args.command=='catalog-add':
+        from .catalog import add_candidate
+        record,path=add_candidate(read_json(args.path))
+        print(json.dumps({'candidate_id':record['candidate_id'],'score':record['assessment']['score'],'verdict':record['assessment']['verdict'],'path':str(path)},ensure_ascii=False));return 0
+    if args.command=='catalog-list':
+        from .catalog import list_candidates
+        rows=[{'candidate_id':r.get('candidate_id'),'name':r.get('name'),'source':r.get('source_name'),'status':r.get('status'),'hypothesis_id':r.get('hypothesis_id'),'score':r.get('assessment',{}).get('score'),'verdict':r.get('assessment',{}).get('verdict')} for r in list_candidates()]
+        print(json.dumps(rows,indent=2,ensure_ascii=False));return 0
+    if args.command=='catalog-review':
+        from .catalog import review_candidate
+        record,path=review_candidate(args.candidate_id,read_json(args.path))
+        print(json.dumps({'candidate_id':record['candidate_id'],'status':record['status'],'path':str(path)},ensure_ascii=False));return 0
+    if args.command=='catalog-promote':
+        from .catalog import promote_candidate
+        hypothesis,path=promote_candidate(args.candidate_id)
+        print(json.dumps({'candidate_id':args.candidate_id,'hypothesis_id':hypothesis['id'],'status':hypothesis['status'],'path':str(path)},ensure_ascii=False));return 0
 
 
 if __name__=='__main__':

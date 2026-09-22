@@ -6,14 +6,15 @@ description: Gate 0 obligatorio. Evalúa calidad de datos históricos de broker 
 # Gate 0 — Calidad de datos (broker minorista)
 
 ## Cuándo correr
-Antes de cualquier cálculo estadístico, indicador o backtest, sobre el archivo IS ya separado. Si el veredicto es RECHAZADO, engine se detiene. Si es APTO_CON_RESERVAS, engine reporta y no avanza sin confirmación explícita de Alexander.
+Antes de cualquier cálculo estadístico, indicador o backtest, sobre el archivo IS ya separado. `qaf.data.inspect_frame` produce `PASS`, `RESERVE` o `FAIL`. `FAIL` bloquea siempre. `RESERVE` permite investigación IS con las reservas visibles, pero nunca habilita aprobación final ni apertura de OOS.
 
-**Nota (2026-09-22): esto ya corre automatizado.** `qaf/data.py::inspect_frame` implementa las secciones A, C, D, F (parcial) y I de este checklist como parte de `qaf.cli run` — su resultado (`PASS`/`RESERVE`/`FAIL` por check, dentro de `result.json`) es la fuente real, no un documento manual aparte en `reports/<slug>/data_quality.md`. El equivalente de `cost_key.status == CONFIRMED` de este documento es el campo `costs_verified` de `config/instruments.json` (hoy `false` para las 10 series activas). Las secciones B (gaps), E (2ª mitad — histórico de spread/slippage), G, H y J de este checklist **no están automatizadas todavía** — siguen siendo trabajo manual de quien corre `engine` hasta que se implementen en `qaf`.
+**Implementación vigente.** `qaf/data.py::inspect_frame` ejecuta los controles automatizados como parte de `qaf.cli run`. El resultado por check dentro de `result.json` y `report.html` es la evidencia autoritativa. `config/instruments.json` es la única fuente contractual de instrumento y costos; `docs/cost_model.md` es documentación humana y no puede contradecirla. Las secciones B (clasificación causal de gaps), E (costos históricos), G, H y J no están automatizadas: deben quedar como reservas, nunca como `PASS` narrativo.
 
 ## Entrada
 - Ruta(s) a serie(s) OHLC (CSV/parquet) del activo y timeframe de la spec.
-- Metadatos del símbolo si existen en `docs/universe.md` (sesión, tipo CFD/futuro, multiplicador, política de rollover).
-- Cost model de referencia en `docs/cost_model.md` (si existe).
+- Contrato exacto del símbolo en `config/instruments.json`.
+- Entrada exacta `symbol+timeframe` del `data/clean/manifest.json` y presencia física de IS/OOS.
+- Spec registrada en `config/strategies/`.
 
 ## Checklist obligatorio (todos los puntos)
 
@@ -46,10 +47,8 @@ Regla: más de 0 feed holes materiales en la ventana IS → RECHAZADO (o APTO_CO
 - No asumir mid si no está documentado.
 
 ### E. Spread y costos (microestructura)
-- **Declaración obligatoria en todo reporte**: el spread histórico NO viene incluido en las barras OHLC exportadas del bróker (son solo precio, no bid/ask con profundidad). Todo backtest usa el spread de `docs/cost_model.md`, nunca asume spread cero ni lo infiere de high-low.
-- Busca en `docs/universe.md` el `cost_key` del símbolo, y en `docs/cost_model.md` su `status`.
-  - `status=CONFIRMED` → el costo es real, no limita el veredicto por este punto.
-  - `status=SIN_CONFIRMAR` (o cualquier valor distinto de CONFIRMED) → **el veredicto de este Gate 0 no puede ser mejor que APTO_CON_RESERVAS**, sin importar qué tan limpios estén los precios. No hay excepción: dato limpio con costo desconocido sigue siendo un backtest no confiable.
+- **Declaración obligatoria en todo reporte**: el spread histórico no viene incluido en OHLC. El backtest usa `spread_points`, `slippage_points_per_side`, comisión y swap de `config/instruments.json`; nunca asume spread cero ni lo infiere de high-low.
+- `costs_verified=false` implica `RESERVE` y bloquea aprobación final. `true` solo confirma que el contrato vigente fue verificado; no convierte costos constantes en una reconstrucción histórica.
 - Si hay histórico de spread o bid/ask real: estadísticos (mediana, p90, p99) en sesión normal vs. rollover/noticias.
 - Verificar que el cost model incluye: spread + comisión + slippage estimado + swap/financing (CFDs). Si falta financing y el holding esperado es mayor a 1 día → RESERVAS.
 
@@ -79,17 +78,17 @@ Regla: más de 0 feed holes materiales en la ventana IS → RECHAZADO (o APTO_CO
 - Si no es posible re-descargar en esta pasada, documentarlo como limitación pendiente, no como fallo.
 
 ## Veredicto
-- **APTO**: todos los checks críticos pasan, limitaciones residuales menores documentadas, Y el `cost_key` del símbolo tiene `status=CONFIRMED` en `docs/cost_model.md`.
-- **APTO_CON_RESERVAS**: usable solo con confirmación de Alexander; listar cada reserva (spread estático, timezone inferida, sin segunda fuente, `cost_key` sin confirmar, etc.). **Techo obligatorio** mientras el `cost_key` no esté `CONFIRMED` — nunca se declara APTO solo porque los precios están limpios.
+- **APTO / `PASS`**: todos los checks automatizados críticos pasan y los campos `price_basis`, `calendar_verified`, `provenance_verified` y `costs_verified` del contrato permiten esa conclusión.
+- **APTO_CON_RESERVAS / `RESERVE`**: usable para exploración IS, con cada reserva visible. No requiere confirmación conversacional para calcular IS; nunca autoriza OOS, aprobación o trading.
 - **RECHAZADO**: integridad rota, feed holes materiales, OHLC inconsistente, o imposibilidad de definir sesión/costos de forma defendible.
 
 ## Salida obligatoria
-Archivo `reports/<slug>/data_quality.md` con:
+Artefactos `reports/factory/runs/<run_id>/result.json` y `report.html` con:
 1. Símbolo, timeframe, rutas de archivos, hashes/fechas.
 2. Tabla check → resultado (PASS / RESERVA / FAIL) + evidencia breve.
 3. Lista de barras excluidas (si las hay) con motivo.
 4. Declaración bid/ask/mid y fuente del cost model.
-5. Veredicto final en una línea: `VEREDICTO: APTO | APTO_CON_RESERVAS | RECHAZADO`
+5. Estado final mapeado: `PASS | RESERVE | FAIL` (`APTO | APTO_CON_RESERVAS | RECHAZADO` en presentación humana).
 6. Bloque "Limitaciones conocidas" que validator debe leer.
 
 ## Prohibiciones

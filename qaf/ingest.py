@@ -3,6 +3,7 @@ from pathlib import Path
 import re
 import pandas as pd
 from .io import ROOT, read_json, write_json, file_hash
+from .partition import seal_entry
 
 
 def normalize(df):
@@ -51,7 +52,9 @@ def import_batch(raw_dir, root=ROOT):
         with (out/'import.lock').open('x') as lock:lock.write(str(path))
         ins.to_parquet(out/'IS.parquet',index=False)
         oos.to_parquet(out/'OOS.parquet',index=False)
-        entries.append({'symbol':symbol,'timeframe':tf,'raw_file':str(path),'raw_sha256':file_hash(path),'is_oos_cutoff_date':str(cutoff),'rows_is':len(ins),'rows_oos':len(oos),'price_basis':'unknown','source':'Export; contract and provenance pending','verdict_gate0':'NOT_RUN'})
+        entry={'symbol':symbol,'timeframe':tf,'raw_file':str(path),'raw_sha256':file_hash(path),'is_oos_cutoff_date':str(cutoff),'rows_is':len(ins),'rows_oos':len(oos),'price_basis':'unknown','source':'Export; contract and provenance pending','verdict_gate0':'NOT_RUN'}
+        # Sello en el momento de crear la particion: el punto mas fuerte de "trust on first use".
+        entries.append(seal_entry(entry,root))
         manifest.update(generated_from='qaf.ingest',note='Fixed cutoff per symbol. Existing partitions immutable. OOS generated, not analyzed.')
         write_json(manifest_path,manifest)
         results.append({'symbol':symbol,'timeframe':tf,'status':'IMPORTED','rows_is':len(ins)})

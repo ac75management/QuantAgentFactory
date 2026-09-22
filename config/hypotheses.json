@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "hypotheses": [
+    {
+      "id": "001",
+      "slug": "xauusd-d1-mean-reversion-streak-extension",
+      "created_at": "2026-09-22",
+      "source": "Sintesis propia y literatura de reversion de corto plazo",
+      "symbol": "XAUUSD",
+      "timeframe": "D1",
+      "family": "streak_reversal",
+      "status": "discarded_is",
+      "reason_code": "NO_PRE_COST_EDGE",
+      "reason": "La señal perdió incluso antes de costos y falló las puertas IS.",
+      "next_action": "Archivar esta regla; investigar otro mecanismo, sin reajustar sus parámetros."
+    },
+    {
+      "id": "002",
+      "slug": "nas100-d1-turn-of-month-flow",
+      "created_at": "2026-09-22",
+      "source": "Ariel; Lakonishok y Smidt; McConnell y Xu",
+      "symbol": "NAS100",
+      "timeframe": "D1",
+      "family": "calendar",
+      "status": "blocked_architecture",
+      "reason_code": "FAMILY_NOT_IMPLEMENTED",
+      "reason": "El motor no implementa señales de calendario; el ensayo exploratorio anterior no es autoritativo.",
+      "next_action": "Decidir si la familia calendario merece implementación causal antes de crear otra spec."
+    },
+    {
+      "id": "003",
+      "slug": "sp500-d1-rsi2-mean-reversion",
+      "created_at": "2026-09-22",
+      "source": "Larry Connors y Cesar Alvarez",
+      "symbol": "SP500",
+      "timeframe": "D1",
+      "family": "oscillator_reversion",
+      "status": "discarded_is",
+      "reason_code": "WEAK_UNSTABLE_EDGE",
+      "reason": "El edge bruto fue positivo, pero insuficiente frente a costos, inestable y no distinguible de cero.",
+      "next_action": "Archivar esta implementación; una variante requiere una hipótesis nueva con evidencia independiente."
+    },
+    {
+      "id": "004",
+      "slug": "us30-d1-time-series-momentum",
+      "created_at": "2026-09-22",
+      "source": "Moskowitz, Ooi y Pedersen; Hurst, Ooi y Pedersen; Hong y Stein",
+      "symbol": "US30",
+      "timeframe": "D1",
+      "family": "trend_cross",
+      "status": "discarded_is",
+      "reason_code": "NO_PRE_COST_EDGE",
+      "reason": "La señal perdió antes de costos y falló las puertas IS.",
+      "next_action": "Archivar esta implementación y no repetirla por cambios de código."
+    },
+    {
+      "id": "005",
+      "slug": "us30-h1-channel-breakout",
+      "created_at": "2026-09-22",
+      "source": "Hipótesis derivada de continuación tras ruptura de canal",
+      "symbol": "US30",
+      "timeframe": "H1",
+      "family": "channel_breakout",
+      "status": "rejected_by_user",
+      "reason_code": "USER_REJECTED",
+      "reason": "Rechazada por decisión del usuario en la campaña actual.",
+      "next_action": "No ejecutar ni rescatar mediante ajustes de parámetros."
+    },
+    {
+      "id": "006",
+      "slug": "dax-h4-time-series-momentum-replication",
+      "created_at": "2026-09-22",
+      "source": "Moskowitz, Ooi y Pedersen; Hurst, Ooi y Pedersen; Hong y Stein",
+      "symbol": "DAX",
+      "timeframe": "H4",
+      "family": "trend_cross",
+      "status": "discarded_is",
+      "reason_code": "NO_PRE_COST_EDGE",
+      "reason": "La replicación perdió antes de costos y falló las puertas IS.",
+      "next_action": "Archivar esta implementación y no repetirla por cambios de código."
+    },
+    {
+      "id": "007",
+      "slug": "xauusd-d1-kama-tendencial-con-efficiency-ratio",
+      "created_at": "2026-09-22",
+      "candidate_id": "IDEA-PILOT-KAMA-XAU-D1",
+      "source": "Oxford Capital Strategies Ltd, Perry J. Kaufman (desarrollador del indicador) — Kaufman Adaptive Moving Average | Trading Strategy (Setup)",
+      "primary_source_url": "https://oxfordstrat.com/trading-strategies/adaptive-moving-average-2/",
+      "source_rule_id": "oxford-kama-turn-filter-atr6",
+      "symbol": "XAUUSD",
+      "timeframe": "D1",
+      "implementation_type": "adaptation",
+      "adaptation_dimensions": [
+        "costs",
+        "frequency",
+        "instrument",
+        "portfolio",
+        "session",
+        "vehicle"
+      ],
+      "evidence_fingerprint": "7f3982a9c2a8db10187bf1d7743663c042f9be2bf4e1b9dd7966bdcb9a3f4584",
+      "status": "pending",
+      "reason_code": "AWAITING_PROTOCOL",
+      "reason": "La evidencia fue revisada; todavía no existe contrato ni backtest.",
+      "next_action": "Protocol debe congelar reglas numéricas o bloquear la hipótesis."
+    }
+  ]
+}

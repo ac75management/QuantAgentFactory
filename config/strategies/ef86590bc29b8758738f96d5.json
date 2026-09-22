@@ -1,0 +1,20 @@
+{
+  "id": "dax-h4-time-series-momentum-replication",
+  "family": "trend_cross",
+  "symbol": "DAX",
+  "timeframe": "H4",
+  "parameters": {
+    "atr_period": 14,
+    "sl_atr": 2.0,
+    "tp_atr": 4.0,
+    "max_holding": 20,
+    "fast": 20,
+    "slow": 60
+  },
+  "rationale": "Cruce SMA20/SMA60 del cierre del DAX para representar persistencia direccional en H4, con riesgo acotado por ATR y salida temporal.",
+  "hypothesis_id": "006",
+  "risk_fraction": 0.005,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}

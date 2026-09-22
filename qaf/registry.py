@@ -12,6 +12,9 @@ class Registry:
         self.db.row_factory=sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('CREATE TABLE IF NOT EXISTS trials (run_id TEXT PRIMARY KEY, day TEXT NOT NULL, campaign TEXT NOT NULL, status TEXT NOT NULL, spec_json TEXT NOT NULL, result_path TEXT, error TEXT, reserved_at TEXT, attempt_id TEXT)')
+        self.db.execute('CREATE TABLE IF NOT EXISTS tasks (task_id TEXT PRIMARY KEY, run_id TEXT, hypothesis_id TEXT, stage TEXT NOT NULL, owner TEXT NOT NULL, status TEXT NOT NULL, reason_code TEXT, reason_text TEXT, input_refs TEXT NOT NULL DEFAULT "[]", output_refs TEXT NOT NULL DEFAULT "[]", started_at TEXT, heartbeat_at TEXT, finished_at TEXT)')
+        self.db.execute('CREATE TABLE IF NOT EXISTS events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, task_id TEXT NOT NULL, created_at TEXT NOT NULL, event_type TEXT NOT NULL, payload_json TEXT NOT NULL DEFAULT "{}")')
+        self.db.execute('CREATE INDEX IF NOT EXISTS events_task_created ON events(task_id,created_at)')
         columns = {row['name'] for row in self.db.execute('PRAGMA table_info(trials)')}
         for column in ('reserved_at', 'attempt_id'):
             if column not in columns:
@@ -55,6 +58,51 @@ class Registry:
 
     def rows(self):
         return [dict(r) for r in self.db.execute('SELECT * FROM trials ORDER BY day,run_id')]
+
+    def start_task(self,task_id,run_id,hypothesis_id,stage,owner,input_refs='[]'):
+        now=datetime.now(timezone.utc).isoformat()
+        self.db.execute(
+            'INSERT INTO tasks (task_id,run_id,hypothesis_id,stage,owner,status,input_refs,started_at,heartbeat_at) VALUES (?,?,?,?,?,?,?,?,?) '
+            'ON CONFLICT(task_id) DO UPDATE SET run_id=excluded.run_id,hypothesis_id=excluded.hypothesis_id,stage=excluded.stage,owner=excluded.owner,status="running",reason_code=NULL,reason_text=NULL,input_refs=excluded.input_refs,started_at=excluded.started_at,heartbeat_at=excluded.heartbeat_at,finished_at=NULL',
+            (task_id,run_id,hypothesis_id,stage,owner,'running',input_refs,now,now),
+        )
+        self.emit_event(task_id,'started',{'stage':stage,'owner':owner})
+
+    def queue_task(self,task_id,hypothesis_id,stage,owner,input_refs='[]',reason_text=None):
+        """Register requested work without pretending that an agent is running."""
+        now=datetime.now(timezone.utc).isoformat()
+        cursor=self.db.execute(
+            'INSERT INTO tasks (task_id,run_id,hypothesis_id,stage,owner,status,reason_text,input_refs,heartbeat_at) VALUES (?,?,?,?,?,?,?,?,?) '
+            'ON CONFLICT(task_id) DO NOTHING',
+            (task_id,None,hypothesis_id,stage,owner,'queued',reason_text,input_refs,now),
+        )
+        if cursor.rowcount:
+            self.emit_event(task_id,'queued',{'stage':stage,'owner':owner})
+            return True
+        return False
+
+    def finish_task(self,task_id,status,reason_code=None,reason_text=None,output_refs='[]'):
+        if status not in {'blocked','failed','completed','cancelled'}:
+            raise ValueError('Estado final de tarea invalido')
+        now=datetime.now(timezone.utc).isoformat()
+        cursor=self.db.execute(
+            'UPDATE tasks SET status=?,reason_code=?,reason_text=?,output_refs=?,heartbeat_at=?,finished_at=? WHERE task_id=?',
+            (status,reason_code,reason_text,output_refs,now,now,task_id),
+        )
+        if cursor.rowcount!=1:
+            raise RuntimeError(f'Tarea inexistente: {task_id}')
+        self.emit_event(task_id,status,{'reason_code':reason_code,'reason_text':reason_text})
+
+    def emit_event(self,task_id,event_type,payload):
+        import json
+        now=datetime.now(timezone.utc).isoformat()
+        self.db.execute('INSERT INTO events (task_id,created_at,event_type,payload_json) VALUES (?,?,?,?)',(task_id,now,event_type,json.dumps(payload,ensure_ascii=False,sort_keys=True)))
+
+    def tasks(self):
+        return [dict(r) for r in self.db.execute('SELECT * FROM tasks ORDER BY COALESCE(started_at,"") DESC,task_id')]
+
+    def events(self,limit=200):
+        return [dict(r) for r in self.db.execute('SELECT * FROM events ORDER BY event_id DESC LIMIT ?',(int(limit),))]
 
     def close(self):
         self.db.close()

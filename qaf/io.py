@@ -52,7 +52,28 @@ def code_hash():
     return digest({p.name: file_hash(p) for p in paths})
 
 
+def load_hypotheses(root):
+    structured = Path(root) / "config/hypotheses.json"
+    if structured.exists():
+        payload = read_json(structured)
+        rows = payload.get("hypotheses") if isinstance(payload, dict) else None
+        if not isinstance(rows, list):
+            raise ValueError("config/hypotheses.json requiere una lista hypotheses")
+        ids = []
+        for row in rows:
+            if not isinstance(row, dict) or not isinstance(row.get("id"), str) or not row["id"].strip():
+                raise ValueError("Cada hipotesis requiere id string no vacio")
+            ids.append(row["id"].strip())
+        if len(ids) != len(set(ids)):
+            raise ValueError("IDs duplicados en config/hypotheses.json")
+        return {row["id"].strip(): row for row in rows}
+    return None
+
+
 def load_registered_hypothesis_ids(root):
+    hypotheses = load_hypotheses(root)
+    if hypotheses is not None:
+        return set(hypotheses)
     path = Path(root) / "docs/hypotheses/_registry.md"
     if not path.exists():
         return set()

@@ -2,10 +2,12 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import traceback
 from pathlib import Path
-from .io import ROOT, read_json, write_json, digest, canonical, code_hash, load_registered_hypothesis_ids
+import json
+from .io import ROOT, read_json, write_json, digest, canonical, code_hash, load_registered_hypothesis_ids, load_hypotheses
 from .contracts import validate_spec, validate_instrument
 from .data import load_is, inspect_frame
 from .engine import simulate
+from .baseline import simulate_baseline
 from .metrics import summarize
 from .validation import diagnose, screening_gates
 from .reporting import render_run, render_daily
@@ -19,6 +21,8 @@ def execute(spec,df,data_info,c,policy,run_id,created,output_root):
     if not c.get('costs_verified'):
         reserves.append('Costos exploratorios no habilitados para aprobación final')
     reserves.append('Motor de costos constantes: escenario vigente aplicado al IS histórico; no habilita validación final')
+    if data_info.get('partition_integrity',{}).get('status')!='SEALED':
+        reserves.append('Partición IS/OOS sin sellar (python -m qaf.partition seal): integridad de OOS no verificable; no habilita validación final')
     provenance={'dataset':data_info,'code_sha256':code_hash(),'spec_sha256':digest(spec),'cost_sha256':digest(c),'policy_sha256':digest(policy),'seed':policy['seed'],'partition':'IS','environment':'requirements-lock.txt','ledger_equation':'net = gross + financing + dividends - spread - slippage - commission'}
     record={'run_id':run_id,'created_at':created,'spec':spec,'cost_scenario':c,'policy':policy,'quality':quality,'reserves':reserves,'provenance':provenance,'decision':'BLOCKED_DATA','gates':[]}
     result=None
@@ -26,8 +30,12 @@ def execute(spec,df,data_info,c,policy,run_id,created,output_root):
         result=simulate(df,spec,c)
         metrics=summarize(result)
         diagnostics=diagnose(df,spec,c,result,policy)
-        decision,gates=screening_gates(metrics,diagnostics,quality,reserves,policy)
-        record.update(metrics=metrics,diagnostics=diagnostics,decision=decision,gates=gates,skipped=result['skipped'])
+        # Comprar y mantener del mismo simbolo/timeframe/ventana IS/costos y el mismo
+        # capital invertido 1x (CLAUDE.md regla 19; exposicion documentada en qaf/baseline.py).
+        baseline_result=simulate_baseline(df,c,direction=1,initial_equity=spec.get('initial_equity',100000))
+        baseline_metrics=summarize(baseline_result)
+        decision,gates=screening_gates(metrics,diagnostics,quality,reserves,policy,baseline_metrics)
+        record.update(metrics=metrics,diagnostics=diagnostics,decision=decision,gates=gates,skipped=result['skipped'],baseline={**baseline_metrics,'sizing':baseline_result['sizing']})
     folder=Path(output_root)/'runs'/run_id
     render_run(folder,record,result)
     return record,folder
@@ -55,6 +63,7 @@ def run_daily(root=ROOT,limit=None,day=None):
                 except (FileNotFoundError, ValueError, KeyError) as error:
                     unavailable.append({'symbol':symbol,'timeframe':tf,'reason':str(error)})
         registered_hypotheses=load_registered_hypothesis_ids(root)
+        hypothesis_catalog=load_hypotheses(root)
         custom=[]
         for path in sorted((root/'config/strategies').glob('*.json')):
             try:
@@ -62,13 +71,16 @@ def run_daily(root=ROOT,limit=None,day=None):
                 if spec["hypothesis_id"].startswith("UNREGISTERED-"):
                     raise ValueError("No se permite registrar una estrategia sin hipótesis del registro")
                 if spec["hypothesis_id"] not in registered_hypotheses:
-                    raise ValueError(f"hypothesis_id {spec['hypothesis_id']!r} no existe en docs/hypotheses/_registry.md")
+                    raise ValueError(f"hypothesis_id {spec['hypothesis_id']!r} no existe en config/hypotheses.json")
             except (ValueError,TypeError,KeyError) as error:
                 # Un contrato invalido no debe tumbar el lote completo: se aisla y el resto sigue.
                 unavailable.append({'symbol':'—','timeframe':'—','reason':f'INVALID_SPEC {path.name}: {error}'})
                 continue
             key=(spec['symbol'],spec['timeframe'])
-            if key in datasets:
+            hypothesis=(hypothesis_catalog or {}).get(spec['hypothesis_id']) if hypothesis_catalog is not None else None
+            if hypothesis is not None and hypothesis.get('status') not in {'pending','ready'}:
+                unavailable.append({'symbol':spec['symbol'],'timeframe':spec['timeframe'],'reason':f"HIPOTESIS_{str(hypothesis.get('status')).upper()}: no se repite automáticamente"})
+            elif key in datasets:
                 custom.append((spec,universe[spec['symbol']]))
             else:
                 unavailable.append({'symbol':spec['symbol'],'timeframe':spec['timeframe'],'reason':'Estrategia registrada pendiente de datos/contrato'})
@@ -84,11 +96,15 @@ def run_daily(root=ROOT,limit=None,day=None):
             reserved=registry.reserve(run_id,day,policy['campaign_id'],canonical(spec),policy['daily_max_trials'],policy['campaign_max_trials'])
             if reserved=='DUPLICATE':duplicates+=1;continue
             if reserved=='BUDGET':state='BUDGET_REACHED';break
+            task_id=f'is:{run_id}'
+            registry.start_task(task_id,run_id,spec['hypothesis_id'],'is_backtest','engine',json.dumps([str((root/'config/strategies').relative_to(root))],ensure_ascii=False))
             print(f'RUN {run_id} {spec["symbol"]}/{spec["timeframe"]} {spec["family"]}',flush=True)
             folder=report_root/'runs'/run_id
             try:
                 record,folder=execute(spec,df,info,c,policy,run_id,now.isoformat(),report_root)
                 registry.finish(run_id,record['decision'],folder/'result.json')
+                task_status='completed' if record['decision'] not in {'BLOCKED_DATA','TECHNICAL_ERROR'} else ('blocked' if record['decision']=='BLOCKED_DATA' else 'failed')
+                registry.finish_task(task_id,task_status,record['decision'],None,json.dumps([str((folder/'result.json').relative_to(root)),str((folder/'report.html').relative_to(root))],ensure_ascii=False))
                 row={'run_id':run_id,'symbol':spec['symbol'],'timeframe':spec['timeframe'],'family':spec['family'],'decision':record['decision'],**record.get('metrics',{})}
             except Exception as error:
                 record={'run_id':run_id,'created_at':now.isoformat(),'spec':spec,'decision':'TECHNICAL_ERROR','reserves':[str(error)],'provenance':{'dataset':info,'code_sha256':code}}
@@ -99,6 +115,7 @@ def run_daily(root=ROOT,limit=None,day=None):
                 except RuntimeError as lease_error:
                     # Un worker recuperado no puede modificar el registro de su reemplazo.
                     record['reserves'].append(str(lease_error))
+                registry.finish_task(task_id,'failed','TECHNICAL_ERROR',str(error),json.dumps([str((folder/'error.txt').relative_to(root))],ensure_ascii=False))
                 row={'run_id':run_id,'symbol':spec['symbol'],'timeframe':spec['timeframe'],'family':spec['family'],'decision':'TECHNICAL_ERROR'}
             runs.append(row)
             print(f'  {row["decision"]}',flush=True)

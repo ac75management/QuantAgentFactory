@@ -73,8 +73,11 @@ def simulate(df, spec, instrument, stress=1.0, start_bar=0, signals_override=Non
             pos = position
             exit_price, reason = resolve_exit(pos["direction"], o[i], h[i], l[i], pos["stop"], pos["target"])
             if i - pos["entry_bar"] >= p["max_holding"]:
-                # At the open only a gapped stop takes priority over the scheduled close.
-                if reason != "STOP_GAP":
+                # Time-stop fills at this bar's open. Only open-time events (a gap through
+                # stop or target, at the same conservative prices used on any other bar)
+                # precede it; intrabar touches would happen after the position is closed.
+                # Deciding at the open based on later intrabar prices would be look-ahead.
+                if reason not in ("STOP_GAP", "TARGET_GAP_CONSERVATIVE"):
                     exit_price, reason = o[i], "TIME"
             if balance + price_cash(pos["direction"] * (o[i] - pos["entry_price"]), c, pos["lots"]) <= 0:
                 exit_price, reason = o[i], "INSOLVENT_OPEN"

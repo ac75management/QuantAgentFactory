@@ -12,6 +12,17 @@ Todas las series activas (`config/instruments.json`) tienen `costs_verified: fal
 3. **Auditoría de exposición previa entre campañas.** `config/runner.json` trackea `campaign_max_trials`/`daily_max_trials` para esta campaña, pero no hay todavía un mecanismo que sume la exposición de campañas anteriores (si las hubiera) al corregir el p-valor por múltiples pruebas — `qaf/validation.py::diagnose` ya expone `p_campaign_bonferroni_upper_bound` como aproximación, pero es diagnóstico, no una corrección formal.
 4. **Referencia mid/bid/ask real.** `price_basis: "unknown"` en todos los símbolos — el fill model asume mid sin confirmarlo. Antes de OOS hay que declarar esto con evidencia, no como supuesto.
 5. **Segunda fuente para verificar el histórico (as-of stability).** No implementado — sin esto, un feed que se reescribe silenciosamente no se detectaría.
+6. **Walk-forward real (CLAUDE.md regla 18).** `diagnostics.walk_forward` reporta `NOT_IMPLEMENTED`. `fixed_parameter_temporal_folds` son ventanas con parámetros fijos, útiles como diagnóstico de estabilidad, no como walk-forward: no hay reentrenamiento por ventana.
+7. **Contrato congelado.** `freeze` debe registrar el hash de spec, costos, datos, política y código antes de abrir OOS, para que el único intento no pueda repetirse con otra configuración. No implementado.
+8. **Partición sellada (hecho 2026-09-22).** Las 28 series de `data/clean/manifest.json` tienen sha256 de IS y OOS, esquema y rango temporal (`python -m qaf.partition seal`); `qaf.data.load_is` verifica ambos hashes en cada corrida. Es un sello "trust on first use": prueba que nada cambió desde el sello, no que los archivos eran correctos antes.
+
+## Ya resuelto en el filtro IS (no bloquea OOS, pero es requisito para llegar a `READY_FOR_FROZEN_VALIDATION`)
+- AED por permutación de la señal cruda (`qaf/aed.py`, regla 5), calibrado: ~4% de rechazos a α=5% sobre random walks.
+- Baseline con mismo símbolo/timeframe/ventana/costos/capital (`qaf/baseline.py`, regla 19).
+- Sensibilidad por parámetro ±10/20% + 200 vecinos Montecarlo (regla 14).
+- Política de time-stop explícita y probada (`tests/test_engine_timestop.py`).
+
+`qaf/holdout.py::PREREQUISITES` lista los pendientes que el error de bloqueo muestra; mantener esa lista y este documento sincronizados.
 
 ## Cuándo se puede reconsiderar
 Cuando los puntos 1, 2 y 4 tengan evidencia concreta (no solo el campo puesto en `true` sin respaldo) para el símbolo/timeframe específico que se quiera validar. No hace falta resolver los 5 puntos para *todo* el universo a la vez — se puede habilitar símbolo por símbolo, documentando cada uno.

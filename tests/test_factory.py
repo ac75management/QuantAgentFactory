@@ -10,11 +10,13 @@ from qaf.data import inspect_frame
 from qaf.signals import generate,rsi
 from qaf.metrics import summarize,block_bootstrap
 from qaf.registry import Registry
-from qaf.io import ROOT,read_json
+from qaf.io import ROOT,read_json,load_registered_hypothesis_ids
 from qaf.runner import run_daily
 from qaf.data import load_is
-from qaf.validation import screening_gates
+from qaf.validation import screening_gates,validate_policy
 from qaf.contracts import validate_instrument
+from qaf.dashboard import render_dashboard,create_intake
+from qaf.catalog import validate_candidate,assess_candidate,add_candidate,review_candidate,promote_candidate
 
 
 def write_manifest(tmp_path,symbol,timeframe,cutoff_after='2030-01-01T00:00:00+00:00',rows_is=360,rows_oos=30):
@@ -260,6 +262,23 @@ def test_gates_blocked_on_failed_quality():
     assert gates==[]
 
 
+def test_sensitivity_policy_is_explicit_and_fail_closed():
+    policy=read_json(ROOT/'config/runner.json')
+    assert validate_policy(policy) is policy
+    for key in ('sensitivity_mc_iterations','sensitivity_mc_range','sensitivity_min_valid',
+                'sensitivity_max_original_percentile','sensitivity_min_positive_share'):
+        broken={k:v for k,v in policy.items() if k!=key}
+        with pytest.raises(ValueError):
+            validate_policy(broken)
+
+
+def test_sensitivity_policy_rejects_incoherent_sample_requirement():
+    policy=read_json(ROOT/'config/runner.json')
+    policy['sensitivity_min_valid']=policy['sensitivity_mc_iterations']+1
+    with pytest.raises(ValueError,match='no puede superar'):
+        validate_policy(policy)
+
+
 def test_margin_uses_same_conversion_as_pnl():
     instruments=read_json(ROOT/'config/instruments.json')
     assert margin_cash_per_lot(90,instruments['USDJPY'])==100000
@@ -297,6 +316,64 @@ def test_registry_stale_worker_cannot_overwrite_replacement(tmp_path):
     old_worker.close();new_worker.close()
 
 
+def test_registry_records_real_task_events(tmp_path):
+    r=Registry(tmp_path/'registry.sqlite')
+    r.start_task('is:abc','abc','004','is_backtest','engine','["spec.json"]')
+    assert r.tasks()[0]['status']=='running'
+    r.finish_task('is:abc','completed','DISCARDED_IS',None,'["result.json"]')
+    assert r.tasks()[0]['status']=='completed'
+    assert [e['event_type'] for e in reversed(r.events())]==['started','completed']
+    r.close()
+
+
+def test_dashboard_renders_repository_state(tmp_path):
+    (tmp_path/'config/strategies').mkdir(parents=True)
+    strategy={'id':'demo','hypothesis_id':'004','symbol':'US30','timeframe':'D1','family':'trend_cross'}
+    (tmp_path/'config/strategies/demo.json').write_text(json.dumps(strategy))
+    page=render_dashboard(tmp_path)
+    assert 'Centro de Control' in page
+    assert 'demo' in page and 'US30' in page
+    assert 'Catálogo de ideas' in page
+
+
+def test_dashboard_intake_creates_truthful_queued_task(tmp_path,instrument):
+    (tmp_path/'config').mkdir()
+    instrument.update(status='research',timeframes=['D1'])
+    (tmp_path/'config/instruments.json').write_text(json.dumps({'XAUUSD':instrument}))
+    intake_id=create_intake(tmp_path,{'idea':'Probar ruptura documentada con filtro de tendencia limpio.','symbol':'XAUUSD','timeframe':'D1','source':'Fuente de prueba'})
+    payload=json.loads((tmp_path/'state/intakes'/f'{intake_id}.json').read_text())
+    registry=Registry(tmp_path/'state/research.sqlite3')
+    try:task=registry.tasks()[0]
+    finally:registry.close()
+    assert payload['status']=='queued_research'
+    assert task['status']=='queued' and task['stage']=='evidence_review'
+
+
+def test_structured_hypothesis_registry_is_authoritative(tmp_path):
+    (tmp_path/'config').mkdir()
+    payload={'version':1,'hypotheses':[{'id':'004','status':'pending'}]}
+    (tmp_path/'config/hypotheses.json').write_text(json.dumps(payload))
+    (tmp_path/'docs/hypotheses').mkdir(parents=True)
+    (tmp_path/'docs/hypotheses/_registry.md').write_text('| # |\n|---|\n| 999 |\n')
+    assert load_registered_hypothesis_ids(tmp_path)=={'004'}
+
+
+def test_daily_skips_hypotheses_not_pending(tmp_path,bars,instrument,spec):
+    (tmp_path/'config/strategies').mkdir(parents=True)
+    policy=read_json(ROOT/'config/runner.json');policy.update(daily_max_trials=1,bootstrap_iterations=50)
+    (tmp_path/'config/runner.json').write_text(json.dumps(policy))
+    instrument.update(status='research',timeframes=['D1'])
+    (tmp_path/'config/instruments.json').write_text(json.dumps({'XAUUSD':instrument}))
+    (tmp_path/'config/strategies/test.json').write_text(json.dumps(spec))
+    (tmp_path/'config/hypotheses.json').write_text(json.dumps({'version':1,'hypotheses':[{'id':'TEST-001','status':'discarded_is'}]}))
+    path=tmp_path/'data/clean/XAUUSD/D1';path.mkdir(parents=True)
+    bars.to_parquet(path/'IS.parquet');bars.tail(30).to_parquet(path/'OOS.parquet')
+    write_manifest(tmp_path,'XAUUSD','D1')
+    summary,_=run_daily(tmp_path,day='2026-09-22')
+    assert summary['executed']==0
+    assert any('HIPOTESIS_DISCARDED_IS' in row['reason'] for row in summary['unavailable'])
+
+
 def test_contract_rejects_critical_ambiguities(instrument):
     validate_instrument(instrument)
     for change in ({'volume_step':20},{'timeframes':['D1','D1']},{'costs_verified':'false'},{'as_of':'not-a-date'},{'margin_calc_mode':'forex_base_account'}):
@@ -312,3 +389,175 @@ def test_gates_reject_fractional_count_and_incomplete_bootstrap():
     decision,gates=screening_gates(metrics,diagnostics,{'status':'PASS'},[],policy)
     assert decision=='INCONCLUSIVE'
     assert next(g for g in gates if g['gate']=='bootstrap_lower_bound')['status']=='FAIL'
+
+
+def test_catalog_triage_separates_external_idea_from_validation(instrument):
+    candidate={
+        'name':'Documented daily trend','source_name':'Quantpedia',
+        'source_url':'https://quantpedia.com/example','primary_source_url':'https://doi.org/10.1/example',
+        'publication_date':'2020-01-01','access_level':'public',
+        'original_asset_classes':['commodity_cfd'],'instruments':['XAUUSD'],
+        'original_timeframes':['D1'],'data_requirements':['OHLC'],
+        'rules_summary':'A sufficiently explicit preliminary description of entry, exit, holding period and portfolio construction rules.',
+        'code_available':False,'content_type':'strategy',
+    }
+    result=assess_candidate(candidate,{'XAUUSD':instrument})
+    assert result['verdict']=='eligible_for_evidence_review'
+    assert result['research_lane']=='mt5_now'
+    assert 'validated' not in result and 'profitable' not in result
+
+
+def test_catalog_requires_traceable_source():
+    candidate={'name':'Idea','source_name':'Quantpedia','source_url':'not-a-url','original_asset_classes':['fx'],'original_timeframes':['D1'],'rules_summary':'x'}
+    with pytest.raises(ValueError,match='source_url'):
+        validate_candidate(candidate)
+
+
+def test_catalog_add_queues_evidence_review(tmp_path,instrument):
+    (tmp_path/'config').mkdir()
+    (tmp_path/'config/instruments.json').write_text(json.dumps({'XAUUSD':instrument}))
+    candidate={
+        'name':'Candidate','source_name':'Quantpedia','source_url':'https://quantpedia.com/example',
+        'primary_source_url':None,'access_level':'public','original_asset_classes':['commodity_cfd'],
+        'instruments':['XAUUSD'],'original_timeframes':['D1'],'data_requirements':['OHLC'],
+        'rules_summary':'This description is deliberately long enough to be reviewed but is not treated as an executable specification.',
+        'code_available':False,'content_type':'strategy',
+    }
+    record,path=add_candidate(candidate,tmp_path)
+    registry=Registry(tmp_path/'state/research.sqlite3')
+    try: task=registry.tasks()[0]
+    finally: registry.close()
+    assert path.exists() and record['status']=='captured'
+    assert task['stage']=='evidence_review' and task['status']=='queued'
+
+
+def test_catalog_routes_methodology_without_calling_it_strategy(instrument):
+    candidate={
+        'name':'Transaction-cost review','source_name':'Alpha Architect',
+        'source_url':'https://alphaarchitect.com/example','primary_source_url':'https://doi.org/10.1/costs',
+        'access_level':'public','content_type':'methodology','original_asset_classes':['equity'],
+        'original_timeframes':['D1'],'data_requirements':['OHLC'],
+        'rules_summary':'A methodological review of capacity, turnover and implementation costs rather than an executable trading rule.',
+        'code_available':False,
+    }
+    result=assess_candidate(candidate,{'XAUUSD':instrument})
+    assert result['research_lane']=='methodology'
+
+
+def test_catalog_distinguishes_original_market_from_qaf_target(instrument):
+    candidate={
+        'name':'Futures rule adapted to CFD','source_name':'Primary book',
+        'source_url':'https://example.com/book','primary_source_url':None,
+        'access_level':'subscription','content_type':'strategy','original_asset_classes':['future'],
+        'instruments':['GC'],'original_timeframes':['D1'],'proposed_targets':[{'symbol':'XAUUSD','timeframe':'D1'}],
+        'data_requirements':['OHLC'],'rules_summary':'A documented futures rule proposed for explicit adaptation to a CFD, pending evidence review and cost analysis.',
+        'code_available':False,
+    }
+    result=assess_candidate(candidate,{'XAUUSD':instrument})
+    assert result['research_lane']=='mt5_now'
+    assert any('objetivo explícito' in reason for reason in result['reasons'])
+
+
+def _catalog_candidate():
+    return {
+        'candidate_id':'IDEA-TEST0001','name':'Documented daily trend',
+        'source_name':'Quantpedia','source_url':'https://quantpedia.com/example',
+        'primary_source_url':'https://doi.org/10.1/example','publication_date':'2020-01-01',
+        'access_level':'public','original_asset_classes':['commodity_cfd'],
+        'instruments':['XAUUSD'],'original_timeframes':['D1'],'data_requirements':['OHLC'],
+        'rules_summary':'A sufficiently explicit preliminary description of entry, exit, holding period and portfolio construction rules.',
+        'code_available':False,'content_type':'strategy',
+    }
+
+
+def _eligible_review(candidate_id='IDEA-TEST0001'):
+    return {
+        'candidate_id':candidate_id,'decision':'eligible','reviewer':'investigator',
+        'reason_code':'SOURCE_AND_RULES_VERIFIED',
+        'decision_reason':'La fuente primaria y el mecanismo permiten formular una hipótesis falsable sin afirmar rentabilidad.',
+        'primary_source_url':'https://doi.org/10.1/example',
+        'primary_source_title':'A documented daily trend rule',
+        'primary_source_authors':['A. Researcher','B. Researcher'],
+        'source_rule_id':'daily-trend-rule',
+        'evidence_summary':'El trabajo documenta una regla tendencial y separa el periodo de formación del periodo de tenencia.',
+        'mechanism':'La persistencia de precios puede aparecer cuando participantes lentos incorporan información de forma gradual.',
+        'original_market':'Futuros de materias primas','original_vehicle':'Futuros continuos',
+        'original_instruments':['GC','CL'],'original_timeframes':['D1'],
+        'original_rules':['Calcular la señal solo con cierres completados.','Entrar en la sesión posterior a la señal.'],
+        'implementation_type':'adaptation','target_symbol':'XAUUSD','target_timeframe':'D1',
+        'adaptation_notes':'Se prueba el mecanismo en un CFD individual y se modelan sus costos y rollover propios.',
+        'adaptation_dimensions':['instrument','vehicle','costs'],
+        'ambiguities':['La fuente no fija el tratamiento de festivos para el CFD.'],
+        'data_requirements':['OHLC D1 con sesiones verificadas.'],
+        'cost_assumptions':['Spread, slippage, comisión y swap del contrato XAUUSD.'],
+        'limitations':['La evidencia original usa una cartera de futuros y no demuestra resultados en XAUUSD CFD.'],
+    }
+
+
+def _catalog_root(tmp_path,instrument):
+    (tmp_path/'config').mkdir()
+    (tmp_path/'config/instruments.json').write_text(json.dumps({'XAUUSD':instrument}))
+    (tmp_path/'config/hypotheses.json').write_text(json.dumps({'version':1,'hypotheses':[{'id':'006','slug':'legacy','status':'discarded_is'}]}))
+    (tmp_path/'docs/hypotheses').mkdir(parents=True)
+    (tmp_path/'docs/hypotheses/_registry.md').write_text('# Registro\n\n| # | slug | fecha | fuente/autor | activo/timeframe | estado |\n|---|---|---|---|---|---|\n')
+
+
+def test_catalog_review_requires_complete_evidence(tmp_path,instrument):
+    _catalog_root(tmp_path,instrument)
+    record,_=add_candidate(_catalog_candidate(),tmp_path)
+    review=_eligible_review(record['candidate_id']);review.pop('limitations')
+    with pytest.raises(ValueError,match='limitations'):
+        review_candidate(record['candidate_id'],review,tmp_path)
+    stored=read_json(tmp_path/'state/catalog'/f"{record['candidate_id']}.json")
+    assert stored['status']=='captured' and 'review' not in stored
+
+
+def test_catalog_review_and_promotion_are_controlled_and_idempotent(tmp_path,instrument):
+    _catalog_root(tmp_path,instrument)
+    record,_=add_candidate(_catalog_candidate(),tmp_path)
+    reviewed,_=review_candidate(record['candidate_id'],_eligible_review(record['candidate_id']),tmp_path)
+    assert reviewed['status']=='eligible'
+    hypothesis,_=promote_candidate(record['candidate_id'],tmp_path)
+    repeated,_=promote_candidate(record['candidate_id'],tmp_path)
+    payload=read_json(tmp_path/'config/hypotheses.json')
+    registry=Registry(tmp_path/'state/research.sqlite3')
+    try: tasks=registry.tasks()
+    finally: registry.close()
+    assert hypothesis['id']=='007' and repeated['id']=='007'
+    assert hypothesis['source_rule_id']=='daily-trend-rule'
+    assert hypothesis['adaptation_dimensions']==['costs','instrument','vehicle']
+    assert sum(row.get('candidate_id')==record['candidate_id'] for row in payload['hypotheses'])==1
+    assert (tmp_path/'docs/hypotheses'/f"{hypothesis['slug']}.md").exists()
+    assert sum(task['task_id']=='protocol:007' for task in tasks)==1
+    assert next(task for task in tasks if task['task_id'].startswith('catalog:'))['status']=='completed'
+
+
+def test_catalog_duplicate_evidence_and_noneligible_are_blocked(tmp_path,instrument):
+    _catalog_root(tmp_path,instrument)
+    first,_=add_candidate(_catalog_candidate(),tmp_path)
+    review_candidate(first['candidate_id'],_eligible_review(first['candidate_id']),tmp_path)
+    promote_candidate(first['candidate_id'],tmp_path)
+    second_candidate=_catalog_candidate();second_candidate['candidate_id']='IDEA-TEST0002';second_candidate['name']='Same mechanism with another label'
+    second,_=add_candidate(second_candidate,tmp_path)
+    review_candidate(second['candidate_id'],_eligible_review(second['candidate_id']),tmp_path)
+    with pytest.raises(ValueError,match='ya originó'):
+        promote_candidate(second['candidate_id'],tmp_path)
+    third_candidate=_catalog_candidate();third_candidate['candidate_id']='IDEA-TEST0003';third_candidate['name']='Blocked candidate'
+    third,_=add_candidate(third_candidate,tmp_path)
+    review_candidate(third['candidate_id'],{
+        'decision':'needs_data','reviewer':'investigator','reason_code':'MISSING_SESSION_DATA',
+        'decision_reason':'Faltan datos de sesión suficientes para reproducir las reglas.'
+    },tmp_path)
+    with pytest.raises(ValueError,match='eligible'):
+        promote_candidate(third['candidate_id'],tmp_path)
+
+
+def test_catalog_rejects_path_ids_and_undeclared_adaptation(tmp_path,instrument):
+    _catalog_root(tmp_path,instrument)
+    with pytest.raises(ValueError,match='candidate_id'):
+        review_candidate('../config/hypotheses',{},tmp_path)
+    record,_=add_candidate(_catalog_candidate(),tmp_path)
+    review=_eligible_review(record['candidate_id'])
+    review['original_timeframes']=['H4']
+    with pytest.raises(ValueError,match='frecuencia'):
+        review_candidate(record['candidate_id'],review,tmp_path)

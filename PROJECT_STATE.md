@@ -2,6 +2,10 @@
 Construir una fábrica de agentes (Claude Code) que lleve hipótesis de trading desde la idea hasta una estrategia validada, siguiendo el método TIS. Proyecto nuevo e independiente de ZOO2 — no toca cuentas ni capital en vivo.
 
 ## CURRENT STATUS
+**Actualización operativa más reciente (2026-09-22):** el catálogo ya tiene una puerta controlada entre idea externa e hipótesis. `catalog-review` exige evidencia estructurada y `catalog-promote` solo acepta ideas `eligible` del carril `mt5_now`; registra una única hipótesis, genera su documento, actualiza el registro y deja una sola tarea para `protocol`. La promoción es idempotente, serializa procesos concurrentes mediante SQLite, bloquea IDs/rutas inválidos y detecta duplicados por fuente + regla estable + objetivo. OOS continúa cerrado.
+
+**Piloto 001:** KAMA tendencial + ER sobre XAUUSD D1 completó revisión de evidencia y originó la hipótesis **007** como adaptación explícita; `protocol:007` está en cola y todavía no existe spec ni backtest. La fuente pública documenta fórmula, giro, filtro, entrada, stop y sizing, pero la ficha conserva cuatro reservas: fuente secundaria respecto del libro de Kaufman, frecuencia original no declarada, entrada al mismo cierre no causal y traslado de cartera de 42 futuros a un CFD. Donchian + ER sobre DAX H4 (58/100) y media móvil con banda porcentual sobre EURUSD H4 (58/100) continúan en `evidence_review` y conservan `needs_information`. Suite completa tras integrar los cambios AED concurrentes: **82 pruebas aprobadas**.
+
 Pipeline de datos real y funcionando de punta a punta contra Darwinex MT5 (2026-09-22): `docs/universe.md` es la fuente única (10 símbolos active + BTCUSD blocked), los 3 scripts (`extract_darwinex_ohlc.py`, `extract_darwinex_costs.py`, `build_clean_data.py`) leen ese archivo sin listas propias, `data/raw/darwinex/` y `data/clean/<ALIAS>/<TF>/{IS,OOS}.parquet` usan el mismo alias que la tabla. `docs/cost_model.md` sección LIVE regenerada con `tick_size` incluido (antes faltaba — bug real, ver abajo); `commission_per_side` sigue `SIN_CONFIRMAR` para todos los símbolos (MT5 no lo expone, pendiente confirmación manual de Alexander). Gate 0 (`scripts/run_gate0.py`) re-corrido sobre los alias actuales — 20/20 series `APTO_CON_RESERVAS` (ninguna RECHAZADA), caché en `reports/_data_quality/` limpio de nombres viejos (SPX500/GER40/USOIL eliminados).
 
 Los 4 agentes ya estaban prácticamente listos para el dry-run (rondas de revisión externa de 2026-09-23: registro de hipótesis obligatorio, rechazo de specs sobre símbolos/costos no confirmados, fill model explícito, split IS/OOS físico, puerta de baseline, meta.yaml, `INVALID_POR_DATOS`). Cambios de este turno: `engine.md` permite continuar sobre `APTO_CON_RESERVAS` sin confirmación en chat cuando la spec declara `tipo: dry-run` (reserva documentada, no oculta); `protocol.md`/`validator.md` ahora fijan que la puerta de baseline es "comprar y mantener del mismo símbolo y timeframe, neto de cost_model" — nunca el índice cash de otra fuente — y que si ese BH neto ya es negativo, el piso no es cero: una estrategia no pasa por "perder menos que el baseline" si igual pierde dinero.
@@ -45,9 +49,7 @@ Repo git local, todo staged, sin commit.
 - **El baseline obligatorio (regla 19 de CLAUDE.md) es siempre buy-and-hold neto del mismo símbolo y timeframe, con `cost_model.md` aplicado** — nunca el índice cash u otra fuente sin esos costos. (2026-09-22)
 
 ## NEXT ACTION
-**Decisión pendiente de Alexander sobre hipótesis #002 (NAS100 turn-of-month):** (a) pasar igual a `validator` para veredicto formal sobre OOS (regla 3 exige las 8 fases en orden), o (b) archivarla como fallida sin gastar el ciclo de robustez completo, dado que IS ya muestra AED sin efecto + todas las puertas numéricas fallidas — y volver a `investigator` por una hipótesis #003.
-
-Separado: decidir si se invoca `engine` sobre `docs/specs/xauusd-d1-mean-reversion-streak-extension.md` (hipótesis #001) ahora (Gate 0 dará `APTO_CON_RESERVAS` por slippage sin confirmar — spec ya lo anticipa y no lo trata como bloqueo duro) o si Alexander prefiere confirmar slippage antes. Si se invoca, tener en cuenta la nota operativa de arriba (el subagente `engine` puede detenerse en el mismo punto de consentimiento).
+Procesar `protocol:007`. Debe decidir si puede congelar una variante causal sin seleccionar a posteriori `ER_Length` y `FastMA_Length`; si no existe una convención fuente defendible, bloquear con `AMBIGUOUS_FREE_PARAMETERS` en vez de escoger el mejor backtest. También debe declarar que hace falta una familia KAMA nueva y que la entrada será como pronto en la barra siguiente. Después revisar Donchian+ER y media móvil con banda. No ejecutar IS hasta que exista un contrato validado.
 
 ## OPEN QUESTIONS
 1. ~~Fuente de datos histórica y bróker de referencia~~ — RESUELTO 2026-09-23: **Darwinex, vía MT5**, universo fijo de 11 símbolos CFD (ver docs/universe.md). `docs/cost_model.md` sigue en placeholder — falta que Alexander confirme spread/comisión/swap reales de su cuenta (Market Watch → especificación del símbolo). `scripts/extract_darwinex_ohlc.py` todavía no se corrió contra un terminal real — los `symbol_mt5` de docs/universe.md son candidatos de documentación pública de Darwinex, no verificados en vivo.
@@ -219,4 +221,130 @@ No hay una causa mecánica única compartida por las tres — no se inventa una 
 3. Estado real del proyecto: **3 de 3 hipótesis probadas hasta ahora descartadas en IS, cero estrategias vivas, cero aperturas de OOS.**
 
 ## LAST UPDATED
-2026-09-22 (validator cierra veredicto de hipótesis #003 — DISCARDED_IS; registro y nota de patrón de 3 fracasos seguidos agregados)
+2026-09-22 (protocol entrega spec y contrato de hipótesis #006, DAX/GDAXI H4, familia trend_cross; no se ejecutó backtest ni se abrió OOS)
+
+## CENTRO DE CONTROL Y REGISTRO ESTRUCTURADO (2026-09-22)
+
+Se añadió un Centro de Control local (`python -m qaf.cli dashboard`; snapshot con `--snapshot`) que muestra contratos, estado de hipótesis, causa del último resultado, siguiente acción, tareas/eventos y enlaces a reportes. La fuente estructurada de hipótesis es ahora `config/hypotheses.json`; el Markdown se conserva para lectura humana. `check-spec`, `register` y el runner validan los IDs contra este catálogo.
+
+Corrección operativa: el runner solo ejecuta hipótesis con estado `pending` o `ready`. Las descartadas, bloqueadas o rechazadas permanecen visibles, pero no vuelven a ejecutarse cuando cambia el hash del código. La verificación real posterior al cambio ejecutó 0 ensayos nuevos, por lo que no consumió otro intento de campaña. Las hipótesis 004 y 006 se sincronizaron como `discarded_is` según sus resultados ya existentes.
+
+Auditoría de skills: el único skill local es `.claude/skills/data-quality-check/SKILL.md`; se actualizó para usar `config/instruments.json` y los artefactos reales de `qaf` como fuentes autoritativas. Los skills globales de productividad, Pine Script, documentos o análisis se mantienen fuera del motor y se invocan solo cuando su tarea lo exige. Detalle: `docs/SKILLS_AUDIT.md`.
+
+## COORDINACIÓN #006 — DAX H4 TIME-SERIES MOMENTUM
+
+`protocol` entregó `docs/specs/dax-h4-time-series-momentum-replication.md` y
+su contrato JSON. La hipótesis #006 se consideró semánticamente admisible
+frente a #004: mantiene el mecanismo y la familia, pero cambia de US30 D1 a
+DAX H4 como replicación cross-asset/cross-timeframe preespecificada. Se
+tradujo a `trend_cross` con SMA20/SMA60, ATR14, SL 2 ATR, TP 4 ATR y time
+stop de 20 barras; dirección larga y corta y riesgo de 0.5% por operación.
+
+El instrumento `DAX` existe en `config/instruments.json`, está en
+`status=research` y declara H4. La spec hereda las reservas de Gate 0
+(`price_basis=unknown`, `costs_verified=false`, spread/slippage y dividendos)
+sin bloquear la escritura; `validator` no puede aprobar mientras
+`costs_verified` sea falso. El baseline obligatorio es comprar y mantener
+del mismo DAX H4, neto de los costos del instrumento. No se ejecutó código,
+backtest, optimización ni se abrió OOS.
+
+## COORDINACIÓN #004 — US30 D1 TIME-SERIES MOMENTUM
+
+`protocol` entregó `docs/specs/us30-d1-time-series-momentum.md` y su contrato
+JSON. La hipótesis quedó traducida a `trend_cross` con SMA20/SMA60, ATR14,
+SL 2 ATR, TP 4 ATR y time stop de 20 barras; dirección larga y corta y riesgo
+de 0.5% por operación, conforme al default de `config/runner.json`.
+
+La spec documenta la limitación: el motor no implementa retorno acumulado ni
+salida por cruce contrario, por lo que esta prueba no es una réplica exacta de
+la literatura de time-series momentum. No se añadió una familia nueva ni se
+duplicó la hipótesis. El instrumento `US30` existe en
+`config/instruments.json`, está en `status=research` y declara D1. Se heredan
+las reservas de Gate 0 (`price_basis=unknown`, `costs_verified=false`) sin
+bloquear la escritura; `validator` no puede aprobar mientras `costs_verified`
+sea falso. No se ejecutó código, backtest ni se abrió OOS.
+
+## C2 IMPLEMENTADO — PUERTA DE BASELINE DENTRO DE `qaf` (2026-09-22, esta sesión)
+
+Alexander pidió corregir lo que la auditoría de GPT (`docs/audit_qaf_complete_2026-09-22.md`) marcó como necesario, sin tocar archivos que GPT tuviera abiertos. Confirmé por `git status`/`git diff` que GPT estaba trabajando en `qaf/cli.py`, `io.py`, `registry.py`, `runner.py` (parte de `run_daily`) y `tests/test_factory.py` (que referencia `qaf/dashboard.py`, también en progreso) — así que implementé **C2 (puerta de baseline)** en archivos nuevos o en partes de archivos que GPT no tocó:
+
+- **`qaf/baseline.py` (nuevo)**: `simulate_baseline()` reutiliza literalmente `execution_cost`/`financing`/`price_cash` de `qaf/costs.py` — mismo ledger exacto que `qaf.engine.simulate`, no una reimplementación paralela. 1 lote fijo (no sizing por riesgo, para aislar "la regla es mejor que nada" del tamaño de posición), entra al open de la primera barra, mark-to-market hasta el close de la última, sin señal/SL/TP/time-stop — la definición de comprar y mantener. Verificado contra `data/clean/{SP500,EURUSD,XAUUSD}/D1/IS.parquet` reales.
+- **`qaf/validation.py`**: `screening_gates()` gana un parámetro `baseline_metrics=None` (compatible hacia atrás — `tests/test_factory.py` todavía llama con la firma vieja de 5 argumentos, ahí no se rompe nada) y una puerta `beats_baseline`: exige `estrategia > 0 Y estrategia > baseline` — perder menos que un baseline ya negativo no aprueba (regla 19 de CLAUDE.md, "el piso no es cero").
+- **`qaf/runner.py`** (solo la función `execute`, que GPT no tocó — su trabajo fue en `run_daily`): calcula el baseline y lo pasa a `screening_gates` y al `record` de cada corrida.
+- **`qaf/reporting.py`**: la sección "Comparador" del reporte HTML ya no dice el texto fijo "B&H no calculado" — ahora muestra el baseline real y si la estrategia lo superó.
+- **`tests/test_baseline.py` (nuevo, no toca `test_factory.py`)**: 8 tests — reconciliación del ledger, cálculo bruto correcto con `tick_size`, recómputo independiente llamando a `costs.py` directo (no solo confía en `baseline.py`), corto invierte dirección y usa `swap_short`, validación de entradas, puerta falla si no supera baseline, puerta falla si la estrategia es negativa aunque pierda menos que el baseline, y compatibilidad hacia atrás sin `baseline_metrics`. Los 8 pasan (`pytest tests/test_baseline.py`, aislado de `test_factory.py` que hoy no colecciona).
+
+**Hallazgo real al verificar** (no un ajuste cosmético): el baseline de comprar-y-mantener sobre datos reales es **más negativo** que lo reportado el turno anterior — `qaf.baseline` aplica el multiplicador de swap triple en el día exacto de la semana (via `qaf.costs.financing`, que ya lo tenía implementado correctamente), mientras que el script suelto de antes (`scripts/dryrun_bh.py`) contaba "1 cargo por barra" sin ese multiplicador. Nuevos números sobre IS completo D1: SP500 -24,102.62 (antes -11,062.16), EURUSD -34,705.14 (antes +431.50 — **cambia de signo**), XAUUSD -353,227.25 (antes -213,786.95). El hallazgo de fondo (holding largo en CFD es caro) se refuerza, no cambia de dirección salvo en EURUSD, que ahora también es negativo.
+
+**Verificación end-to-end sin tocar estado compartido**: corrí `execute()` sobre la spec real `config/strategies/00196adf527efa117f6bc53c.json` (hipótesis #004, US30) en una carpeta temporal aislada — no escribió en `reports/factory/` ni en `state/research.sqlite3` (evité correr `qaf.cli run` completo por el riesgo de colisión con lo que GPT pudiera estar escribiendo ahí mismo). Resultado: `DISCARDED_IS`, la puerta `beats_baseline` aparece y falla correctamente (estrategia -7,929.87 > baseline -14,063.30, pero al ser negativa igual no pasa).
+
+**No implementado (fuera de este alcance, sigue en la lista de la auditoría):** C1 (AED), C3 (freeze/OOS, deliberadamente bloqueado en `holdout.py`), C4 (costos históricos reales). `qaf/holdout.py` no se tocó.
+
+**Pendiente de decisión de Alexander**: no hice commit — hay trabajo sin commit de GPT en curso (`qaf/dashboard.py`, `docs/CONTROL_CENTER_ROADMAP.md`, catálogo `config/hypotheses.json`). Recomiendo commitear cuando ambos flujos estén en un punto estable, no a mitad de la edición de GPT.
+
+## C1 IMPLEMENTADO — AED (CONFIRMACIÓN ESTADÍSTICA DE LA SEÑAL ANTES DEL BACKTEST) (2026-09-22, esta sesión)
+
+Alexander pidió seguir con C1 después de revisar el orden de fases del pipeline (flowchart pegado en el chat). Reconfirmé por `git status`/`git diff` antes de tocar nada: el diff existente en `validation.py`/`runner.py`/`reporting.py` resultó ser mi propio trabajo de C2 sin commitear, no de GPT — GPT solo había tocado `registry.py`/`cli.py`/`io.py` y la función `run_daily()` de `runner.py` (tracking de tareas). Cero colisión.
+
+- **`qaf/aed.py` (nuevo)**: `permutation_test(df, spec, policy)` — toma la señal cruda de `qaf.signals.generate` (la misma que usa `qaf.engine.simulate`, sin costos/SL/TP/sizing) y prueba H0: "el momento en que dispara la señal no aporta información sobre el retorno direccional futuro". Fija el número y la mezcla de direcciones de señales observadas, aleatoriza en qué barras caen (permutación de temporalidad), y compara contra el retorno direccional medio observado. `horizon_bars` reutiliza `spec['parameters']['max_holding']` — ya validado por `contracts.py`, cero parámetros libres nuevos que se pudieran ajustar después de ver el resultado. Con menos de 20 señales crudas en la ventana IS, devuelve `INCONCLUSIVE` en vez de forzar un resultado con muestra insuficiente.
+- **`qaf/validation.py`**: `diagnose()` ya no deja `permutation_test` como stub fijo `NOT_EXECUTED` — llama a `aed.permutation_test()` de verdad. `screening_gates()` gana la puerta `aed_pattern_confirmed` (exige `p_value_one_sided < 0.05`, el umbral que la regla dura 5 de CLAUDE.md ya pedía por defecto y que nunca estaba implementado). Solo se activa si `diagnostics` trae un `permutation_test` con `status: EXECUTED` real — ausente, `INCONCLUSIVE` o el viejo stub `NOT_EXECUTED` hacen que la puerta se omita (no finge PASS ni bloquea sola), igual que el patrón ya usado para `beats_baseline`.
+- **`tests/test_aed.py` (nuevo, no toca `test_factory.py`)**: 6 tests — detecta un efecto direccional real y repetido construido a propósito (dataset sintético con breakout + continuación de 3 barras + meseta, p<0.05), reporta `INCONCLUSIVE` con pocas señales, rango de p-valor válido sobre un random walk, puerta PASS/FAIL correctos, y puerta omitida (no rompe compatibilidad) cuando `permutation_test` está ausente o `INCONCLUSIVE`. Los 6 pasan, y los 8 de `test_baseline.py` siguen pasando (14/14 total).
+
+**Verificación end-to-end real**: corrí `execute()` sobre la misma spec real `config/strategies/00196adf527efa117f6bc53c.json` (US30 D1, hipótesis #004) en una carpeta temporal aislada, con los datos reales de `data/clean/US30/D1/IS.parquet` (3389 filas) y la política real de `config/runner.json` (2000 iteraciones de bootstrap/permutación). 0.49s de ejecución total. Resultado: sigue `DISCARDED_IS`, y ahora con evidencia directa de que nunca hubo señal — `aed_pattern_confirmed` FALLA (p=0.61, retorno direccional medio observado ligeramente NEGATIVO, -0.0015). Antes solo sabíamos que la estrategia perdía dinero después de costos; ahora sabemos que el cruce SMA20/SMA60 de US30 D1 no tiene ventaja direccional cruda ni antes de aplicar ningún costo.
+
+**También verificado sin dañar nada existente**: `tests/test_factory.py` ya colecciona (antes fallaba por `ModuleNotFoundError: qaf.dashboard`, que GPT resolvió creando ese archivo) — 28/43 tests pasan ahí; los 15 restantes fallan por un `PermissionError` de Windows en el directorio temporal de pytest (`pytest-of-keysi`), un problema de entorno/concurrencia no relacionado con este cambio (probablemente otra sesión corriendo pytest al mismo tiempo).
+
+**No implementado (sigue en la lista de la auditoría):** C3 (freeze/OOS, deliberadamente bloqueado en `holdout.py`), C4 (costos históricos reales, no solo el snapshot actual). `qaf/holdout.py` no se tocó.
+
+**Pendiente de decisión de Alexander**: mismo estado que C2 — no hice commit, hay trabajo de GPT sin commitear en curso.
+
+## ENCARGO DE COPILOT AUDITADO E IMPLEMENTADO — FILTRO IS FAIL-CLOSED (2026-09-22 16:10, Claude app escritorio)
+
+Detalle completo: `docs/implementation_report_2026-09-22.md`. Coordinación entre agentes: `AGENTS.md` (nuevo "cerebro" con tablero de reclamos; `CLAUDE.md` lo importa y `.github/copilot-instructions.md` lo exige a Copilot).
+
+**Estado real ahora:**
+- Todas las puertas IS son obligatorias y fallan cerradas: un diagnóstico ausente es `FAIL`, una puerta `INCONCLUSIVE` deja la decisión en `INCONCLUSIVE` (antes el AED `INCONCLUSIVE` se omitía en silencio).
+- AED (`qaf/aed.py`) usa permutación por rotación circular: calibrada ~4% de rechazos a α=5% sobre random walks; el diseño anterior daba 8.5%.
+- Baseline (`qaf/baseline.py`) con el mismo capital invertido 1x y liquidación por insolvencia; ya no 1 lote fijo.
+- Sensibilidad por parámetro ±10/20% + 200 vecinos Montecarlo (regla 14), con puerta `parameter_sensitivity` (umbrales provisionales: percentil ≤0.8, ≥50% vecinos rentables).
+- Time-stop: el punto 4 del encargo (aplicar time-stop "si no se tocó stop/target intrabar") era look-ahead y **no se implementó**. Sí se corrigió que un gap a través del target en la barra límite se pagaba al open (optimista) en vez del target.
+- Las 28 particiones de `data/clean/manifest.json` están selladas (sha256 IS/OOS, esquema, rangos); `load_is` verifica ambos hashes en cada corrida. OOS nunca se parsea en el flujo IS.
+- `qaf/holdout.py` sigue cerrado con 7 prerrequisitos explícitos; `diagnostics.walk_forward = NOT_IMPLEMENTED`.
+- `python -m qaf.consistency`: registros de hipótesis coherentes (0 divergencias).
+- Tests: **99 pasados, 0 fallidos** (`--basetemp` propio; el `PermissionError` anterior era concurrencia de pytest entre agentes).
+
+**Corrida real IS de las 5 estrategias registradas (carpeta temporal):** todas siguen `DISCARDED_IS`; ninguna señal cruda supera la permutación (p entre 0.11 y 0.99). La 003 (SP500 RSI2) además es ganadora aislada en su vecindad (percentil 0.92). El baseline con mismo capital queda **insolvente en las 5 series (≈ -100.5k)**, en buena parte por C4 (swap actual en efectivo por lote aplicado a precios históricos bajos): no cambia decisiones, pero el baseline no es referencia fina hasta resolver C4.
+
+**Otro agente activo en paralelo:** la orden de Copilot para detener su agente delegado falló; siguió editando (`catalog.py`, `dashboard.py`, `test_factory.py`, este archivo, y una vez `tests/test_aed.py` — cambio correcto, conservado). Creó la hipótesis 007 (KAMA XAUUSD D1), sin spec todavía.
+
+**NEXT ACTION:** Alexander decide (1) si el baseline con mismo capital y los umbrales de sensibilidad quedan como criterio; (2) cuándo commitear este lote junto con el de GPT. Después: C4 (costos históricos), que hoy distorsiona el baseline más que cualquier otra cosa.
+
+## ORQUESTACIÓN DETERMINISTA DE FASES (2026-09-22 16:40, Claude app escritorio)
+
+Origen: revisión de Copilot sobre el diseño de los 4 agentes, auditada contra el repo. Válida en sus 4 puntos accionables; de acuerdo con no agregar agentes (optimizer/sizing/deploy) hasta tener walk-forward y OOS.
+
+- **`qaf/pipeline.py` (nuevo)**: controlador de solo lectura, no un quinto agente. Deriva de los artefactos la fase de cada hipótesis y el único agente al que le toca (`NEEDS_HYPOTHESIS_DOC` → investigator, `NEEDS_SPEC` → protocol, `NEEDS_REGISTRATION`/`NEEDS_IS_RUN` → engine, `NEEDS_VALIDATOR_REVIEW` → validator, `RUNNING` → nadie, `INCONSISTENT`/`BLOCKED`/`NEEDS_DECISION` → Alexander, `CLOSED`). Vínculo por contenido: `digest(spec)` = estrategia registrada, `canonical(spec)` = corridas en SQLite; una spec editada después de registrar se detecta sola. `python -m qaf.pipeline --hypothesis <id> --as <agente>` devuelve 0 (permitido) o 3 (detenerse). `CLAUDE.md` obliga al hilo principal a consultarlo antes de invocar cualquier agente; `engine`/`validator`/`investigator` lo corren como paso 0; `protocol` (sin Bash) exige que quien lo invoque lo haya confirmado.
+- **Estado real hoy**: 007 (KAMA XAUUSD D1) en `NEEDS_SPEC` → protocol (coincide con la tarea `protocol:007` en cola); 002 `BLOCKED` → Alexander; 001, 003–006 `CLOSED`. Una advertencia histórica: la estrategia registrada de la 001 (`dd17…`) no tiene contrato JSON de protocol en `docs/specs` (se creó antes de que existiera ese formato); no bloquea porque la hipótesis está cerrada.
+- **`investigator.md`**: el `description` (lo que usa Claude Code para decidir cuándo invocarlo) decía "diario o 4H"; ahora H1, H4 o D1. Tomado del reclamo de GPT con autorización de Alexander, registrado en `AGENTS.md`.
+- **`READY_FOR_FROZEN_VALIDATION`**: el reporte HTML/MD de cada corrida muestra el significado de cada decisión ("lista para ENTRAR en validación congelada… no es una estrategia validada"); también en `validator.md`, `CLAUDE.md` y `docs/architecture.md`.
+- **`AGENTS.md`**: la fila de GPT pasa de DESCONOCIDO a INACTIVO desde 16:01 (sin ediciones; no confirmado por el propio agente).
+- Corrección menor: `qaf.partition.seal` ya no reescribe el manifest cuando no sella nada.
+- Tests: **121 pasados, 0 fallidos** (22 nuevos en `tests/test_pipeline.py`).
+
+**NEXT ACTION:** igual que arriba — decisión de criterios y commit. Para avanzar la 007: invocar `protocol` (el controlador ya lo permite).
+
+## ESTABILIZACIÓN OPERATIVA Y POLÍTICA DE OPTIMIZACIÓN (2026-09-22 16:49, Codex app escritorio)
+
+- Se auditó la orquestación de Claude: `qaf.pipeline` es consistente, deja 007 en `NEEDS_SPEC → protocol`, 002 bloqueada y el resto cerrado. La ausencia histórica del contrato JSON de 001 permanece como advertencia no bloqueante.
+- El tablero Markdown ya no es el mecanismo de exclusión. `qaf.coordination` usa SQLite, transacción `BEGIN IMMEDIATE` y clave única por ruta: una reclamación conflictiva no adquiere ningún archivo; hay heartbeat, vencimiento a 120 minutos, recuperación auditada y liberación con resultado.
+- `qaf.preflight` reúne fuentes obligatorias, coherencia de hipótesis, controlador de fases, reservas, estado git y crecimiento de la bitácora. `PROJECT_STATE.md` queda explícitamente como historial; no se usa para inferir el estado vigente.
+- `docs/OPERATIONS.md` fija el ciclo de agentes y el proceso de investigación/optimización: spec congelada antes del backtest, sensibilidad solo diagnóstica, ningún vecino sustituye la spec, cualquier cambio posterior cuenta como hipótesis nueva y OOS nunca retroalimenta IS.
+- Decisiones pendientes resueltas: baseline de igual capital 1x se conserva como costo de oportunidad absoluto (estrategia positiva y por encima del baseline; no se afirma que esté ajustado por riesgo). Los umbrales de sensibilidad quedan versionados en `config/runner.json`: 200 vecinos, rango ±20%, mínimo 100 válidos, percentil original ≤0.80 y ≥50% de vecinos rentables. Solo pueden cambiarse antes de una campaña nueva, nunca para rescatar un resultado.
+- Se añadió workflow de verificación para GitHub y se corrigió el mensaje obsoleto de `qaf.runner` para apuntar a `config/hypotheses.json`.
+- Verificación: compilación Python correcta; **131 pruebas aprobadas / 0 fallidas**; consistencia 0 errores; pipeline 0 violaciones bloqueantes. Preflight `WARN` únicamente por la advertencia histórica 001, la bitácora larga y **67 cambios sin consolidar**. Sin commit.
+
+**NEXT ACTION:** consolidar este lote en un commit cuando Alexander lo autorice. Después, `protocol:007`; OOS continúa cerrado por `docs/VALIDATION_ROADMAP.md`.
+
+## CONSOLIDACIÓN AUTORIZADA (2026-09-22)
+
+Alexander autorizó consolidar el lote completo. Se repitieron las **131 pruebas (todas aprobadas)**, se revisaron los 68 archivos preparados, se corrigieron únicamente advertencias de whitespace documental y se creó un único commit local. No se hizo push. El working tree quedó limpio; el siguiente paso operativo vuelve a ser `protocol:007`.

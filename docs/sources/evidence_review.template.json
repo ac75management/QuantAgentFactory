@@ -1,0 +1,30 @@
+{
+  "candidate_id": "IDEA-XXXXXXXXXX",
+  "decision": "eligible",
+  "reviewer": "investigator",
+  "reason_code": "SOURCE_AND_RULES_VERIFIED",
+  "decision_reason": "Explicar por qué la evidencia permite o no permite formular una hipótesis falsable.",
+  "primary_source_url": "https://doi.org/...",
+  "primary_source_title": "Título exacto de la fuente primaria",
+  "primary_source_authors": ["Autor uno", "Autor dos"],
+  "source_rule_id": "identificador-estable-de-la-regla",
+  "evidence_summary": "Qué estudió realmente la fuente, sobre qué muestra y con qué alcance.",
+  "mechanism": "Por qué podría existir el efecto y quién genera la oportunidad.",
+  "original_market": "Futuros de materias primas",
+  "original_vehicle": "Futuros continuos",
+  "original_instruments": ["GC", "CL"],
+  "original_timeframes": ["D1"],
+  "original_rules": [
+    "Regla publicada uno.",
+    "Regla publicada dos."
+  ],
+  "implementation_type": "adaptation",
+  "adaptation_dimensions": ["instrument", "vehicle", "costs"],
+  "target_symbol": "XAUUSD",
+  "target_timeframe": "D1",
+  "adaptation_notes": "Cambios de vehículo, sesión, frecuencia o construcción respecto de la fuente.",
+  "ambiguities": ["Aspecto que la fuente no define."],
+  "data_requirements": ["OHLC D1 con sesiones verificadas."],
+  "cost_assumptions": ["Spread, slippage, comisión y swap del CFD."],
+  "limitations": ["La evidencia original no demuestra resultados en el CFD objetivo."]
+}

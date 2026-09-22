@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from .contracts import TIMEFRAMES
 from .io import ROOT, file_hash, read_json
+from .partition import verify as verify_partition
 
 
 def inspect_frame(df, timeframe, metadata=None):
@@ -77,10 +78,13 @@ def load_is(symbol, timeframe, root=ROOT):
     for key in ('rows_is', 'rows_oos'):
         if not isinstance(entry.get(key), int) or isinstance(entry.get(key), bool) or entry[key] <= 0:
             raise ValueError(f"Manifest incompleto para {symbol}/{timeframe}: {key} debe ser entero positivo")
+    integrity = verify_partition(entry, path, oos_path)
     df = pd.read_parquet(path)
     if len(df) != entry['rows_is']:
         raise ValueError(f"IS.parquet no coincide con manifest: {len(df)} filas, esperadas {entry['rows_is']}")
-    info = {"path": str(path.relative_to(root)), "sha256": file_hash(path)}
+    if len(df) and 'time' in df and not df.time.max() < exact_cutoff:
+        raise ValueError(f"IS.parquet de {symbol}/{timeframe} contiene barras en o después de su corte {exact_cutoff}: partición solapada")
+    info = {"path": str(path.relative_to(root)), "sha256": file_hash(path), "partition_integrity": integrity}
     cutoffs = [pd.Timestamp(x['is_oos_cutoff_date']) for x in entries if x.get('symbol') == symbol and x.get('is_oos_cutoff_date')]
     if cutoffs:
         cutoff=min(cutoffs)

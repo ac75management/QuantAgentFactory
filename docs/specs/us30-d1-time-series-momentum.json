@@ -1,0 +1,20 @@
+{
+  "id": "us30-d1-time-series-momentum",
+  "family": "trend_cross",
+  "symbol": "US30",
+  "timeframe": "D1",
+  "parameters": {
+    "atr_period": 14,
+    "sl_atr": 2.0,
+    "tp_atr": 4.0,
+    "max_holding": 20,
+    "fast": 20,
+    "slow": 60
+  },
+  "rationale": "Cruce SMA20/SMA60 del propio US30 para representar persistencia direccional, con riesgo acotado por ATR y salida temporal.",
+  "hypothesis_id": "004",
+  "risk_fraction": 0.005,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}

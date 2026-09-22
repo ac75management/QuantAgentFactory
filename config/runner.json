@@ -4,11 +4,16 @@
   "campaign_max_trials": 240,
   "seed": 20260922,
   "bootstrap_iterations": 2000,
+  "sensitivity_mc_iterations": 200,
+  "sensitivity_mc_range": 0.2,
+  "sensitivity_min_valid": 100,
+  "sensitivity_max_original_percentile": 0.8,
+  "sensitivity_min_positive_share": 0.5,
   "risk_fraction": 0.005,
   "initial_equity": 100000,
   "min_trades": 30,
   "min_profit_factor": 1.3,
   "max_drawdown_fraction": 0.2,
   "min_friction_ratio": 3.0,
-  "policy_note": "Solo ejecuta estrategias registradas con hypothesis_id; no genera familias ni variantes."
+  "policy_note": "Solo ejecuta estrategias registradas con hypothesis_id; no genera familias ni variantes. La sensibilidad es diagnóstico de robustez, nunca selecciona un vecino ni reemplaza la spec."
 }

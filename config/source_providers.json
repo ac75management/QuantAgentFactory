@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "providers": [
+    {
+      "id": "quantpedia",
+      "name": "Quantpedia",
+      "role": "discovery_catalog",
+      "public_url": "https://quantpedia.com/",
+      "ingestion_mode": "manual_public",
+      "future_mode": "licensed_api",
+      "trust_policy": "lead_not_ground_truth",
+      "enabled": true
+    },
+    {
+      "id": "awesome_llm_quant_papers",
+      "name": "Awesome LLM Quantitative Trading Papers",
+      "role": "agent_research_catalog",
+      "public_url": "https://github.com/Tom-roujiang/Awesome-LLM-Quantitative-Trading-Papers",
+      "ingestion_mode": "manual_index",
+      "future_mode": "scheduled_index_review",
+      "trust_policy": "index_only_verify_primary_paper",
+      "enabled": false,
+      "disabled_reason": "Aparcado: no alimenta estrategias MT5 actuales y añade investigación experimental de LLM. Revisar solo si se abre una campaña específica de arquitectura de agentes."
+    },
+    {
+      "id": "quant_research_paper_dump",
+      "name": "Quant Research Paper Dump",
+      "role": "broad_paper_discovery",
+      "public_url": "https://github.com/kushalgowdagv/Quant-Research-Paper-Dump",
+      "ingestion_mode": "manual_index",
+      "future_mode": "scheduled_metadata_scan",
+      "trust_policy": "unranked_dump_verify_provenance_and_rights",
+      "enabled": false,
+      "disabled_reason": "Descartado de la ingesta activa: volumen alto, curación insuficiente y derechos heterogéneos. Puede consultarse puntualmente por título."
+    },
+    {
+      "id": "alpha_architect",
+      "name": "Alpha Architect Research Blog",
+      "role": "methodology_and_factor_research",
+      "public_url": "https://alphaarchitect.com/blog/",
+      "ingestion_mode": "manual_public",
+      "future_mode": "rss_or_scheduled_index_review",
+      "trust_policy": "secondary_analysis_trace_to_primary_paper",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "candidate_id": "IDEA-PILOT-DONCHIAN-ER-DAX",
+  "name": "Ruptura Donchian filtrada por Efficiency Ratio",
+  "source_name": "Perry J. Kaufman — Trading Systems and Methods",
+  "source_url": "https://onlinelibrary.wiley.com/doi/book/10.1002/9781119202561",
+  "primary_source_url": null,
+  "publication_date": "2012-01-02",
+  "access_level": "subscription",
+  "content_type": "strategy",
+  "original_asset_classes": ["future", "index"],
+  "instruments": ["MULTI_ASSET_FUTURES"],
+  "original_timeframes": ["D1"],
+  "proposed_targets": [
+    {"symbol": "DAX", "timeframe": "H4"}
+  ],
+  "data_requirements": ["OHLC"],
+  "rules_summary": "Candidato descrito por el usuario: aceptar una ruptura de canal Donchian solo cuando Efficiency Ratio indique desplazamiento direccional limpio. El investigador debe comprobar si esta combinación exacta aparece en la fuente, separar cada componente y documentar que DAX H4 sería una adaptación.",
+  "code_available": false,
+  "status": "captured"
+}

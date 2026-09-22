@@ -1,0 +1,19 @@
+{
+  "candidate_id": "IDEA-PILOT-KAMA-XAU-D1",
+  "name": "KAMA tendencial con Efficiency Ratio",
+  "source_name": "Perry J. Kaufman — Smarter Trading",
+  "source_url": "https://books.google.com/books/about/Smarter_Trading.html?id=ndq_21wRJjEC",
+  "primary_source_url": "https://books.google.com/books/about/Smarter_Trading.html?id=ndq_21wRJjEC",
+  "access_level": "subscription",
+  "content_type": "strategy",
+  "original_asset_classes": ["future", "fx", "index"],
+  "instruments": ["MULTI_ASSET"],
+  "original_timeframes": ["D1"],
+  "proposed_targets": [
+    {"symbol": "XAUUSD", "timeframe": "D1"}
+  ],
+  "data_requirements": ["OHLC"],
+  "rules_summary": "Candidato preliminar: seguir la dirección de una media adaptativa de Kaufman y usar Efficiency Ratio para distinguir desplazamiento direccional de ruido. La fuente debe verificarse para fijar la definición causal del giro, la inicialización y las reglas de salida sin inventar parámetros.",
+  "code_available": false,
+  "status": "captured"
+}
