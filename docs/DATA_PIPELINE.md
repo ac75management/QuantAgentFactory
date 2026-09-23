@@ -1,49 +1,41 @@
 # Pipeline de datos — QuantAgentFactory (Darwinex MT5)
 
-Orden fijo. No saltarse pasos ni correrlos fuera de orden — cada script asume que el anterior ya corrió.
+La extracción es manual, de solo lectura y ocasional: no forma parte de `qaf.cli run`. Conectarse a la cuenta, aunque sea demo, requiere confirmación explícita de Alexander en el chat (CLAUDE.md regla 1). Los símbolos salen de `config/instruments.json` (`status: research` con `symbol_mt5`).
 
 ## Requisitos
-```
-pip install MetaTrader5 pandas pyarrow
-```
 
-## Pasos (Windows)
+`.venv\Scripts\python.exe -m pip install MetaTrader5` (dependencia opcional, declarada en `pyproject.toml` como extra `mt5`). El terminal Darwinex MT5 debe estar abierto y con sesión iniciada.
 
-1. Abrir el terminal Darwinex MT5 y loguearse en la cuenta (demo o real). Dejarlo abierto — todos los scripts que hablan con MT5 lo necesitan corriendo.
+## Pasos
 
-2. Descargar OHLC H1, H4 y D1 del universo activo:
+1. **Exportar OHLC** de los timeframes declarados de cada símbolo:
    ```
-   python scripts/extract_darwinex_ohlc.py
+   python scripts/extract_darwinex_ohlc.py --connect-mt5
    ```
-   Escribe `data/raw/darwinex/<SYMBOL>_<TF>.parquet`. Para NAS100/NDX
-   generará también `NAS100_H1.parquet`, usando el histórico del broker
-   Darwinex vía MT5 y la misma normalización UTC. Solo usa los `symbol_mt5`
-   de `docs/universe.md` con `status=active` — `BTCUSD` (blocked) queda fuera.
+   Escribe un lote nuevo en `data/raw/darwinex/<fecha-hora>/`: un `<ALIAS>_<TF>.parquet` por serie, más `extraction.json`. Sin `--connect-mt5` no se conecta.
 
-3. Normalizar y cortar 70/30 IS/OOS (H1, H4 o D1):
+2. **Importar y partir 70/30 IS/OOS** ese lote:
    ```
-   python scripts/build_clean_data.py
+   python scripts/build_clean_data.py --raw-dir data/raw/darwinex/<fecha-hora>
    ```
-   Escribe `data/clean/<SYMBOL>/<TF>/IS.parquet` y `OOS.parquet`, más `data/clean/manifest.json`.
-   No elimina duplicados ni interpola huecos: los conserva para que Gate 0
-   los detecte y los documente.
+   Escribe `data/clean/<ALIAS>/<TF>/{IS,OOS}.parquet` y la entrada en `data/clean/manifest.json`, y sella la partición: sha256 de ambos archivos, esquema y rango temporal. Una partición existente nunca se sobreescribe. El corte IS/OOS se fija la primera vez que se importa un símbolo y se reutiliza para sus demás timeframes. Por eso EURUSD y USDJPY no tienen H1: su historial H1 empieza después del corte (`INSUFFICIENT_BEFORE_FIXED_CUTOFF`). No elimina duplicados ni interpola huecos: Gate 0 los reporta.
 
-4. Capturar costos reales de la cuenta (spread, swap, tamaño de contrato — la comisión casi nunca viene, queda para completar a mano):
+3. **Capturar costos actuales** (opcional; solo si se van a actualizar):
    ```
-   python scripts/extract_darwinex_costs.py
+   python scripts/extract_darwinex_costs.py --connect-mt5
    ```
-   Escribe `docs/cost_snapshots/<YYYYMMDD_HHMM>.json` y actualiza la sección LIVE de `docs/cost_model.md`.
+   Escribe `docs/cost_snapshots/<fecha-hora>.json`. No modifica `config/instruments.json`: los campos verificados se copian a mano (ver `docs/cost_model.md`, "Cómo actualizar").
 
-5. Correr el Gate 0 de calidad de datos sobre lo ya limpio:
+4. **Gate 0**. Corre dentro de `qaf.cli run` (`qaf/data.py::inspect_frame`) y queda en `result.json` de cada corrida con estado PASS, RESERVE o FAIL. Para revisar todas las series sin correr estrategias:
    ```
    python scripts/run_gate0.py
    ```
-   Escribe `reports/_data_quality/<SYMBOL>_<TF>.md` por serie, y agrega `verdict_gate0` a cada entrada de `data/clean/manifest.json`. El veredicto no puede ser mejor que `APTO_CON_RESERVAS` mientras el `cost_key` del símbolo siga en `SIN_CONFIRMAR` en `docs/cost_model.md` — por eso el paso 4 va antes que este.
+   Escribe `reports/factory/quality.json`.
 
-## BTCUSD y DAX
-Fuera del pipeline hasta que su fila en `docs/universe.md` diga `status=active` con un `symbol_mt5` confirmado. `extract_darwinex_ohlc.py` los ignora tal cual está configurado — no hace falta comentar nada a mano, basta con cambiar el status cuando se resuelvan.
+Particiones sin sello (anteriores al sellado): `python -m qaf.partition seal`.
 
-## Qué no hace este pipeline todavía
-- No corre AED ni backtests — eso es trabajo del agente `engine`, sobre `data/clean/`, después de que Gate 0 dé un veredicto.
-- No confirma comisión por operación — sigue siendo manual (Darwinex → tipo de cuenta → tabla de comisiones), rellenar en `docs/cost_model.md`.
-- No toca `investigator`, `protocol`, `engine` ni `validator`.
+## Qué no hace
+
+- No corre AED ni backtests: eso es `qaf.cli run`, invocado por `engine`.
+- No descarga comisiones: MT5 no las expone en `symbol_info()`. Su procedencia está en `docs/cost_model.md`.
+- No abre OOS. `qaf.data.load_is` solo lee IS; de OOS se verifican el hash y el rango temporal, sin leer precios.

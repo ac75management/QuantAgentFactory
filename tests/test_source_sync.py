@@ -342,3 +342,16 @@ def test_same_work_under_two_dois_is_flagged_not_dropped(tmp_path):
     assert "possible_duplicate_of" not in first["provenance"]
     assert candidates["10.2222/proc.2"]["provenance"]["possible_duplicate_of"] == first["candidate_id"]
     assert "possible_duplicate_of" not in candidates["10.3333/other.3"]["provenance"]
+
+
+def test_catalog_fails_loudly_on_unreadable_candidate_and_ignores_legacy_folder(tmp_path):
+    from qaf.catalog import list_candidates
+    (tmp_path / "state/catalog").mkdir(parents=True)
+    (tmp_path / "state/catalog/IDEA-OLD1.json").write_text('{"candidate_id": "IDEA-OLD1"}', encoding="utf-8")
+    (tmp_path / "catalog/candidates").mkdir(parents=True)
+    (tmp_path / "catalog/candidates/IDEA-GOOD.json").write_text('{"candidate_id": "IDEA-GOOD"}', encoding="utf-8")
+    assert [row["candidate_id"] for row in list_candidates(tmp_path)] == ["IDEA-GOOD"]
+
+    (tmp_path / "catalog/candidates/IDEA-BROKEN.json").write_text("{no es json", encoding="utf-8")
+    with pytest.raises(ValueError, match="IDEA-BROKEN"):
+        list_candidates(tmp_path)

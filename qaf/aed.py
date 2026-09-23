@@ -2,7 +2,7 @@
 qaf.signals.generate predice un movimiento direccional futuro en los datos IS,
 antes de aceptar como candidato el backtest costeado de qaf.engine.simulate.
 
-Cierra el hallazgo C1 de docs/audit_qaf_complete_2026-09-22.md y llena la puerta
+Cierra el hallazgo C1 de docs/archive/reviews/audit_qaf_complete_2026-09-22.md y llena la puerta
 "p-valor de permutacion < 0.05" de CLAUDE.md regla 5. Es una prueba de la senal,
 no una busqueda: no cambia ningun parametro de la spec.
 """

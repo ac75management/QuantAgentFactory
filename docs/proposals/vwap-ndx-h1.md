@@ -134,8 +134,8 @@ Si los bloqueos se resuelven, el flujo futuro será:
 
 1. La serie local H1 todavía no existe. Debe obtenerse mediante el extractor
    de Darwinex/MT5 antes de ejecutar la prueba.
-2. [`docs/universe.md`](./universe.md) y
-   [`config/instruments.json`](../config/instruments.json) ya declaran
+2. [`docs/universe.md`](../universe.md) y
+   [`config/instruments.json`](../../config/instruments.json) ya declaran
    NAS100/NDX en H1, H4 y D1.
 3. El histórico existente contiene `tick_volume`, mientras `real_volume` es
    cero en todas las filas; no hay volumen centralizado del futuro Nasdaq.
@@ -145,7 +145,7 @@ Si los bloqueos se resuelven, el flujo futuro será:
 7. Deben reconciliarse contrato, tick value, swaps, conversiones y ajustes
    del CFD.
 8. No existe todavía una hipótesis correspondiente en
-   [`docs/hypotheses/_registry.md`](./hypotheses/_registry.md).
+   [`docs/hypotheses/_registry.md`](../hypotheses/_registry.md).
 
 ## 8. Próximo paso
 

@@ -33,4 +33,4 @@ Mezclar los cinco autores nuevos en una sola lista sin esta distinción haría q
 
 ## Pendiente
 - Confirmar si hay acceso a datos COT (necesarios para algunas ideas de Larry Williams).
-- Ya preguntado y resuelto en docs/review_round2.md, docs/review_round3.md y esta misma tabla: separación A/B confirmada correcta, autores nuevos ya incorporados arriba.
+- Ya preguntado y resuelto en docs/archive/reviews/review_round2.md, docs/archive/reviews/review_round3.md y esta misma tabla: separación A/B confirmada correcta, autores nuevos ya incorporados arriba.

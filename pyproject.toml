@@ -10,3 +10,5 @@ mt5 = ["MetaTrader5"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+# Sin .pytest_cache: varios agentes corren pytest a la vez sobre OneDrive.
+addopts = "-p no:cacheprovider"

@@ -25,7 +25,7 @@ Todas las series activas (`config/instruments.json`) tienen `costs_verified: fal
 `qaf/holdout.py::PREREQUISITES` lista los pendientes que el error de bloqueo muestra; mantener esa lista y este documento sincronizados.
 
 ## Cuándo se puede reconsiderar
-Cuando los puntos 1, 2 y 4 tengan evidencia concreta (no solo el campo puesto en `true` sin respaldo) para el símbolo/timeframe específico que se quiera validar. No hace falta resolver los 5 puntos para *todo* el universo a la vez — se puede habilitar símbolo por símbolo, documentando cada uno.
+Cuando los puntos 1, 2 y 4 tengan evidencia concreta (no solo el campo puesto en `true` sin respaldo) para el símbolo/timeframe específico que se quiera validar. No hace falta resolver todos los puntos para *todo* el universo a la vez — se puede habilitar símbolo por símbolo, documentando cada uno.
 
 ## Mientras tanto
 `engine`/`validator` no intentan destrabar esto con un script alterno. Una estrategia que llega a `READY_FOR_FROZEN_VALIDATION` se documenta como tal y queda esperando — no es una falla del pipeline, es el diseño: mejor cero validaciones OOS que una validación sobre un modelo de costos que sabemos que no es correcto todavía.

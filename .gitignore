@@ -2,9 +2,6 @@ data/*
 !data/.gitkeep
 reports/*
 !reports/.gitkeep
-!reports/_data_quality/
-reports/_data_quality/*
-!reports/_data_quality/README.md
 
 __pycache__/
 *.pyc

@@ -128,12 +128,19 @@ def test_contract_without_narrative_is_a_violation(tmp_path):
     assert _row(root)['stage'] == 'INCONSISTENT'
 
 
-def test_closed_hypothesis_history_is_only_a_warning(tmp_path):
+def test_closed_hypothesis_anomaly_is_history_not_a_pending_warning(tmp_path):
     root = _repo(tmp_path, status='discarded_is')
     (root / f'config/strategies/{digest(SPEC)[:24]}.json').write_text(json.dumps(SPEC))
     state = pipeline_state(root)
-    assert [v['severity'] for v in state['violations']] == ['warning']
+    assert [v['severity'] for v in state['violations']] == ['history']
     assert state['hypotheses'][0]['stage'] == 'CLOSED'
+    assert state['hypotheses'][0]['violations']  # sigue visible en la fila de la hipótesis
+
+
+def test_blocked_hypothesis_anomaly_is_still_a_warning(tmp_path):
+    root = _repo(tmp_path, status='blocked_architecture')
+    (root / f'config/strategies/{digest(SPEC)[:24]}.json').write_text(json.dumps(SPEC))
+    assert [v['severity'] for v in pipeline_state(root)['violations']] == ['warning']
 
 
 def test_check_turn_allows_only_the_next_actor(tmp_path):

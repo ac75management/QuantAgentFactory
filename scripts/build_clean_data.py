@@ -3,7 +3,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import argparse
 import json
-from qaf.ingest import import_batch, normalize
+from qaf.ingest import import_batch
 from qaf.io import ROOT
 if __name__=='__main__':
     p=argparse.ArgumentParser(description='Importar particiones nuevas; preservar IS/OOS existentes')

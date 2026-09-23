@@ -14,7 +14,6 @@ from .registry import Registry
 CATALOG_STATUSES = {"captured", "triage", "eligible", "needs_data", "rejected", "promoted"}
 ACCESS_LEVELS = {"public", "subscription", "licensed_api", "unknown"}
 CONTENT_TYPES = {"strategy", "methodology", "agent_system", "dataset", "survey"}
-RESEARCH_LANES = {"mt5_now", "future_market", "methodology", "agent_research", "manual_review"}
 REVIEW_DECISIONS = {"eligible", "needs_data", "rejected"}
 IMPLEMENTATION_TYPES = {"replication", "adaptation"}
 ADAPTATION_DIMENSIONS = {"vehicle", "instrument", "session", "frequency", "portfolio", "costs"}
@@ -24,15 +23,6 @@ CATALOG_DIRECTORY = Path("catalog/candidates")
 def candidate_path(root, candidate_id):
     """Canonical, Git-tracked path for a catalog candidate."""
     return Path(root) / CATALOG_DIRECTORY / f"{candidate_id}.json"
-
-
-def _existing_candidate_path(root, candidate_id):
-    """Read old ignored records during migration, but never write new data there."""
-    canonical_path = candidate_path(root, candidate_id)
-    if canonical_path.exists():
-        return canonical_path
-    legacy_path = Path(root) / "state/catalog" / f"{candidate_id}.json"
-    return legacy_path if legacy_path.exists() else canonical_path
 
 
 def _validate_candidate_id(candidate_id):
@@ -334,7 +324,7 @@ def _finish_evidence_task(registry, candidate_id, decision, relative_path):
 def review_candidate(candidate_id, review, root=ROOT):
     root = Path(root)
     _validate_candidate_id(candidate_id)
-    path = _existing_candidate_path(root, candidate_id)
+    path = candidate_path(root, candidate_id)
     if not path.exists():
         raise ValueError(f"Candidato inexistente: {candidate_id}")
     registry = Registry(root / "state/research.sqlite3")
@@ -479,7 +469,7 @@ def promote_candidate(candidate_id, root=ROOT):
     """Create one registered hypothesis from one reviewed candidate, at most once."""
     root = Path(root)
     _validate_candidate_id(candidate_id)
-    candidate_path_value = _existing_candidate_path(root, candidate_id)
+    candidate_path_value = candidate_path(root, candidate_id)
     if not candidate_path_value.exists():
         raise ValueError(f"Candidato inexistente: {candidate_id}")
     registry = Registry(root / "state/research.sqlite3")
@@ -577,18 +567,15 @@ def promote_candidate(candidate_id, root=ROOT):
 
 
 def list_candidates(root=ROOT):
+    """Every candidate of the versioned catalog. An unreadable file fails loudly:
+    skipping it would hide evidence and let source-sync create a duplicate."""
     rows = []
-    seen = set()
-    paths = list(sorted((Path(root) / CATALOG_DIRECTORY).glob("*.json")))
-    paths.extend(sorted((Path(root) / "state/catalog").glob("*.json")))
-    for path in paths:
+    for path in sorted((Path(root) / CATALOG_DIRECTORY).glob("*.json")):
         try:
             row = read_json(path)
-            candidate_id = row.get("candidate_id")
-            if candidate_id in seen:
-                continue
-            seen.add(candidate_id)
-            rows.append(row)
-        except (OSError, ValueError, json.JSONDecodeError):
-            continue
+        except (OSError, ValueError) as error:
+            raise ValueError(f"Candidato ilegible en el catálogo: {path.name} ({error})") from error
+        if not isinstance(row, dict) or row.get("candidate_id") != path.stem:
+            raise ValueError(f"Candidato inconsistente en el catálogo: {path.name} no declara candidate_id={path.stem}")
+        rows.append(row)
     return rows

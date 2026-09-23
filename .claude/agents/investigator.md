@@ -12,7 +12,7 @@ Antes de actuar sobre una hipótesis ya registrada, confirma que te toca: `.venv
 
 ## Entrada desde el catálogo
 
-Las ideas nuevas llegan primero a `catalog/candidates/*.json` (versionado en Git; `state/catalog/` es solo la ubicación antigua y no se escribe más). Los descubrimientos automáticos de `source-sync` traen `provenance.evidence_status: unverified_discovery`: son metadatos (título, autores, DOI/URL, commit), no reglas, y su `access_level` puede ser `unknown` aunque tengan DOI. Antes de crear una hipótesis:
+Las ideas nuevas llegan primero a `catalog/candidates/*.json` (versionado en Git). Los descubrimientos automáticos de `source-sync` traen `provenance.evidence_status: unverified_discovery`: son metadatos (título, autores, DOI/URL, commit), no reglas, y su `access_level` puede ser `unknown` aunque tengan DOI. Antes de crear una hipótesis:
 
 1. Lee `assessment.research_lane`. `mt5_now` permite evaluar compatibilidad inmediata; `future_market` se conserva sin forzarla a un CFD; `methodology` sirve para mejorar criterios y no genera una estrategia; `agent_research` sirve para evaluar el proceso de agentes y tampoco genera una estrategia automáticamente.
 2. Una lista de GitHub, un blog o Quantpedia son índices secundarios. Sigue `primary_source_url` hasta el paper o documento original y verifica autor, fecha, universo, periodo, reglas y datos. Si no existe una fuente primaria accesible, deja la entrada bloqueada; no promociones un resumen.
@@ -35,7 +35,7 @@ Cola de investigación externa (`docs/research_queue.md`): si para evaluar un pa
 
 Reglas:
 - Nunca aceptes un patrón "porque lo dijo un video/curso". Usa WebSearch/WebFetch para verificar que el autor y el método son reales, y para buscar evidencia independiente (papers, estudios, otros practicantes) que respalde o contradiga la idea antes de escribir la hipótesis.
-- Toda hipótesis debe indicar en qué clase de activo y timeframe fue validada originalmente la idea (ej. "Crabel: futuros de materias primas, diario" o "momentum de series temporales: 58 futuros líquidos multi-activo, 1970-2012"). Si ese contexto no coincide razonablemente con nuestro alcance (CFD/futuros, diario/4H), decláralo explícitamente como una extrapolación de riesgo, no como una aplicación directa.
+- Toda hipótesis debe indicar en qué clase de activo y timeframe fue validada originalmente la idea (ej. "Crabel: futuros de materias primas, diario" o "momentum de series temporales: 58 futuros líquidos multi-activo, 1970-2012"). Si ese contexto no coincide razonablemente con nuestro alcance (CFD/futuros, H1, H4 o D1), decláralo explícitamente como una extrapolación de riesgo, no como una aplicación directa.
 - No escribes reglas de trading con umbrales numéricos. Eso es trabajo del agente `protocol`.
 - No corres backtests ni tocas datos de precio programáticamente. Eso es trabajo de `engine`.
 - Cada hipótesis va a un archivo nuevo en `docs/hypotheses/<slug>.md` con: fuente/inspiración, mercado/activo, lógica de comportamiento, clase de participante que genera el edge, horizonte de holding esperado, por qué el edge no se ha comprimido del todo (costes, restricciones institucionales, liquidez) y por qué crees que sigue siendo explotable.

@@ -1,27 +1,42 @@
-﻿# Catálogo de universo — QuantAgentFactory
+# Universo de símbolos — QuantAgentFactory
 
-Bróker: **Darwinex, vía MT5**. Mapeo **fijo** — confirmado contra un terminal Darwinex real el 2026-09-24 (extracción OHLC ya corrida). `investigator`, `protocol` y `engine` consultan este archivo antes de aceptar o codificar una hipótesis. `scripts/extract_darwinex_ohlc.py` y `scripts/extract_darwinex_costs.py` usan **solo** `symbol_mt5` de las filas `status=active` — nada de fallback difuso, ya no hace falta.
+Bróker de datos: **Darwinex, vía MT5**, solo lectura. La fuente autoritativa es `config/instruments.json`: contrato, costos, timeframes y estado de cada símbolo. La tabla de abajo es un espejo generado; no se edita a mano. Tras cambiar `config/instruments.json`, regenerarla con `python -m qaf.consistency --write-universe`. El preflight falla si difieren.
 
-| alias | symbol_mt5 | type | tfs | cost_key | status |
-|---|---|---|---|---|---|
-| XAUUSD | XAUUSD | cfd_metal | D1,H4 | metal | active |
-| XAGUSD | XAGUSD | cfd_metal | D1,H4 | metal | active |
-| US30 | WS30 | cfd_index | H1,D1,H4 | index_us | active |
-| NAS100 | NDX | cfd_index | H1,D1,H4 | index_us | active |
-| SP500 | SP500 | cfd_index | H1,D1,H4 | index_us | active |
-| USDJPY | USDJPY | cfd_fx | D1,H4 | fx | active |
-| EURUSD | EURUSD | cfd_fx | D1,H4 | fx | active |
-| GBPUSD | GBPUSD | cfd_fx | D1,H4 | fx | active |
-| PETROLEO | XTIUSD | cfd_energy | D1,H4 | energy | active |
-| BTCUSD | - | cfd_crypto | - | crypto | blocked |
-| DAX | GDAXI | cfd_index | H1,D1,H4 | index_eu | active |
+- `research`: se puede formular una hipótesis y ejecutarla en IS.
+- `pending`: vehículo registrado para una expansión futura (ETF, acciones, futuros, cripto). No se propone hipótesis sobre él.
 
-## Notas
-- **BTCUSD = blocked**: no existe en la cuenta demo de Darwinex usada para probar. No se reintenta hasta que Alexander confirme si su cuenta real sí lo tiene.
-- `PETROLEO` (alias) usa `XTIUSD` como `symbol_mt5` real — confirmado, no `USOIL`.
-- `DAX`/`GER40` (alias) usa `GDAXI` como `symbol_mt5` real, `status=active` — confirmado.
+<!-- qaf:universe:start -->
+| alias | symbol_mt5 | clase | timeframes | status |
+|---|---|---|---|---|
+| XAUUSD | XAUUSD | commodity_cfd | H1, H4, D1 | research |
+| XAGUSD | XAGUSD | commodity_cfd | H1, H4, D1 | research |
+| US30 | WS30 | index_cfd | H1, H4, D1 | research |
+| NAS100 | NDX | index_cfd | H1, H4, D1 | research |
+| SP500 | SP500 | index_cfd | H1, H4, D1 | research |
+| USDJPY | USDJPY | fx | H1, H4, D1 | research |
+| EURUSD | EURUSD | fx | H1, H4, D1 | research |
+| GBPUSD | GBPUSD | fx | H1, H4, D1 | research |
+| PETROLEO | XTIUSD | commodity_cfd | H1, H4, D1 | research |
+| DAX | GDAXI | index_cfd | H1, H4, D1 | research |
+| BTCUSD | — | crypto_cfd | H1, H4, D1 | pending |
+| ETHUSD | — | crypto | H1, H4, D1 | pending |
+| SPY | — | etf | H1, H4, D1 | pending |
+| QQQ | — | etf | H1, H4, D1 | pending |
+| IWM | — | etf | H1, H4, D1 | pending |
+| TLT | — | etf | H1, H4, D1 | pending |
+| GLD | — | etf | H1, H4, D1 | pending |
+| AAPL | — | equity | H1, H4, D1 | pending |
+| MSFT | — | equity | H1, H4, D1 | pending |
+| ES | — | future | H1, H4, D1 | pending |
+| NQ | — | future | H1, H4, D1 | pending |
+| GC | — | future | H1, H4, D1 | pending |
+| CL | — | future | H1, H4, D1 | pending |
+<!-- qaf:universe:end -->
 
-## Regla de uso
-- `investigator` no propone hipótesis sobre símbolos con `status` distinto de `active` (ni `blocked` ni `pending`), ni sobre datos que este archivo no reconoce como disponibles (COT, order flow, profundidad de mercado), salvo que las declare explícitamente "bloqueada por datos".
-- `protocol`/`engine` usan la columna `cost_key` para buscar el costo correspondiente en `docs/cost_model.md`.
-- Reactivar `BTCUSD` o `DAX` implica cambiar su `status` a `active` aquí, con `symbol_mt5` confirmado, no antes.
+## Notas de mapeo
+
+- `PETROLEO` usa `XTIUSD` como símbolo MT5 real, no `USOIL`.
+- `DAX` usa `GDAXI`.
+- `BTCUSD` no existe en la cuenta demo de Darwinex usada para extraer; sigue `pending` hasta que Alexander confirme la cuenta real.
+- Qué particiones IS/OOS existen de verdad: `data/clean/manifest.json` (local, no versionado). EURUSD y USDJPY no tienen H1 importado: su corte IS/OOS se fijó con el historial D1/H4 y el H1 de MT5 empieza después del corte (decisión pendiente en `PROJECT_STATE.md`).
+- Datos que el bróker no ofrece (COT, order flow, profundidad de mercado, volumen centralizado real) no están disponibles. Una hipótesis que los necesite se declara bloqueada por datos. `tick_volume` es actividad de ticks, no volumen ejecutado.

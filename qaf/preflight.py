@@ -4,7 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
-from .consistency import check_hypothesis_registry
+from .consistency import check_hypothesis_registry, check_universe_mirror
 from .coordination import Coordination
 from .io import ROOT
 from .pipeline import pipeline_state
@@ -54,11 +54,20 @@ def audit(root=ROOT, include_git=True):
         add("hypothesis_consistency", "FAIL", str(error))
 
     try:
+        universe = check_universe_mirror(root)
+        add("universe_mirror", "FAIL" if universe else "PASS",
+            universe[0]["issue"] if universe else "docs/universe.md coincide con config/instruments.json")
+    except Exception as error:
+        add("universe_mirror", "FAIL", str(error))
+
+    try:
         state = pipeline_state(root)
         blocking = [row for row in state["violations"] if row["severity"] == "error"]
+        warnings = [row for row in state["violations"] if row["severity"] == "warning"]
+        history = len(state["violations"]) - len(blocking) - len(warnings)
         add("pipeline", "FAIL" if blocking else "PASS",
-            f"{len(blocking)} violaciones bloqueantes; {len(state['violations']) - len(blocking)} advertencias",
-            state["violations"] or None)
+            f"{len(blocking)} violaciones bloqueantes; {len(warnings)} advertencias; {history} históricas de hipótesis cerradas",
+            blocking + warnings or None)
     except Exception as error:
         add("pipeline", "FAIL", str(error))
 
@@ -86,7 +95,9 @@ def audit(root=ROOT, include_git=True):
 
     state_lines = len((root / "PROJECT_STATE.md").read_text(encoding="utf-8-sig").splitlines()) if (root / "PROJECT_STATE.md").exists() else 0
     add("state_log", "WARN" if state_lines > 250 else "PASS",
-        f"PROJECT_STATE.md tiene {state_lines} líneas; es historial, no fuente operativa" if state_lines else "PROJECT_STATE.md ausente")
+        (f"PROJECT_STATE.md tiene {state_lines} líneas"
+         + (" (máximo 250): mover la bitácora antigua a docs/archive/" if state_lines > 250 else ""))
+        if state_lines else "PROJECT_STATE.md ausente")
     overall = "FAIL" if any(row["status"] == "FAIL" for row in checks) else ("WARN" if any(row["status"] == "WARN" for row in checks) else "PASS")
     return {"status": overall, "checks": checks}
 

@@ -2,32 +2,9 @@
 
 Este documento responde tres preguntas: qué es seguro hacer ahora, cómo se evita que dos agentes se sobreescriban y qué significa realmente optimizar una estrategia.
 
-## Fuentes operativas
+## Coordinación
 
-No se deduce el estado actual leyendo toda la bitácora:
-
-- `python -m qaf.preflight`: salud del repositorio, coherencia, reservas y cambios pendientes.
-- `python -m qaf.pipeline`: fase y siguiente actor de cada hipótesis.
-- `python -m qaf.coordination status`: archivos reservados en este working tree.
-- `PROJECT_STATE.md`: historial append-only; aporta contexto, no autoridad operativa.
-
-## Ciclo obligatorio de cualquier agente
-
-1. Ejecutar `python -m qaf.preflight` y leer `AGENTS.md`.
-2. Consultar `python -m qaf.pipeline --hypothesis <id> --as <agente>` cuando el trabajo pertenece a una hipótesis.
-3. Revisar el diff de cada archivo que se piensa tocar.
-4. Adquirir el conjunto completo de archivos de forma atómica:
-
-   ```powershell
-   .venv\Scripts\python.exe -m qaf.coordination claim --agent "Claude-app" --objective "objetivo concreto" qaf/modulo.py tests/test_modulo.py
-   ```
-
-5. Reflejar la reserva en `AGENTS.md`. Durante trabajos largos, enviar heartbeat antes de 120 minutos.
-6. Implementar una unidad terminada, sin stubs que aparenten pasar.
-7. Ejecutar preflight y la suite completa con un `--basetemp` exclusivo.
-8. Registrar resultado en `PROJECT_STATE.md` y `AGENTS.md`; liberar las reservas al final.
-
-La base `state/coordination.sqlite3` está ignorada por git porque coordina procesos locales. La clave primaria por ruta y `BEGIN IMMEDIATE` impiden que dos agentes adquieran simultáneamente el mismo archivo. Una reclamación con un conflicto no adquiere ningún archivo.
+El ciclo de cualquier agente (preflight, reserva atómica, tablero, pruebas y cierre) está en `AGENTS.md`, que es la única copia. Las fuentes operativas son `python -m qaf.preflight` (salud), `python -m qaf.pipeline` (fase y siguiente actor de cada hipótesis) y `python -m qaf.coordination status` (reservas).
 
 ## Pipeline de investigación y optimización permitido
 
@@ -55,10 +32,4 @@ Cambiar una regla o parámetro después de ver resultados no es “mejorar la mi
 
 ## Prioridad actual
 
-**Ahora:** consolidar en un commit el lote estable cuando Alexander lo autorice. Mientras permanezca sin commit, el preflight mostrará una advertencia deliberada.
-
-**Siguiente:** `protocol` para la hipótesis 007, sin escoger parámetros por el mejor resultado. Si la fuente no permite congelarlos de forma defendible, bloquearla.
-
-**Bloqueado:** OOS y cualquier afirmación de estrategia validada, hasta cumplir `docs/VALIDATION_ROADMAP.md`.
-
-**Puede esperar:** nuevas familias, agentes adicionales, despliegue, sizing avanzado y expansión de mercados.
+Vive en un solo lugar: la sección NEXT ACTION de `PROJECT_STATE.md`. OOS y cualquier afirmación de estrategia validada siguen bloqueados hasta cumplir `docs/VALIDATION_ROADMAP.md`.

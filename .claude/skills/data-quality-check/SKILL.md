@@ -1,6 +1,6 @@
 ---
 name: data-quality-check
-description: Gate 0 obligatorio. Evalúa calidad de datos históricos de broker minorista (CFD/futuros) antes de cualquier AED o backtest. Úsalo solo desde el agente engine, sobre archivos en data/. Produce reports/<slug>/data_quality.md con veredicto APTO | APTO_CON_RESERVAS | RECHAZADO.
+description: Gate 0 obligatorio. Checklist de calidad de datos de bróker minorista (CFD/futuros) antes de cualquier AED o backtest. Los controles automáticos corren en qaf/data.py::inspect_frame dentro de qaf.cli run y quedan en result.json como PASS | RESERVE | FAIL; este skill guía la revisión de lo que no está automatizado. Úsalo desde el agente engine.
 ---
 
 # Gate 0 — Calidad de datos (broker minorista)

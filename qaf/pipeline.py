@@ -65,7 +65,11 @@ def pipeline_state(root=ROOT):
 
     def severity(hypothesis_id):
         status = (catalog.get(hypothesis_id) or {}).get("status")
-        return "error" if hypothesis_id not in catalog or status in RUNNABLE else "warning"
+        if hypothesis_id not in catalog or status in RUNNABLE:
+            return "error"
+        # A closed hypothesis is frozen history: the anomaly stays visible in its row,
+        # but it is not a pending warning that anyone can act on.
+        return "history" if TERMINAL.get(status, (None,))[0] == "CLOSED" else "warning"
 
     def violation(hypothesis_id, text, level=None):
         violations.append({"severity": level or severity(hypothesis_id), "hypothesis_id": hypothesis_id, "issue": text})

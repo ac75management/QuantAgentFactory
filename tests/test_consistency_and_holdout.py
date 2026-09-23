@@ -67,3 +67,29 @@ def test_final_validation_fails_closed_with_explicit_prerequisites(call):
     assert ROADMAP in message and 'OOS no abierto' in message
     assert all(item in message for item in PREREQUISITES)
     assert (ROOT / ROADMAP).exists()
+
+
+def test_universe_mirror_is_generated_from_instruments_and_drift_fails(tmp_path):
+    from qaf.consistency import UNIVERSE_END, UNIVERSE_START, check_universe_mirror, write_universe_mirror
+    (tmp_path / 'config').mkdir()
+    (tmp_path / 'docs').mkdir()
+    contract = {'XAUUSD': {'symbol_mt5': 'XAUUSD', 'asset_class': 'commodity_cfd', 'timeframes': ['H4', 'D1'], 'status': 'research'}}
+    (tmp_path / 'config/instruments.json').write_text(json.dumps(contract), encoding='utf-8')
+    (tmp_path / 'docs/universe.md').write_text(f'# Universo\n{UNIVERSE_START}\n{UNIVERSE_END}\nnotas humanas\n', encoding='utf-8')
+    assert check_universe_mirror(tmp_path)
+
+    write_universe_mirror(tmp_path)
+    text = (tmp_path / 'docs/universe.md').read_text(encoding='utf-8')
+    assert check_universe_mirror(tmp_path) == []
+    assert '| XAUUSD | XAUUSD | commodity_cfd | H4, D1 | research |' in text and 'notas humanas' in text
+
+    contract['XAUUSD']['timeframes'].append('H1')
+    (tmp_path / 'config/instruments.json').write_text(json.dumps(contract), encoding='utf-8')
+    assert 'regenerar' in check_universe_mirror(tmp_path)[0]['issue']
+
+
+def test_universe_mirror_without_markers_is_an_error(tmp_path):
+    from qaf.consistency import check_universe_mirror
+    (tmp_path / 'docs').mkdir()
+    (tmp_path / 'docs/universe.md').write_text('| XAUUSD | editado a mano |\n', encoding='utf-8')
+    assert check_universe_mirror(tmp_path)[0]['severity'] == 'error'

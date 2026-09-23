@@ -8,7 +8,7 @@ import pytest
 from qaf.data import load_is
 from qaf.ingest import import_batch
 from qaf.io import read_json
-from qaf.partition import seal, seal_entry
+from qaf.partition import seal
 
 CUTOFF = pd.Timestamp('2021-01-01', tz='UTC')
 

@@ -1,16 +1,18 @@
-"""Coherencia del estado de hipotesis entre sus tres registros.
+"""Coherencia entre las fuentes autoritativas y sus espejos legibles.
 
-config/hypotheses.json es la fuente autoritativa (qaf.io.load_hypotheses);
-docs/hypotheses/_registry.md es su espejo legible; state/research.sqlite3 guarda
-las decisiones reales de cada corrida. Este modulo no corrige nada: reporta
-divergencias para que el agente dueno las resuelva a mano, con registro.
+- Hipotesis: config/hypotheses.json es la fuente (qaf.io.load_hypotheses);
+  docs/hypotheses/_registry.md es su espejo; state/research.sqlite3 guarda las
+  decisiones reales de cada corrida. Las divergencias se reportan, no se corrigen.
+- Universo: config/instruments.json es la fuente; la tabla de docs/universe.md se
+  genera desde ahi (--write-universe) y cualquier edicion a mano se detecta.
 
-Uso: python -m qaf.consistency   (codigo de salida 1 si hay errores)
+Uso: python -m qaf.consistency [--write-universe]   (codigo de salida 1 si hay errores)
 """
+import argparse
 import json
 import sqlite3
 from pathlib import Path
-from .io import ROOT, load_hypotheses
+from .io import ROOT, load_hypotheses, read_json
 
 # Vocabulario permitido en config/hypotheses.json -> marcas aceptadas en la columna
 # "estado" del espejo markdown (minusculas, subcadena).
@@ -29,6 +31,9 @@ STATUS_MARKERS = {
 }
 RUNNABLE = {"pending", "ready"}
 TERMINAL_RUN_DECISIONS = {"DISCARDED_IS", "BLOCKED_DATA"}
+UNIVERSE_DOC = "docs/universe.md"
+UNIVERSE_START = "<!-- qaf:universe:start -->"
+UNIVERSE_END = "<!-- qaf:universe:end -->"
 
 
 def markdown_states(root):
@@ -97,8 +102,52 @@ def check_hypothesis_registry(root=ROOT):
     return issues
 
 
+def render_universe_table(root=ROOT):
+    """Tabla legible del universo, derivada solo de config/instruments.json."""
+    instruments = read_json(Path(root) / "config/instruments.json")
+    lines = ["| alias | symbol_mt5 | clase | timeframes | status |", "|---|---|---|---|---|"]
+    for alias, row in instruments.items():
+        lines.append(f"| {alias} | {row.get('symbol_mt5') or '—'} | {row.get('asset_class')} | "
+                     f"{', '.join(row.get('timeframes', []))} | {row.get('status')} |")
+    return "\n".join(lines)
+
+
+def _universe_block(text):
+    if UNIVERSE_START not in text or UNIVERSE_END not in text:
+        return None
+    return text.split(UNIVERSE_START, 1)[1].split(UNIVERSE_END, 1)[0].strip()
+
+
+def check_universe_mirror(root=ROOT):
+    path = Path(root) / UNIVERSE_DOC
+    if not path.exists():
+        return []
+    block = _universe_block(path.read_text(encoding="utf-8-sig"))
+    if block is None:
+        return [{"severity": "error", "hypothesis_id": None, "issue": f"{UNIVERSE_DOC} no tiene los marcadores de la tabla generada"}]
+    if block != render_universe_table(root):
+        return [{"severity": "error", "hypothesis_id": None,
+                 "issue": f"{UNIVERSE_DOC} no coincide con config/instruments.json: regenerar con python -m qaf.consistency --write-universe"}]
+    return []
+
+
+def write_universe_mirror(root=ROOT):
+    path = Path(root) / UNIVERSE_DOC
+    text = path.read_text(encoding="utf-8-sig")
+    if _universe_block(text) is None:
+        raise ValueError(f"{UNIVERSE_DOC} no tiene los marcadores {UNIVERSE_START} / {UNIVERSE_END}")
+    head, rest = text.split(UNIVERSE_START, 1)
+    tail = rest.split(UNIVERSE_END, 1)[1]
+    path.write_text(f"{head}{UNIVERSE_START}\n{render_universe_table(root)}\n{UNIVERSE_END}{tail}", encoding="utf-8")
+
+
 def main():
-    issues = check_hypothesis_registry()
+    parser = argparse.ArgumentParser(description="Coherencia entre fuentes autoritativas y espejos")
+    parser.add_argument("--write-universe", action="store_true", help="regenerar la tabla de docs/universe.md")
+    args = parser.parse_args()
+    if args.write_universe:
+        write_universe_mirror()
+    issues = check_hypothesis_registry() + check_universe_mirror()
     print(json.dumps(issues, indent=2, ensure_ascii=False))
     return 1 if any(i["severity"] == "error" for i in issues) else 0
 

@@ -1,6 +1,5 @@
 import html
 import json
-import re
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path

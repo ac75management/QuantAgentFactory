@@ -1,6 +1,6 @@
 # KAMA tendencial con Efficiency Ratio
 
-Estado: **pendiente de protocolo**. Esta ficha registra una hipótesis investigable; no afirma rentabilidad y no contiene resultados de backtest.
+Estado: **bloqueada** (`blocked_architecture` en `config/hypotheses.json`, la fuente autoritativa): la fuente no fija `ER_Length`, `FastMA_Length` ni la salida, y `qaf` no tiene familia KAMA. Detalle en `docs/specs/xauusd-d1-kama-tendencial-con-efficiency-ratio.md`. Esta ficha registra una hipótesis investigable; no afirma rentabilidad y no contiene resultados de backtest.
 
 ## Trazabilidad
 

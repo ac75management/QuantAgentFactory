@@ -1,7 +1,7 @@
 """
 Re-verificacion de comprar-y-mantener usando el motor de costos ya auditado
 de `qaf` (qaf.costs / qaf.data) -- NO reimplementa la aritmetica de costos.
-Reemplaza al comparador retirado (scripts/dryrun_bh.py), cuyos resultados
+Reemplaza al comparador retirado (dryrun_bh.py, retirado; tag git archive/pre-factory-v2), cuyos resultados
 el propio proyecto marco como "no comparables" tras la auditoria del motor.
 
 Uso:

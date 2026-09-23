@@ -1,6 +1,5 @@
 import math
 import numpy as np
-import pandas as pd
 from .contracts import validate_spec, validate_instrument
 from .costs import execution_cost, financing, margin_cash_per_lot, price_cash
 from .signals import atr, generate

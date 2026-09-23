@@ -1,9 +1,8 @@
 import argparse
 import json
-from pathlib import Path
 from .io import ROOT,read_json,digest,write_json,load_registered_hypothesis_ids
 from .runner import run_daily
-from .contracts import validate_spec,validate_instrument
+from .contracts import validate_spec
 
 
 def main():

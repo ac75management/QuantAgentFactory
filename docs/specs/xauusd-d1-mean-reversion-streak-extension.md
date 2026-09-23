@@ -67,7 +67,7 @@ R:R nominal de la regla (2:1, 3.0/1.5) es un punto de partida defendible para un
 ## 4. Modelo de fill explícito
 
 - Señal en el close de la barra `t` (D1) → orden a mercado al **open de la barra `t+1`**. Nunca fill al close de la barra de señal.
-- Precio de referencia: **mid** — asunción interina, igual que en `docs/specs/dryrun_bh_sp500.md`, porque `data/clean/` no distingue bid/ask todavía. `engine` debe declarar el precio real (bid/ask/mid) en `reports/xauusd-d1-mean-reversion-streak-extension/data_quality.md` al correr Gate 0 (`.claude/skills/data-quality-check/SKILL.md`, sección D). Si Gate 0 declara algo distinto de mid, las fórmulas de fill y de costo de spread de esta sección deben ajustarse antes del backtest — no se asume mid sin esa confirmación.
+- Precio de referencia: **mid** — asunción interina, igual que en `docs/archive/specs/dryrun_bh_sp500.md`, porque `data/clean/` no distingue bid/ask todavía. `engine` debe declarar el precio real (bid/ask/mid) en `reports/xauusd-d1-mean-reversion-streak-extension/data_quality.md` al correr Gate 0 (`.claude/skills/data-quality-check/SKILL.md`, sección D). Si Gate 0 declara algo distinto de mid, las fórmulas de fill y de costo de spread de esta sección deben ajustarse antes del backtest — no se asume mid sin esa confirmación.
 - El costo de spread (sección 5) se aplica **una vez, al entrar** (no se duplica en la salida), igual que la convención ya usada en `dryrun_bh_sp500.md` — evita contar el spread dos veces.
 - Salida: al primer evento entre SL, TP (con regla de desempate de la sección 3) o el time-stop al open de la sexta barra tras la entrada.
 
