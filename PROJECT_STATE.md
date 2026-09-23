@@ -399,7 +399,7 @@ Huella nueva: `metadata_sha256` excluye `source_url` y `source_revision`. No hab
 
 **NEXT ACTION:** Alexander decide cuándo consolidar en un commit este lote (Codex + 007 + esta revisión) y cuándo correr la primera extracción real pequeña (`source-sync --limit 5`, hasta 15 candidatos).
 
-## COMMIT + DUPLICADOS DE CROSSREF (2026-09-22 19:50, Claude-app)
+## COMMIT + DUPLICADOS DE CROSSREF (2026-09-22 19:40, Claude-app)
 
 - Alexander autorizó el commit: `fca47a1` consolida el lote de Codex (catálogo versionado, source-sync), la spec bloqueada de la 007, la revisión de evidencia Donchian-ER y la revisión de source-sync. 141 pasados / 0 fallidos antes del commit.
 - Resuelto el pendiente "mismo trabajo con varios DOI": `qaf/source_sync.py::_work_key` (título normalizado de 4+ palabras + apellido del primer autor). El candidato nuevo se crea igual y lleva `provenance.possible_duplicate_of`; nunca se descarta, porque título + autor puede colisionar. Contador `possible_duplicates` en el resumen. 1 prueba nueva; suite **142 pasados / 0 fallidos**. Dry-run real `--limit 25`: crearía 60 candidatos, 0 posibles duplicados, sin escrituras.
