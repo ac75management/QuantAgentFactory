@@ -320,6 +320,20 @@ def _identity_keys(record):
     return sorted(set(keys))
 
 
+def _work_key(record):
+    """Same work under several DOIs (journal + proceedings, preprint + article).
+
+    Title plus first-author surname can collide, so this key only flags a possible
+    duplicate for investigator; it never skips a record the way identity keys do.
+    """
+    authors = record.get("authors") or []
+    words = re.findall(r"\w+", _clean_text(record.get("title")).casefold())
+    surname = re.findall(r"\w+", _clean_text(authors[0]).casefold()) if authors else []
+    if len(words) < 4 or not surname:
+        return None
+    return "work:" + " ".join(words) + "|" + surname[-1]
+
+
 def _candidate_from_record(provider, record, fingerprint, snapshot_path, now):
     provider_id = provider["id"]
     candidate_id = "IDEA-SRC-" + digest({"provider": provider_id, "upstream_id": record["upstream_id"]})[:12].upper()
@@ -348,6 +362,7 @@ def _candidate_from_record(provider, record, fingerprint, snapshot_path, now):
             "metadata_sha256": fingerprint,
             "snapshot_path": snapshot_path.as_posix(),
             "identity_keys": _identity_keys(record),
+            "work_key": _work_key(record),
             "source_revision": record.get("source_revision"),
             "repository_url": record.get("repository_url"),
             "source_path": record.get("source_path"),
@@ -400,12 +415,17 @@ def sync_sources(root=ROOT, provider_ids=None, limit=20, dry_run=False, transpor
     candidates = list_candidates(root)
     by_id = {item.get("candidate_id"): item for item in candidates}
     identity_index = _candidate_identity_index(candidates)
-    summary = {"started_at": now.isoformat(), "dry_run": dry_run, "providers": [], "created": 0, "unchanged": 0, "updates_queued": 0, "duplicates": 0}
+    work_index = {}
+    for item in candidates:
+        work_key = item.get("provenance", {}).get("work_key")
+        if work_key:
+            work_index.setdefault(work_key, item.get("candidate_id"))
+    summary = {"started_at": now.isoformat(), "dry_run": dry_run, "providers": [], "created": 0, "unchanged": 0, "updates_queued": 0, "duplicates": 0, "possible_duplicates": 0}
 
     for provider in config["providers"]:
         if selected and provider["id"] not in selected:
             continue
-        row = {"provider_id": provider["id"], "status": "skipped", "fetched": 0, "created": 0, "unchanged": 0, "updates_queued": 0, "duplicates": 0}
+        row = {"provider_id": provider["id"], "status": "skipped", "fetched": 0, "created": 0, "unchanged": 0, "updates_queued": 0, "duplicates": 0, "possible_duplicates": 0}
         if not provider.get("enabled"):
             row["reason"] = provider.get("disabled_reason", "disabled")
             summary["providers"].append(row)
@@ -438,6 +458,13 @@ def sync_sources(root=ROOT, provider_ids=None, limit=20, dry_run=False, transpor
                 summary["duplicates"] += 1
                 continue
             if not existing:
+                work_key = candidate["provenance"]["work_key"]
+                if work_key and work_index.get(work_key, candidate_id) != candidate_id:
+                    candidate["provenance"]["possible_duplicate_of"] = work_index[work_key]
+                    row["possible_duplicates"] += 1
+                    summary["possible_duplicates"] += 1
+                if work_key:
+                    work_index.setdefault(work_key, candidate_id)
                 if not dry_run:
                     stored, _ = add_candidate(candidate, root)
                 else:

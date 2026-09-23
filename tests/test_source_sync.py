@@ -323,3 +323,22 @@ def test_crossref_uses_relevance_bounded_dates_and_unknown_access(tmp_path):
     candidate = read_json(next((tmp_path / "catalog/candidates").glob("*.json")))
     assert candidate["access_level"] == "unknown"
     assert candidate["publication_date"] == "2024-05-02"
+
+
+def test_same_work_under_two_dois_is_flagged_not_dropped(tmp_path):
+    _root(tmp_path, [_crossref_provider()])
+    item = _crossref_payload()["message"]["items"][0]
+    journal = {**item, "DOI": "10.1111/journal.1", "title": ["Time-Series Momentum in Futures Markets"]}
+    proceedings = {**item, "DOI": "10.2222/proc.2", "title": ["Time series momentum in futures markets."]}
+    other_author = {**item, "DOI": "10.3333/other.3", "title": ["Time series momentum in futures markets"],
+                    "author": [{"given": "Otro", "family": "Autor"}]}
+    transport = FakeTransport({"api.crossref.org": {"message": {"items": [journal, proceedings, other_author]}}})
+
+    summary = sync_sources(tmp_path, limit=5, transport=transport, now=datetime(2026, 9, 22, tzinfo=timezone.utc))
+
+    candidates = {c["provenance"]["upstream_id"]: c for c in map(read_json, (tmp_path / "catalog/candidates").glob("*.json"))}
+    assert summary["created"] == 3 and summary["duplicates"] == 0 and summary["possible_duplicates"] == 1
+    first = candidates["10.1111/journal.1"]
+    assert "possible_duplicate_of" not in first["provenance"]
+    assert candidates["10.2222/proc.2"]["provenance"]["possible_duplicate_of"] == first["candidate_id"]
+    assert "possible_duplicate_of" not in candidates["10.3333/other.3"]["provenance"]
