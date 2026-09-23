@@ -2,6 +2,7 @@ import hashlib
 import json
 import math
 import os
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -45,6 +46,27 @@ def write_json(path, value):
     temp = path.with_name(path.name + f".{os.getpid()}.tmp")
     temp.write_text(json.dumps(clean(value), indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8")
     os.replace(temp, path)
+
+
+def write_json_exclusive(path, value):
+    """Create a JSON artifact exactly once; never replace an existing path."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=path.name + ".", suffix=".tmp", dir=path.parent
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            json.dump(clean(value), stream, indent=2, ensure_ascii=False, allow_nan=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary, path)
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def code_hash():

@@ -1,9 +1,15 @@
 import json
+import sqlite3
+import threading
 from datetime import datetime, timezone
 
 import pytest
 
-from qaf.io import read_json
+import qaf.io as io_module
+import qaf.source_sync as source_sync_module
+from qaf.catalog import acknowledge_refresh
+from qaf.coordination import ClaimConflict
+from qaf.io import read_json, write_json_exclusive
 from qaf.registry import Registry
 from qaf.source_sync import sync_sources, validate_provider_config
 
@@ -48,6 +54,11 @@ def _crossref_provider():
         "endpoint": "https://api.crossref.org/works",
         "query": "systematic trading",
         "automation_status": "metadata_only",
+        "initial_created_from": "2023-01-01",
+        "created_overlap_days": 7,
+        "minimum_score": 1.0,
+        "refresh_known_dois": False,
+        "sort": "relevance",
         "max_results": 10,
         "enabled": True,
     }
@@ -64,6 +75,7 @@ def _crossref_payload(title="A documented trading rule"):
                     "published": {"date-parts": [[2024, 5, 2]]},
                     "URL": "https://doi.org/10.1234/example",
                     "type": "journal-article",
+                    "score": 10.0,
                 }
             ]
         }
@@ -164,7 +176,7 @@ def test_cross_provider_doi_is_deduplicated(tmp_path):
 
     assert result["created"] == 1 and result["duplicates"] == 1
     assert len(list((tmp_path / "catalog/candidates").glob("*.json"))) == 1
-    assert len(list((tmp_path / "catalog/discoveries").rglob("*.json"))) == 2
+    assert len(list((tmp_path / "catalog/discoveries").rglob("*.json"))) == 1
 
 
 def test_manual_provider_cannot_be_enabled_as_automatic():
@@ -192,9 +204,10 @@ def test_malformed_external_response_fails_without_candidate(tmp_path):
     _root(tmp_path, [provider])
     transport = FakeTransport({"/commits/master": {"sha": "not-a-commit"}})
 
-    with pytest.raises(ValueError, match="commit SHA"):
-        sync_sources(tmp_path, transport=transport, now=datetime(2026, 9, 22, tzinfo=timezone.utc))
+    result = sync_sources(tmp_path, transport=transport, now=datetime(2026, 9, 22, tzinfo=timezone.utc))
 
+    assert result["failed"] == 1
+    assert "commit SHA" in result["providers"][0]["reason"]
     assert not list((tmp_path / "catalog/candidates").glob("*.json"))
     assert not (tmp_path / "state/research.sqlite3").exists()
 
@@ -207,17 +220,35 @@ def _arxiv_provider():
         "endpoint": "https://export.arxiv.org/api/query",
         "query": "cat:q-fin.TR",
         "automation_status": "metadata_only",
+        "max_results": 2000,
         "enabled": True,
     }
 
 
 def _atom(version, updated):
     return (
-        '<feed xmlns="http://www.w3.org/2005/Atom"><entry>'
+        '<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">'
+        '<opensearch:totalResults>1</opensearch:totalResults><entry>'
         f'<id>http://arxiv.org/abs/2401.12345{version}</id><updated>{updated}</updated>'
         '<published>2024-01-01T00:00:00Z</published><title>Momentum in gold</title>'
         f'<author><name>A B</name></author><link href="http://arxiv.org/abs/2401.12345{version}" rel="alternate"/>'
         '</entry></feed>'
+    )
+
+
+def _atom_many(count, declared_total=None):
+    entries = []
+    for number in range(count):
+        entries.append(
+            f'<entry><id>http://arxiv.org/abs/2401.{number:05d}v1</id>'
+            f'<updated>2024-01-{number + 1:02d}T00:00:00Z</updated>'
+            f'<published>2024-01-{number + 1:02d}T00:00:00Z</published>'
+            f'<title>Documented strategy number {number}</title><author><name>A Researcher</name></author></entry>'
+        )
+    total = count if declared_total is None else declared_total
+    return (
+        '<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">'
+        f'<opensearch:totalResults>{total}</opensearch:totalResults>' + "".join(entries) + "</feed>"
     )
 
 
@@ -305,12 +336,12 @@ def test_github_exclude_regex_drops_regression_suites(tmp_path):
     assert "Regression" not in read_json(next((tmp_path / "catalog/candidates").glob("*.json")))["name"]
 
 
-def test_crossref_uses_relevance_bounded_dates_and_unknown_access(tmp_path):
-    _root(tmp_path, [{**_crossref_provider(), "type_filter": "journal-article", "lookback_days": 365}])
+def test_crossref_uses_relevance_created_window_and_unknown_access(tmp_path):
+    _root(tmp_path, [{**_crossref_provider(), "type_filter": "journal-article"}])
     payload = _crossref_payload()
     payload["message"]["items"].append({
         "DOI": "10.9999/future", "title": ["Title Pending 5823"],
-        "published": {"date-parts": [[2115, 7, 1]]}, "type": "journal-article",
+        "published": {"date-parts": [[2115, 7, 1]]}, "type": "journal-article", "score": 10.0,
     })
     transport = FakeTransport({"api.crossref.org": payload})
 
@@ -318,7 +349,8 @@ def test_crossref_uses_relevance_bounded_dates_and_unknown_access(tmp_path):
 
     url = transport.urls[0]
     assert "sort=" not in url
-    assert "until-pub-date%3A2026-09-22" in url and "type%3Ajournal-article" in url
+    assert "from-created-date%3A2023-01-01" in url
+    assert "until-created-date%3A2026-09-22" in url and "type%3Ajournal-article" in url
     assert result["created"] == 1
     candidate = read_json(next((tmp_path / "catalog/candidates").glob("*.json")))
     assert candidate["access_level"] == "unknown"
@@ -355,3 +387,332 @@ def test_catalog_fails_loudly_on_unreadable_candidate_and_ignores_legacy_folder(
     (tmp_path / "catalog/candidates/IDEA-BROKEN.json").write_text("{no es json", encoding="utf-8")
     with pytest.raises(ValueError, match="IDEA-BROKEN"):
         list_candidates(tmp_path)
+
+
+def test_arxiv_complete_scan_drains_more_actions_than_limit_without_cursor(tmp_path):
+    _root(tmp_path, [_arxiv_provider()])
+    transport = FakeTransport({"arxiv.org": _atom_many(5)})
+    now = datetime(2026, 9, 22, tzinfo=timezone.utc)
+
+    first = sync_sources(tmp_path, limit=2, transport=transport, now=now)
+    second = sync_sources(tmp_path, limit=2, transport=transport, now=now)
+    third = sync_sources(tmp_path, limit=2, transport=transport, now=now)
+
+    assert [first["created"], second["created"], third["created"]] == [2, 2, 1]
+    assert len(list((tmp_path / "catalog/candidates").glob("*.json"))) == 5
+    registry = Registry(tmp_path / "state/research.sqlite3")
+    try:
+        assert len([task for task in registry.tasks() if task["stage"] == "evidence_review"]) == 5
+    finally:
+        registry.close()
+
+
+def test_arxiv_incomplete_total_fails_closed(tmp_path):
+    _root(tmp_path, [_arxiv_provider()])
+    transport = FakeTransport({"arxiv.org": _atom_many(1, declared_total=2)})
+
+    result = sync_sources(tmp_path, transport=transport, now=datetime(2026, 9, 22, tzinfo=timezone.utc))
+
+    assert result["failed"] == 1
+    assert "respuesta incompleta" in result["providers"][0]["reason"]
+    assert not list((tmp_path / "catalog/candidates").glob("*.json"))
+
+
+def test_github_truncated_tree_fails_closed(tmp_path):
+    _root(tmp_path, [_lean_provider()])
+    transport = FakeTransport({
+        "/commits/master": {"sha": "a" * 40},
+        "/git/trees/": {"truncated": True, "tree": []},
+    })
+
+    result = sync_sources(tmp_path, transport=transport, now=datetime(2026, 9, 22, tzinfo=timezone.utc))
+
+    assert result["failed"] == 1
+    assert "árbol truncado" in result["providers"][0]["reason"]
+
+
+def test_github_full_tree_applies_limit_after_processed_paths(tmp_path):
+    _root(tmp_path, [_lean_provider()])
+    tree = {
+        "truncated": False,
+        "tree": [
+            {"path": f"Algorithm.Python/Momentum{number}Algorithm.py", "type": "blob", "sha": str(number) * 40}
+            for number in range(1, 4)
+        ],
+    }
+    transport = FakeTransport({"/commits/master": {"sha": "a" * 40}, "/git/trees/": tree})
+    now = datetime(2026, 9, 22, tzinfo=timezone.utc)
+
+    results = [sync_sources(tmp_path, limit=1, transport=transport, now=now) for _ in range(3)]
+
+    assert [item["created"] for item in results] == [1, 1, 1]
+    assert len(list((tmp_path / "catalog/candidates").glob("*.json"))) == 3
+
+
+def test_existing_refresh_task_does_not_consume_limit_again(tmp_path):
+    _root(tmp_path, [_crossref_provider()])
+    current = {"title": "Original documented strategy"}
+    transport = FakeTransport({"api.crossref.org": lambda: _crossref_payload(current["title"])})
+    now = datetime(2026, 9, 22, tzinfo=timezone.utc)
+    sync_sources(tmp_path, limit=1, transport=transport, now=now)
+    current["title"] = "Revised documented strategy"
+
+    first_refresh = sync_sources(tmp_path, limit=1, transport=transport, now=now)
+    repeated = sync_sources(tmp_path, limit=1, transport=transport, now=now)
+
+    assert first_refresh["updates_queued"] == 1
+    assert repeated["updates_queued"] == 0 and repeated["unchanged"] == 1
+
+
+def test_acknowledged_refresh_survives_lost_sqlite_without_reopening_refresh(tmp_path):
+    _root(tmp_path, [_crossref_provider()])
+    current = {"title": "Original documented strategy"}
+    transport = FakeTransport({"api.crossref.org": lambda: _crossref_payload(current["title"])})
+    now = datetime(2026, 9, 22, tzinfo=timezone.utc)
+    sync_sources(tmp_path, transport=transport, now=now)
+    current["title"] = "Revised documented strategy"
+    sync_sources(tmp_path, transport=transport, now=now)
+    candidate_file = next((tmp_path / "catalog/candidates").glob("*.json"))
+    candidate = read_json(candidate_file)
+    original = candidate["provenance"]["metadata_sha256"]
+    refresh = next(path.stem for path in (tmp_path / "catalog/discoveries/crossref_test").glob("*.json") if path.stem != original)
+    acknowledge_refresh(candidate["candidate_id"], refresh, tmp_path)
+    (tmp_path / "state/research.sqlite3").unlink()
+
+    result = sync_sources(tmp_path, transport=transport, now=now)
+    registry = Registry(tmp_path / "state/research.sqlite3")
+    try:
+        tasks = registry.tasks()
+    finally:
+        registry.close()
+
+    assert result["updates_queued"] == 0
+    assert result["tasks_recovered"] == 1
+    assert [task["stage"] for task in tasks] == ["evidence_review"]
+
+
+def test_corrupt_snapshot_fails_closed(tmp_path):
+    _root(tmp_path, [_crossref_provider()])
+    transport = FakeTransport({"api.crossref.org": _crossref_payload()})
+    now = datetime(2026, 9, 22, tzinfo=timezone.utc)
+    sync_sources(tmp_path, transport=transport, now=now)
+    snapshot = next((tmp_path / "catalog/discoveries/crossref_test").glob("*.json"))
+    snapshot.write_text('{"metadata_sha256":"false"}', encoding="utf-8")
+
+    result = sync_sources(tmp_path, transport=transport, now=now)
+
+    assert result["failed"] == 1
+    assert "Snapshot corrupto" in result["providers"][0]["reason"]
+
+
+def test_dry_run_without_databases_creates_no_state(tmp_path):
+    _root(tmp_path, [_crossref_provider()])
+    transport = FakeTransport({"api.crossref.org": _crossref_payload()})
+
+    result = sync_sources(
+        tmp_path,
+        limit=1,
+        dry_run=True,
+        transport=transport,
+        now=datetime(2026, 9, 22, tzinfo=timezone.utc),
+    )
+
+    assert result["created"] == 1
+    assert not (tmp_path / "state/research.sqlite3").exists()
+    assert not (tmp_path / "state/coordination.sqlite3").exists()
+    assert not (tmp_path / "catalog").exists()
+
+
+def test_corrupt_crossref_cursor_fails_closed(tmp_path):
+    _root(tmp_path, [_crossref_provider()])
+    state = tmp_path / "state/research.sqlite3"
+    state.parent.mkdir()
+    connection = sqlite3.connect(state)
+    connection.execute(
+        "CREATE TABLE source_sync_state(provider_id TEXT PRIMARY KEY,schema_version INTEGER,cursor_json TEXT,updated_at TEXT)"
+    )
+    connection.execute(
+        "INSERT INTO source_sync_state VALUES(?,?,?,?)",
+        ("crossref_test", 999, "{}", "2026-09-22T00:00:00+00:00"),
+    )
+    connection.commit()
+    connection.close()
+
+    result = sync_sources(
+        tmp_path,
+        dry_run=True,
+        transport=FakeTransport({"api.crossref.org": _crossref_payload()}),
+        now=datetime(2026, 9, 22, tzinfo=timezone.utc),
+    )
+
+    assert result["failed"] == 1
+    assert "versión de cursor desconocida" in result["providers"][0]["reason"]
+
+
+def test_lost_global_lease_stops_before_next_write(tmp_path):
+    _root(tmp_path, [_crossref_provider()])
+
+    class LostLeaseCoordination:
+        def __init__(self, root):
+            self.heartbeats = 0
+
+        def claim(self, *args, **kwargs):
+            return []
+
+        def heartbeat(self, agent, paths):
+            self.heartbeats += 1
+            if self.heartbeats >= 3:
+                raise ClaimConflict("reserva recuperada")
+            return list(paths)
+
+        def release(self, *args, **kwargs):
+            return []
+
+        def close(self):
+            return None
+
+    with pytest.raises(ClaimConflict, match="recuperada"):
+        sync_sources(
+            tmp_path,
+            transport=FakeTransport({"api.crossref.org": _crossref_payload()}),
+            now=datetime(2026, 9, 22, tzinfo=timezone.utc),
+            coordination_factory=LostLeaseCoordination,
+        )
+
+    assert len(list((tmp_path / "catalog/discoveries").rglob("*.json"))) == 1
+    assert not list((tmp_path / "catalog/candidates").glob("*.json"))
+    assert not (tmp_path / "state/research.sqlite3").exists()
+
+
+def test_global_lease_serializes_parallel_providers_with_same_doi(tmp_path):
+    first = _crossref_provider()
+    second = {**first, "id": "crossref_second", "name": "Crossref Second"}
+    _root(tmp_path, [first, second])
+    entered = threading.Event()
+    finish = threading.Event()
+
+    class BlockingTransport(FakeTransport):
+        def get_json(self, url, headers):
+            entered.set()
+            assert finish.wait(timeout=5)
+            return _crossref_payload()
+
+    errors = []
+
+    def run_first():
+        try:
+            sync_sources(
+                tmp_path,
+                provider_ids=["crossref_test"],
+                transport=BlockingTransport({}),
+                now=datetime(2026, 9, 22, tzinfo=timezone.utc),
+            )
+        except BaseException as error:
+            errors.append(error)
+
+    thread = threading.Thread(target=run_first)
+    thread.start()
+    assert entered.wait(timeout=5)
+    with pytest.raises(ClaimConflict):
+        sync_sources(
+            tmp_path,
+            provider_ids=["crossref_second"],
+            transport=FakeTransport({"api.crossref.org": _crossref_payload()}),
+            now=datetime(2026, 9, 22, tzinfo=timezone.utc),
+        )
+    finish.set()
+    thread.join(timeout=5)
+
+    assert not errors
+    assert len(list((tmp_path / "catalog/candidates").glob("*.json"))) == 1
+
+
+def test_reconciles_missing_candidate_task_without_refetching_record(tmp_path):
+    _root(tmp_path, [_crossref_provider()])
+    now = datetime(2026, 9, 22, tzinfo=timezone.utc)
+    sync_sources(tmp_path, transport=FakeTransport({"api.crossref.org": _crossref_payload()}), now=now)
+    (tmp_path / "state/research.sqlite3").unlink()
+
+    result = sync_sources(
+        tmp_path,
+        limit=1,
+        transport=FakeTransport({"api.crossref.org": {"message": {"items": []}}}),
+        now=now,
+    )
+
+    assert result["tasks_recovered"] == 1
+    assert result["providers"][0]["fetched"] == 0
+    registry = Registry(tmp_path / "state/research.sqlite3")
+    try:
+        assert [task["task_id"] for task in registry.tasks()] == [
+            "catalog:" + next((tmp_path / "catalog/candidates").glob("*.json")).stem
+        ]
+    finally:
+        registry.close()
+
+
+def test_exclusive_json_is_linked_only_after_complete_fsync(tmp_path, monkeypatch):
+    target = tmp_path / "artifact.json"
+    original_link = io_module.os.link
+    observed = {}
+
+    def checked_link(temporary, final):
+        observed["payload"] = read_json(temporary)
+        observed["final_absent"] = not target.exists()
+        original_link(temporary, final)
+
+    monkeypatch.setattr(io_module.os, "link", checked_link)
+    write_json_exclusive(target, {"complete": True})
+
+    assert observed == {"payload": {"complete": True}, "final_absent": True}
+    assert read_json(target) == {"complete": True}
+    assert not list(tmp_path.glob("*.tmp"))
+
+
+def test_arxiv_prioritizes_last_updated_descending(tmp_path):
+    _root(tmp_path, [_arxiv_provider()])
+    transport = FakeTransport({"arxiv.org": _atom_many(0)})
+
+    sync_sources(tmp_path, dry_run=True, transport=transport, now=datetime(2026, 9, 22, tzinfo=timezone.utc))
+
+    assert "sortBy=lastUpdatedDate" in transport.urls[0]
+    assert "sortOrder=descending" in transport.urls[0]
+
+
+def test_provider_failure_does_not_block_later_provider(tmp_path):
+    _root(tmp_path, [_arxiv_provider(), _lean_provider()])
+    tree = {
+        "truncated": False,
+        "tree": [{"path": "Algorithm.Python/MomentumAlgorithm.py", "type": "blob", "sha": "b" * 40}],
+    }
+    transport = FakeTransport({
+        "arxiv.org": _atom_many(1, declared_total=2),
+        "/commits/master": {"sha": "a" * 40},
+        "/git/trees/": tree,
+    })
+
+    result = sync_sources(tmp_path, transport=transport, now=datetime(2026, 9, 22, tzinfo=timezone.utc))
+
+    assert result["failed"] == 1 and result["created"] == 1
+    assert [row["status"] for row in result["providers"]] == ["failed", "ok"]
+
+
+def test_failed_crossref_does_not_advance_cursor(tmp_path):
+    _root(tmp_path, [_crossref_provider()])
+
+    result = sync_sources(
+        tmp_path,
+        transport=FakeTransport({"api.crossref.org": {"unexpected": True}}),
+        now=datetime(2026, 9, 22, tzinfo=timezone.utc),
+    )
+
+    assert result["failed"] == 1
+    assert not (tmp_path / "state/research.sqlite3").exists()
+
+
+def test_main_returns_nonzero_when_any_provider_failed(monkeypatch, capsys):
+    monkeypatch.setattr(source_sync_module, "sync_sources", lambda **kwargs: {"failed": 1})
+    monkeypatch.setattr("sys.argv", ["source-sync"])
+
+    assert source_sync_module.main() == 1
+    assert '"failed": 1' in capsys.readouterr().out

@@ -502,6 +502,18 @@ def _catalog_root(tmp_path,instrument):
     (tmp_path/'docs/hypotheses/_registry.md').write_text('# Registro\n\n| # | slug | fecha | fuente/autor | activo/timeframe | estado |\n|---|---|---|---|---|---|\n')
 
 
+def test_catalog_add_never_overwrites_existing_candidate(tmp_path,instrument):
+    _catalog_root(tmp_path,instrument)
+    original,_=add_candidate(_catalog_candidate(),tmp_path)
+    replacement=_catalog_candidate();replacement['name']='Attempted replacement'
+
+    with pytest.raises(ValueError,match='ya existe'):
+        add_candidate(replacement,tmp_path)
+
+    stored=read_json(tmp_path/'catalog/candidates'/f"{original['candidate_id']}.json")
+    assert stored['name']==original['name']
+
+
 def test_catalog_review_requires_complete_evidence(tmp_path,instrument):
     _catalog_root(tmp_path,instrument)
     record,_=add_candidate(_catalog_candidate(),tmp_path)

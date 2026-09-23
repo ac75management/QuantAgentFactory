@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from uuid import uuid4
 
 from .contracts import TIMEFRAMES
-from .io import ROOT, digest, read_json, write_json
+from .io import ROOT, digest, read_json, write_json, write_json_exclusive
 from .registry import Registry
 
 
@@ -181,7 +181,7 @@ def assess_candidate(candidate, instruments):
     return {"score": score, "verdict": verdict, "research_lane": lane, "reasons": reasons, "blockers": blockers}
 
 
-def add_candidate(candidate, root=ROOT):
+def add_candidate(candidate, root=ROOT, before_write=None):
     root = Path(root)
     candidate = validate_candidate(candidate)
     assessment = assess_candidate(candidate, read_json(root / "config/instruments.json"))
@@ -195,10 +195,14 @@ def add_candidate(candidate, root=ROOT):
     now = datetime.now(timezone.utc).isoformat()
     record = {**candidate, "candidate_id": candidate_id, "created_at": now, "assessment": assessment}
     path = candidate_path(root, candidate_id)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if path.exists():
-        raise ValueError(f"El candidato {candidate_id} ya existe")
-    write_json(path, record)
+    if before_write:
+        before_write()
+    try:
+        write_json_exclusive(path, record)
+    except FileExistsError as error:
+        raise ValueError(f"El candidato {candidate_id} ya existe") from error
+    if before_write:
+        before_write()
     registry = Registry(root / "state/research.sqlite3")
     try:
         registry.queue_task(
@@ -209,6 +213,46 @@ def add_candidate(candidate, root=ROOT):
     finally:
         registry.close()
     return record, path
+
+
+def acknowledge_refresh(candidate_id, fingerprint, root=ROOT):
+    """Persist that investigator inspected one immutable metadata refresh."""
+    root = Path(root)
+    _validate_candidate_id(candidate_id)
+    if not isinstance(fingerprint, str) or not re.fullmatch(r"[0-9a-f]{64}", fingerprint):
+        raise ValueError("metadata_sha256 debe tener 64 caracteres hexadecimales en minúscula")
+    path = candidate_path(root, candidate_id)
+    if not path.exists():
+        raise ValueError(f"Candidato inexistente: {candidate_id}")
+    candidate = read_json(path)
+    provider_id = candidate.get("provenance", {}).get("provider_id")
+    if not isinstance(provider_id, str) or not re.fullmatch(r"[a-z0-9][a-z0-9_-]{2,60}", provider_id):
+        raise ValueError("El candidato no proviene de source-sync")
+    snapshot_path = root / "catalog/discoveries" / provider_id / f"{fingerprint}.json"
+    if not snapshot_path.exists():
+        raise ValueError(f"Snapshot inexistente para {fingerprint}")
+    from .source_sync import validate_snapshot_file
+    validate_snapshot_file(snapshot_path, fingerprint, provider_id)
+    acknowledged = candidate.setdefault("provenance", {}).setdefault("acknowledged_fingerprints", [])
+    if fingerprint not in acknowledged:
+        acknowledged.append(fingerprint)
+        candidate["provenance"]["acknowledged_fingerprints"] = sorted(set(acknowledged))
+        write_json(path, candidate)
+    task_id = f"catalog-refresh:{candidate_id}:{fingerprint}"
+    registry = Registry(root / "state/research.sqlite3")
+    try:
+        row = registry.db.execute("SELECT status FROM tasks WHERE task_id=?", (task_id,)).fetchone()
+        if row and row["status"] not in {"completed", "blocked", "failed", "cancelled"}:
+            registry.finish_task(
+                task_id,
+                "completed",
+                "METADATA_REFRESH_ACKNOWLEDGED",
+                "Investigator revisó el snapshot y reconoció esta huella sin sobrescribir evidencia.",
+                json.dumps([str(path.relative_to(root)), str(snapshot_path.relative_to(root))], ensure_ascii=False),
+            )
+    finally:
+        registry.close()
+    return candidate, path
 
 
 def _required_text(value, name):

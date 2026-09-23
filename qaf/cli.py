@@ -31,10 +31,13 @@ def main():
     catalog_review.add_argument('path',help='JSON con la revisión de evidencia')
     catalog_promote=sub.add_parser('catalog-promote',help='Crear una hipótesis desde una idea elegible')
     catalog_promote.add_argument('candidate_id')
+    catalog_ack=sub.add_parser('catalog-ack-refresh',help='Reconocer un cambio de metadatos ya revisado')
+    catalog_ack.add_argument('candidate_id')
+    catalog_ack.add_argument('metadata_sha256')
     source_sync=sub.add_parser('source-sync',help='Extraer periódicamente metadatos y encolar candidatos nuevos')
     source_sync.add_argument('--provider',action='append',dest='providers',help='ID de proveedor; se puede repetir')
-    source_sync.add_argument('--limit',type=int,default=20,help='Máximo de registros por proveedor (1-200)')
-    source_sync.add_argument('--dry-run',action='store_true',help='Consultar sin escribir catálogo, snapshots ni tareas')
+    source_sync.add_argument('--limit',type=int,default=20,help='Máximo de acciones nuevas por proveedor (1-200)')
+    source_sync.add_argument('--dry-run',action='store_true',help='Consultar sin escribir catálogo, tareas, reservas ni cursores')
     args=parser.parse_args()
     if args.command=='run':
         summary,folder=run_daily(limit=args.limit)
@@ -82,11 +85,15 @@ def main():
         from .catalog import promote_candidate
         hypothesis,path=promote_candidate(args.candidate_id)
         print(json.dumps({'candidate_id':args.candidate_id,'hypothesis_id':hypothesis['id'],'status':hypothesis['status'],'path':str(path)},ensure_ascii=False));return 0
+    if args.command=='catalog-ack-refresh':
+        from .catalog import acknowledge_refresh
+        record,path=acknowledge_refresh(args.candidate_id,args.metadata_sha256)
+        print(json.dumps({'candidate_id':record['candidate_id'],'acknowledged':args.metadata_sha256,'path':str(path)},ensure_ascii=False));return 0
     if args.command=='source-sync':
         from .source_sync import sync_sources
         if args.limit < 1 or args.limit > 200:raise ValueError('--limit debe estar entre 1 y 200')
         result=sync_sources(provider_ids=args.providers,limit=args.limit,dry_run=args.dry_run)
-        print(json.dumps(result,indent=2,ensure_ascii=False));return 0
+        print(json.dumps(result,indent=2,ensure_ascii=False));return 1 if result['failed'] else 0
 
 
 if __name__=='__main__':

@@ -74,9 +74,47 @@ La huella (`metadata_sha256`) excluye `source_url` y `source_revision`, que camb
 ### Calidad de las fuentes (verificado con consultas reales el 2026-09-22)
 
 - **arXiv q-fin.TR:** pertinente, con temas fuera de alcance (microestructura, cripto, prediction markets) que `investigator` debe rechazar.
-- **Crossref:** solo sirve ordenado por relevancia, con `until-pub-date` = hoy y `type:journal-article`. Ordenado por fecha de publicación devolvía marketing, medicina y registros "Title Pending" con fechas de 2036-2115. Un mismo trabajo puede aparecer con varios DOI en revistas distintas: si coinciden el título normalizado (4 palabras o más) y el apellido del primer autor, el candidato nuevo se crea igual y lleva `provenance.possible_duplicate_of` apuntando al anterior; `investigator` decide si es el mismo trabajo. Nunca se descarta por esa coincidencia, porque título + autor puede colisionar. `access_level` queda `unknown`: un DOI no garantiza acceso abierto.
+- **Crossref:** se usa como muestra ordenada por relevancia, dentro de una ventana de fecha de creación y con `type:journal-article`; no se presenta como cosecha completa. Ordenar por publicación devolvía marketing, medicina y registros "Title Pending" con fechas de 2036-2115. Un mismo trabajo puede aparecer con varios DOI en revistas distintas: si coinciden el título normalizado (4 palabras o más) y el apellido del primer autor, el candidato nuevo se crea igual y lleva `provenance.possible_duplicate_of` apuntando al anterior; `investigator` decide si es el mismo trabajo. Nunca se descarta por esa coincidencia, porque título + autor puede colisionar. `access_level` queda `unknown`: un DOI no garantiza acceso abierto.
 - **QuantConnect LEAN (`Algorithm.Python/`):** es sobre todo una suite de regresión y demos de la API (236 de 460 archivos contienen "Regression"). Con `include_regex` de palabras de estrategia y `exclude_regex` de regresiones y opciones quedan unos 10 archivos, varios fuera de alcance (rotación de cartera, pares de acciones). Rendimiento bajo como cantera; útil como código de referencia.
-- El `--limit` (máximo 200) cabe en una sola petición por fuente, así que paginar no cambia nada por sí solo. La limitación real es que no hay cursor entre corridas: si entre dos extracciones aparecen más de `--limit` trabajos nuevos, los que quedan fuera del top no se ven nunca. arXiv devuelve lo más reciente; Crossref, lo más relevante (no lo nuevo); GitHub, siempre los mismos archivos en orden alfabético. Pendiente de diseño (dueño: GPT/Codex).
+- `--limit` cuenta acciones realmente nuevas por proveedor: candidatos creados, tareas recuperadas o refrescos nuevos. Los registros ya procesados no consumen presupuesto.
+
+## Recorrido seguro entre corridas
+
+No existe un cursor universal: cada fuente se recorre según lo que su API puede garantizar.
+
+| Conector | Contrato vigente | Límite reconocido |
+|---|---|---|
+| arXiv | escaneo completo en cada corrida, ordenado por última actualización; `totalResults`, entradas recibidas e IDs únicos deben coincidir | falla cerrado si el total supera 2.000; la consulta real del 2026-09-22 devolvió 330 |
+| Crossref | muestra explícita por relevancia dentro de una ventana de fecha de creación, con siete días de solape y score mínimo | no es una cosecha exhaustiva; cambios de un DOI conocido solo se detectan si vuelve a aparecer en la muestra (`refresh_known_dois: false`) |
+| GitHub | árbol completo del commit, paths filtrados y ordenados antes de aplicar el límite | falla cerrado si GitHub responde `truncated: true` o si un blob no tiene SHA válido |
+
+Crossref guarda únicamente el final de la última ventana exitosa en una tabla con versión de esquema dentro de `state/research.sqlite3`. Un cursor ausente usa `initial_created_from` de la configuración; uno corrupto o de versión desconocida falla cerrado. No se conserva un cursor opaco de la API.
+
+### Crossref: recomendación y procesamiento de candidatos
+
+**Recomendación (no es regla):** usar Crossref para la muestra inicial (`initial_created_from` hasta hoy) y no para revisiones periódicas. Medición del 2026-09-22 con la consulta configurada:
+
+- Ventana de 3 años: 429.700 coincidencias; en el top 20 por relevancia, 19 son pertinentes (score 20-29).
+- Ventana de una semana: 4.083 coincidencias; en el top 20, unas 5 son pertinentes. Los pertinentes puntúan 12-14 y el ruido 10-16, así que ningún `minimum_score` los separa.
+
+Si aun así se corre de forma periódica, el costo recae en `investigator`. Para mantenerlo bajo, cada candidato de Crossref se procesa en este orden:
+
+1. **Triaje por metadatos, sin abrir el texto completo.** Solo título, revista y autores del snapshot. Se rechaza de inmediato si trata de otro dominio (medicina, marketing, energía eléctrica, gestión) o si queda fuera del alcance de `CLAUDE.md`: scalping o alta frecuencia, rebalanceo de cartera, solo acciones o cripto sin un CFD equivalente, o datos que QAF no tiene.
+2. **Rechazo barato.** Una revisión mínima con `catalog-review`: `decision: rejected`, `reviewer`, `reason_code` (`OUT_OF_DOMAIN`, `OUT_OF_SCOPE` o `DATA_UNAVAILABLE`) y una línea en `decision_reason`. Los demás campos solo se exigen para `eligible`.
+3. **Solo si pasa el triaje:** revisión completa de evidencia con la plantilla, fuente primaria y distinción entre réplica y adaptación, igual que cualquier candidato.
+4. **Posibles duplicados** (`provenance.possible_duplicate_of`): revisar primero el candidato original. Si es el mismo trabajo, rechazar el nuevo con `DUPLICATE_WORK` y apuntar al original.
+
+## Concurrencia, escrituras y recuperación
+
+- Toda corrida que escribe adquiere una única reserva global mediante `qaf.coordination` para `catalog/candidates` y `catalog/discoveries`. Renueva y comprueba la reserva antes de cada escritura; si otro proceso la recuperó, se detiene.
+- Candidatos y snapshots se crean de forma exclusiva: nunca reemplazan un archivo existente. Un snapshot solo se crea cuando existe una acción nueva; los duplicados exactos no producen snapshots huérfanos.
+- Si la corrida cayó después del snapshot o del candidato, la siguiente valida la huella y reconstruye la tarea determinista que falte.
+- Un snapshot existente se vuelve a calcular y comparar con el SHA-256 de su nombre. JSON ilegible, contenido alterado o una huella falsa bloquean la corrida.
+- `updates_queued` solo aumenta cuando SQLite creó realmente una tarea nueva. Repetir un refresco ya encolado no consume `--limit`.
+- Al terminar una tarea `evidence_refresh`, `investigator` ejecuta `catalog-ack-refresh <candidate_id> <metadata_sha256>`. La huella queda en `provenance.acknowledged_fingerprints`, dentro del candidato versionado; perder SQLite no reabre ese refresco atendido.
+- `--dry-run` consulta las fuentes y, si existe, abre el estado en solo lectura. No crea SQLite, reservas, snapshots, candidatos, tareas ni cursores.
+
+La implementación tiene pruebas de drenaje por lotes, deduplicación global, pérdida de reserva, árbol truncado, total incompleto de arXiv, cursor corrupto, snapshot alterado, refresco repetido, recuperación sin SQLite y `dry-run` sin mutaciones. Los tres conectores pasaron además una consulta real de solo lectura el 2026-09-22.
 
 `QAF_CONTACT_EMAIL` es opcional para identificar respetuosamente las consultas a Crossref. `GITHUB_TOKEN` es opcional para ampliar el límite público de GitHub; ninguna credencial se guarda en el repositorio.
 

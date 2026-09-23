@@ -5,7 +5,7 @@ Foto del estado vigente arriba, bitácora corta abajo. La fase de cada hipótesi
 ## CURRENT OBJECTIVE
 Llevar una hipótesis de trading desde la idea hasta una estrategia validada con el método TIS (CFD/futuros, H1/H4/D1), sin conectar ningún bróker. Proyecto independiente de ZOO2.
 
-## CURRENT STATUS (2026-09-22 20:10)
+## CURRENT STATUS (2026-09-22 20:53)
 - **Hipótesis:** 7 registradas, ninguna ejecutable en cola.
   - Descartadas en IS: 001 (XAUUSD D1), 003 (SP500 D1), 004 (US30 D1) y 006 (DAX H4).
   - Rechazada por Alexander: 005 (US30 H1).
@@ -17,10 +17,10 @@ Llevar una hipótesis de trading desde la idea hasta una estrategia validada con
   - `IDEA-PILOT-KAMA-XAU-D1` se promovió a la 007.
   - `IDEA-PILOT-DONCHIAN-ER-DAX` fue rechazada.
   - `IDEA-PILOT-MABAND-EUR-H4` está `captured`, con una revisión de evidencia en cola para `investigator`.
-  - `source-sync` (arXiv, Crossref y LEAN) está listo; solo se probó en dry-run.
+  - `source-sync` seguro: arXiv completo, Crossref como muestra por relevancia y árbol LEAN completo; los tres pasaron consulta real en `--dry-run`. Todavía no se ejecutó una extracción que escriba candidatos.
 - **Datos:** 10 símbolos `research` con H1/H4/D1, salvo EURUSD y USDJPY, que no tienen H1. `costs_verified: false` y `price_basis: unknown` en todos.
 - **Coordinación:** `AGENTS.md` + reservas SQLite + preflight. El workflow de CI existe, pero el repo no tiene remoto git, así que no corre.
-- **Pruebas:** suite completa verde (146).
+- **Pruebas:** suite completa verde (164).
 
 ## NEXT ACTION
 Invocar `investigator` sobre la tarea en cola `catalog:IDEA-PILOT-MABAND-EUR-H4`: revisar la fuente primaria y decidir si es elegible. Es el único trabajo desbloqueado sin una decisión de Alexander.
@@ -78,3 +78,31 @@ Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover 
   - La anomalía de la 001 (hipótesis cerrada) cuenta como histórica, no como advertencia.
   - `pytest` ya no crea `.pytest_cache`.
   - Suite: 146 pasados / 0 fallidos.
+
+### 2026-09-22 20:14 — Auditoría post-limpieza y cursor `source-sync` (Codex)
+- `d6d7096` conserva el lote de catálogo/source-sync; los retiros no tienen usuarios activos y el tag `archive/pre-factory-v2` existe.
+- `catalog-list` y el Centro de Control pasaron con los 3 candidatos; suite completa: 146 pasados.
+- `docs/cost_model.md` y `docs/DATA_PIPELINE.md` coinciden con los comandos y salidas vigentes de MT5.
+- Las preguntas VWAP siguen aparcadas: Codex no las estaba investigando.
+- El diseño inicial del cursor fue auditado y reemplazado por el contrato implementado de `docs/CATALOG_AUTOMATION.md`.
+
+### 2026-09-22 20:40 — Auditoría del diseño del cursor de source-sync (Claude-app)
+- Veredicto: REQUIERE CAMBIOS; el contrato corregido quedó implementado en la entrada siguiente.
+- Cambios pedidos: arXiv por recorrido completo, Crossref como muestreo por relevancia, reserva global y escrituras exclusivas.
+- Solo consultas reales de lectura; sin cambios de código ni commit.
+
+### 2026-09-22 20:53 — `source-sync` seguro implementado (Codex)
+- Reemplazado el cursor universal: arXiv escanea 330/330; Crossref declara muestreo; GitHub exige árbol completo.
+- Reserva global con heartbeat, escrituras exclusivas y snapshots solo para acciones reales.
+- Refrescos idempotentes y reconocidos en el candidato; borrar SQLite no reabre trabajo atendido.
+- Cubiertos límites, concurrencia, pérdida de lease, corrupción, recuperación y `dry-run` sin estado.
+- Consulta real de solo lectura: arXiv 330, Crossref 1 y LEAN 10; no se crearon candidatos.
+- Suite completa: 158 pasados / 0 fallidos. Primera extracción real sigue pendiente de Alexander.
+
+### 2026-09-22 21:08 — Robustecimiento final de `source-sync` (Codex)
+- Reconciliación independiente del fetch, JSON exclusivo por enlace atómico, arXiv reciente primero y fallos aislados por proveedor.
+- Suite completa: 164 pasados / 0 fallidos; sin commit.
+
+### 2026-09-22 21:06 — Revisión de las correcciones de Codex y recomendaciones (Claude-app)
+- Correcciones de Codex verificadas: reconciliación sin depender del fetch, escritura atómica exclusiva, arXiv lo reciente primero y fallos aislados por proveedor. Suite: 164/164.
+- `docs/CATALOG_AUTOMATION.md`: recomendación de Crossref (solo la muestra inicial) y procedimiento de triaje barato. `AGENTS.md`: 5 recomendaciones para ahorrar tokens, incluida la de compactar. `.gitignore`: `*.tmp`.

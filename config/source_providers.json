@@ -18,7 +18,7 @@
       "query": "cat:q-fin.TR AND (all:\"trading strategy\" OR all:momentum OR all:\"mean reversion\" OR all:breakout)",
       "automation_status": "metadata_only",
       "license_policy": "Los metadatos se pueden consultar; la licencia y reutilización del texto se revisan por documento.",
-      "max_results": 25,
+      "max_results": 2000,
       "min_interval_seconds": 3,
       "enabled": true
     },
@@ -33,7 +33,10 @@
       "contact_email_env": "QAF_CONTACT_EMAIL",
       "sort": "relevance",
       "type_filter": "journal-article",
-      "lookback_days": 1095,
+      "initial_created_from": "2023-09-22",
+      "created_overlap_days": 7,
+      "minimum_score": 1.0,
+      "refresh_known_dois": false,
       "max_results": 25,
       "min_interval_seconds": 1,
       "enabled": true
@@ -52,7 +55,6 @@
       "license": "Apache-2.0",
       "license_policy": "Se registra el archivo y commit exactos. El código no se copia automáticamente al catálogo.",
       "token_env": "GITHUB_TOKEN",
-      "max_results": 25,
       "min_interval_seconds": 1,
       "enabled": true
     },

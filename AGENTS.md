@@ -17,6 +17,14 @@ Reglas de método (qué es válido en trading/estadística): `CLAUDE.md`. Estado
 9. **Una sola fuente por estado**: `python -m qaf.pipeline` decide la fase de cada hipótesis y `python -m qaf.preflight` la salud operativa. `PROJECT_STATE.md` es la foto legible; si los contradice, se corrige la foto.
 10. **Una sola copia de cada cosa.** No copies reglas, tablas ni valores de una fuente a otro documento: enlázala. Un espejo solo existe si se genera o se verifica con código (`qaf.consistency`). Al corregir, reemplaza la frase vieja; no agregues un párrafo de corrección encima.
 
+## Recomendaciones para ahorrar tokens (no obligatorias)
+
+1. **Un rol por tarea:** uno implementa y otro audita; nunca los dos lo mismo. Antes de lanzar otro agente o sesión, revisa `python -m qaf.coordination status`.
+2. **Comunicarse por archivos:** de 3 a 5 líneas en "Hallazgos cruzados" más el `git diff`. No se pega contexto de un chat a otro.
+3. **Revisar solo el diff**, una vez por tarea terminada; no archivos enteros ni pasos intermedios.
+4. **Compactar al cerrar cada tarea:** primero deja el estado en `PROJECT_STATE.md` y `AGENTS.md`, luego compacta (`/compact` en Claude Code y en Codex) o abre una sesión nueva. El estado vive en los archivos, no en la conversación.
+5. **Modelo según la tarea:** uno caro para diseño y auditoría, uno barato para lo mecánico (pruebas, mover archivos, formato).
+
 ## Fuente de verdad por tema (una sola)
 
 | Tema | Fuente autoritativa | Espejos / notas |
@@ -50,5 +58,3 @@ Solo trabajos en curso o bloqueados. Al liberar, borra tu fila: el resultado va 
 ## Hallazgos cruzados (para el dueño del archivo)
 
 Solo hallazgos abiertos. Quien lo resuelve lo borra y lo anota en la bitácora.
-
-- **Para GPT/Codex — source-sync, cursor entre corridas.** `--limit` (≤200) cabe en una sola petición: paginar no resuelve nada. Falta no perder los trabajos nuevos que quedan fuera del top N entre dos extracciones; Crossref ordena por relevancia, no por novedad. Proponer el diseño antes de implementarlo. Ya resuelto: identidad de arXiv y GitHub, ruido de Crossref y LEAN, varios DOI de un mismo trabajo (`possible_duplicate_of`) y las copias de `state/catalog/` (eliminadas junto con su lectura en `qaf/catalog.py`).
