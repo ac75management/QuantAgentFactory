@@ -1,0 +1,55 @@
+{
+  "candidate_id": "IDEA-PILOT-DONCHIAN-ER-DAX",
+  "name": "Ruptura Donchian filtrada por Efficiency Ratio",
+  "source_name": "Perry J. Kaufman — Trading Systems and Methods",
+  "source_url": "https://onlinelibrary.wiley.com/doi/book/10.1002/9781119202561",
+  "primary_source_url": null,
+  "publication_date": "2012-01-02",
+  "access_level": "subscription",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "future",
+    "index"
+  ],
+  "instruments": [
+    "MULTI_ASSET_FUTURES"
+  ],
+  "original_timeframes": [
+    "D1"
+  ],
+  "proposed_targets": [
+    {
+      "symbol": "DAX",
+      "timeframe": "H4"
+    }
+  ],
+  "data_requirements": [
+    "OHLC"
+  ],
+  "rules_summary": "Candidato descrito por el usuario: aceptar una ruptura de canal Donchian solo cuando Efficiency Ratio indique desplazamiento direccional limpio. El investigador debe comprobar si esta combinación exacta aparece en la fuente, separar cada componente y documentar que DAX H4 sería una adaptación.",
+  "code_available": false,
+  "status": "rejected",
+  "created_at": "2026-09-22T20:49:55.019376+00:00",
+  "assessment": {
+    "score": 58,
+    "verdict": "needs_information",
+    "research_lane": "mt5_now",
+    "reasons": [
+      "La descripción contiene reglas preliminares revisables.",
+      "Existe un objetivo explícito habilitado en el universo de investigación.",
+      "Los requisitos declarados parecen reproducibles con datos simples."
+    ],
+    "blockers": [
+      "Falta localizar y revisar la fuente primaria.",
+      "El objetivo cambia la frecuencia original; debe declararse como adaptación."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-PILOT-DONCHIAN-ER-DAX",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "EXACT_RULE_NOT_VERIFIED",
+    "decision_reason": "La fuente de Wiley confirma que el libro trata por separado los sistemas de ruptura Donchian y el Efficiency Ratio, pero la evidencia accesible no demuestra que Kaufman publique la combinacion exacta propuesta, ni fija ventanas, umbral de ER, salida o sizing. Convertir esa idea en una estrategia exigiria inventar reglas y despues elegirlas con el backtest. Se conserva como idea rechazada; solo puede reabrirse con una pagina o fuente primaria que documente la regla combinada completa. No se crea hipotesis, contrato ni backtest.",
+    "reviewed_at": "2026-09-22T22:35:19.679886+00:00"
+  }
+}

@@ -12,7 +12,7 @@ Antes de actuar sobre una hipótesis ya registrada, confirma que te toca: `.venv
 
 ## Entrada desde el catálogo
 
-Las ideas nuevas llegan primero a `state/catalog/*.json`. Antes de crear una hipótesis:
+Las ideas nuevas llegan primero a `catalog/candidates/*.json` (versionado en Git; `state/catalog/` es solo la ubicación antigua y no se escribe más). Los descubrimientos automáticos de `source-sync` traen `provenance.evidence_status: unverified_discovery`: son metadatos (título, autores, DOI/URL, commit), no reglas, y su `access_level` puede ser `unknown` aunque tengan DOI. Antes de crear una hipótesis:
 
 1. Lee `assessment.research_lane`. `mt5_now` permite evaluar compatibilidad inmediata; `future_market` se conserva sin forzarla a un CFD; `methodology` sirve para mejorar criterios y no genera una estrategia; `agent_research` sirve para evaluar el proceso de agentes y tampoco genera una estrategia automáticamente.
 2. Una lista de GitHub, un blog o Quantpedia son índices secundarios. Sigue `primary_source_url` hasta el paper o documento original y verifica autor, fecha, universo, periodo, reglas y datos. Si no existe una fuente primaria accesible, deja la entrada bloqueada; no promociones un resumen.

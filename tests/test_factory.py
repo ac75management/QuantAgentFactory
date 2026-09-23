@@ -508,7 +508,7 @@ def test_catalog_review_requires_complete_evidence(tmp_path,instrument):
     review=_eligible_review(record['candidate_id']);review.pop('limitations')
     with pytest.raises(ValueError,match='limitations'):
         review_candidate(record['candidate_id'],review,tmp_path)
-    stored=read_json(tmp_path/'state/catalog'/f"{record['candidate_id']}.json")
+    stored=read_json(tmp_path/'catalog/candidates'/f"{record['candidate_id']}.json")
     assert stored['status']=='captured' and 'review' not in stored
 
 

@@ -99,10 +99,10 @@
         "vehicle"
       ],
       "evidence_fingerprint": "7f3982a9c2a8db10187bf1d7743663c042f9be2bf4e1b9dd7966bdcb9a3f4584",
-      "status": "pending",
-      "reason_code": "AWAITING_PROTOCOL",
-      "reason": "La evidencia fue revisada; todavía no existe contrato ni backtest.",
-      "next_action": "Protocol debe congelar reglas numéricas o bloquear la hipótesis."
+      "status": "blocked_architecture",
+      "reason_code": "RULES_UNDERSPECIFIED_AND_FAMILY_NOT_IMPLEMENTED",
+      "reason": "Protocol congeló fórmulas, giro, filtro, entradas, stop 6xATR(20), sizing 1% y fill causal en docs/specs/xauusd-d1-kama-tendencial-con-efficiency-ratio.md, pero la fuente registrada no declara los valores base de ER_Length ni de FastMA_Length ni una salida distinta del stop, y qaf no implementa una familia KAMA ni salida por señal opuesta. validate_spec rechaza el contrato previsto: 'Familia no implementada'. Sin JSON, sin backtest, OOS cerrado.",
+      "next_action": "1) Evidencia de Kaufman (Smarter Trading 1995 / Trading Systems and Methods) para ER_Length, FastMA_Length y salida: docs/research_queue.md#kama-kaufman-valores-base-y-salida; 2) Alexander decide si se implementa la familia y la salida; 3) volver a pending y protocol genera el JSON sin cambiar lo congelado."
     }
   ]
 }

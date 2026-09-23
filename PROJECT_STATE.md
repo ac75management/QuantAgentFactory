@@ -348,3 +348,53 @@ Origen: revisión de Copilot sobre el diseño de los 4 agentes, auditada contra 
 ## CONSOLIDACIÓN AUTORIZADA (2026-09-22)
 
 Alexander autorizó consolidar el lote completo. Se repitieron las **131 pruebas (todas aprobadas)**, se revisaron los 68 archivos preparados, se corrigieron únicamente advertencias de whitespace documental y se creó un único commit local. No se hizo push. El working tree quedó limpio; el siguiente paso operativo vuelve a ser `protocol:007`.
+
+## PROTOCOL 007 — SPEC CONGELADA Y BLOQUEADA (2026-09-22 17:40, Claude-app)
+
+Preflight `qaf.pipeline --hypothesis 007 --as protocol` → PERMITIDO; reserva atómica de los archivos exactos; tarea SQLite `protocol:007` marcada running mientras duró el trabajo.
+
+- La fuente primaria registrada (Oxford, verificada dos veces hoy) **no declara** los valores base de `ER_Length` ni `FastMA_Length` (solo rangos de sensibilidad [2,100] y [2,28]) ni ninguna salida distinta del stop 6×ATR(20). Su muestra 1980-2011 se solapa con ~2/3 del IS de XAUUSD (1998-2018), así que tomar valores de sus gráficos sería seleccionar por resultados.
+- `qaf` no implementa familia KAMA ni salida por señal opuesta. El contrato previsto, validado en memoria, falla con `validate_spec`: "Familia no implementada"; forzarlo en cualquiera de las 4 familias existentes también falla (falta `max_holding`).
+- **Creado**: `docs/specs/xauusd-d1-kama-tendencial-con-efficiency-ratio.md` (agente `protocol`, auditado): congela fórmulas ER/AMA, pivotes, filtro 0.01·σ(ΔAMA,20), entrada larga/corta como condición de estado, stop fijo 6×ATR(20), riesgo 1%, fill causal al open siguiente, costos XAUUSD, 9 convenciones de implementación y la tabla de contrato previsto con los PENDIENTES. **No se creó el JSON.**
+- **Registro**: 007 → `blocked_architecture` (`RULES_UNDERSPECIFIED_AND_FAMILY_NOT_IMPLEMENTED`) en `config/hypotheses.json` y en su espejo; pregunta `kama-kaufman-valores-base-y-salida` en `docs/research_queue.md`; tarea `protocol:007` cerrada como `blocked`.
+- Verificación: `qaf.pipeline` → 007 `BLOCKED` (le toca a Alexander); `qaf.consistency` sin errores; suite completa **131 pasados, 0 fallidos**. Sin backtest, sin OOS, sin cambios de código, sin commit.
+- Pendiente menor: `docs/hypotheses/xauusd-d1-kama-tendencial-con-efficiency-ratio.md` (documento de investigator) sigue diciendo "Estado: pendiente de protocolo"; el estado autoritativo es `config/hypotheses.json`.
+
+**NEXT ACTION (Alexander):** conseguir la evidencia de Kaufman para ER_Length/FastMA_Length/salida (o decidir aceptar una fuente secundaria) y decidir si se implementa la familia KAMA. Hasta entonces no hay hipótesis ejecutable en cola.
+## 2026-09-22 — Revisión de evidencia Donchian + Efficiency Ratio
+
+- `IDEA-PILOT-DONCHIAN-ER-DAX` quedó `rejected` con `EXACT_RULE_NOT_VERIFIED`.
+- La fuente confirma ambos conceptos por separado, pero no una regla combinada reproducible con ventanas, umbral, salida y sizing definidos.
+- No se creó hipótesis, contrato ni backtest. Reabrir exige una fuente primaria que documente la combinación completa.
+
+## 2026-09-22 — Catálogo versionado y extracción periódica
+
+- El catálogo canónico pasó de `state/catalog/` (ignorado por Git) a `catalog/candidates/`; se migraron sin cambios semánticos los tres pilotos existentes. `state/` queda solo para colas SQLite, reservas y cachés.
+- `qaf.source_sync` implementa cosecha manual por lotes desde arXiv, Crossref y metadatos de archivos de QuantConnect LEAN. No descarga PDFs, no copia ni ejecuta código externo y fija las referencias GitHub a un commit SHA exacto.
+- Cada observación externa produce un snapshot inmutable en `catalog/discoveries/` con SHA-256 calculado sobre sus metadatos canónicos. Se deduplica por DOI, URL o repositorio/ruta.
+- La primera observación crea un candidato `captured` y una tarea para `investigator`. Una revisión posterior de la fuente nunca sobreescribe el expediente: crea otro snapshot y una tarea `evidence_refresh`.
+- La frontera está aplicada en código y pruebas: discovery no crea hipótesis, contratos, estrategias, reportes ni backtests. Quantpedia, Alpha Architect, SSRN y Qlib permanecen manuales/deshabilitados.
+- Prueba real `--dry-run --limit 1`: arXiv, Crossref y GitHub respondieron correctamente; no se escribió ningún artefacto. Suite completa: **137 pasados / 0 fallidos**.
+
+**NEXT ACTION:** ejecutar `python -m qaf.cli source-sync --limit <N>` solo cuando se quiera refrescar la cantera. Cada candidato nuevo queda en revisión; no avanzar OOS hasta resolver costos, `price_basis`, contrato congelado y walk-forward.
+
+## REVISIÓN DE SOURCE-SYNC (2026-09-22 19:40, Claude-app, sobre el lote sin commit de Codex)
+
+Alexander pidió revisar lo integrado por Codex antes de que se le acabaran los tokens. Se verificó con consultas reales de solo lectura y reproducciones en carpeta temporal; no se ejecutó ninguna extracción que escriba.
+
+**Correcto y conservado:** catálogo canónico en `catalog/candidates/` (los 3 pilotos migrados son idénticos a sus copias en `state/catalog/`), lectura de respaldo de la ubicación antigua, sin ejecución de código externo, sin promoción ni backtest automáticos, dry-run, reintentos con espera, commits de GitHub fijados.
+
+**Errores encontrados y corregidos (`qaf/source_sync.py`, `config/source_providers.json`):**
+1. arXiv: una versión nueva de un paper (v1→v2) creaba un segundo candidato. Ahora la identidad es el ID sin versión y la versión nueva genera `evidence_refresh`.
+2. GitHub: un cambio real de contenido de un archivo se contaba como "duplicado" y se descartaba; además cada commit del repo habría cambiado la identidad. Ahora la identidad es `repo:ruta` y el cambio se detecta por `blob_sha`; un commit que no toca el archivo no genera tarea.
+3. Crossref ordenado por fecha devolvía 10/10 registros ajenos (marketing, medicina, "Title Pending", fechas 2036-2115). Ahora: relevancia, `until-pub-date` = hoy, `type:journal-article`, y descarte de fechas futuras → 25/25 papers de trading en la prueba real. `access_level` pasa a `unknown` (un DOI no garantiza acceso abierto).
+4. LEAN: la regex capturaba 423 de 460 archivos (236 son pruebas de regresión). Ahora `include_regex` de palabras de estrategia + `exclude_regex` de regresiones/opciones → 10 archivos de estrategia, 0 regresiones.
+5. `.claude/agents/investigator.md` seguía diciendo que las ideas llegan a `state/catalog/`; ahora apunta a `catalog/candidates/` y explica qué es un descubrimiento `unverified_discovery`.
+
+Huella nueva: `metadata_sha256` excluye `source_url` y `source_revision`. No había candidatos `IDEA-SRC-*` todavía, así que no hay datos previos que migrar. Documentado en `docs/CATALOG_AUTOMATION.md` (tabla de identidad por conector y calidad de fuentes).
+
+**Verificación:** 4 pruebas nuevas en `tests/test_source_sync.py`; suite completa **141 pasados / 0 fallidos**, sin advertencias; `source-sync --dry-run --limit 5` crearía 15 candidatos y no escribió nada; preflight sin errores. Sin commit.
+
+**Pendiente para GPT/Codex** (anotado también en `AGENTS.md`): `--limit` no pagina (GitHub siempre devuelve los mismos archivos en orden alfabético); Crossref puede traer el mismo trabajo con varios DOI; `state/catalog/` conserva copias antiguas idénticas, que no se borraron.
+
+**NEXT ACTION:** Alexander decide cuándo consolidar en un commit este lote (Codex + 007 + esta revisión) y cuándo correr la primera extracción real pequeña (`source-sync --limit 5`, hasta 15 candidatos).

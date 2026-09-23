@@ -24,6 +24,13 @@ Nota: la herramienta externa no importa (Gemini, Copilot u otra) — lo único q
 
 ## Preguntas pendientes
 
+### kama-kaufman-valores-base-y-salida — PENDIENTE
+- Pregunta: ¿Qué valores de ER_Length y FastMA_Length (con SlowMA_Length = 30) y qué regla de salida distinta del stop (señal opuesta, stop-and-reverse, take profit, salida por tiempo u otra) define Perry Kaufman para el sistema AMA/KAMA con giro y filtro en Smarter Trading (1995) y/o Trading Systems and Methods? ¿Declara también la inicialización de la AMA y el timeframe de sus ejemplos?
+- Origen: protocol, hipótesis #007 / `docs/specs/xauusd-d1-kama-tendencial-con-efficiency-ratio.md` (secciones 8 y 14), 2026-09-22. `docs/research_external/` no contiene informe previo (verificado).
+- Fuentes esperadas: texto original de Kaufman (edición y página); en segundo lugar, documentación que cite ese texto con página
+- Qué debe traer el informe: fuente + cita textual, qué demuestra, qué no demuestra, año de publicación de los valores (deben ser anteriores al IS 1998-2018 o independientes de él), aplicabilidad a XAUUSD D1, nivel de confianza; señalar cualquier discrepancia con la regla de Oxford (filtro 0.01 x StdDev(ΔAMA, 20), stop 6 x ATR(20))
+- Criterio de rechazo: valores por defecto de plataformas sin cita al texto de Kaufman; valores elegidos por optimización sobre datos que se solapen con 1998-2018 (incluidos los gráficos de sensibilidad de Oxford); blogs o cursos sin cita verificable
+
 ### vwap-tick-volume-proxy — EN_PROGRESO (Copilot/VS Code)
 - Pregunta: ¿Existe evidencia (papers, estudios de microestructura, backtests serios documentados) de reversión hacia VWAP calculado con `tick_volume` (conteo de cambios de precio) en vez de volumen real ejecutado, específicamente en CFDs o futuros de índices? ¿O toda la evidencia de "VWAP reversion" que existe asume volumen centralizado real y no dice nada sobre el proxy de tick volume?
 - Origen: `docs/vwap-ndx-h1-draft.md`, borrador VWAP NDX H1, 2026-09-22

@@ -1,0 +1,47 @@
+{
+  "candidate_id": "IDEA-PILOT-MABAND-EUR-H4",
+  "name": "Media móvil con banda porcentual",
+  "source_name": "Perry J. Kaufman — Trading Systems and Methods",
+  "source_url": "https://onlinelibrary.wiley.com/doi/book/10.1002/9781119202561",
+  "primary_source_url": null,
+  "publication_date": "2012-01-02",
+  "access_level": "subscription",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "future",
+    "fx"
+  ],
+  "instruments": [
+    "MULTI_ASSET"
+  ],
+  "original_timeframes": [
+    "D1"
+  ],
+  "proposed_targets": [
+    {
+      "symbol": "EURUSD",
+      "timeframe": "H4"
+    }
+  ],
+  "data_requirements": [
+    "OHLC"
+  ],
+  "rules_summary": "Candidato preliminar: exigir que el precio cruce una media más una banda porcentual para reducir cambios de dirección por ruido. Antes de formular hipótesis se deben localizar las reglas publicadas, distinguir precio contra media de cruce entre medias y justificar la adaptación a EURUSD H4.",
+  "code_available": false,
+  "status": "captured",
+  "created_at": "2026-09-22T20:49:56.191601+00:00",
+  "assessment": {
+    "score": 58,
+    "verdict": "needs_information",
+    "research_lane": "mt5_now",
+    "reasons": [
+      "La descripción contiene reglas preliminares revisables.",
+      "Existe un objetivo explícito habilitado en el universo de investigación.",
+      "Los requisitos declarados parecen reproducibles con datos simples."
+    ],
+    "blockers": [
+      "Falta localizar y revisar la fuente primaria.",
+      "El objetivo cambia la frecuencia original; debe declararse como adaptación."
+    ]
+  }
+}

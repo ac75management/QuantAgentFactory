@@ -17,4 +17,6 @@ venv/
 
 .DS_Store
 
+# Estado operativo descartable (SQLite, leases y cachés). El catálogo canónico
+# vive en catalog/ y sí se versiona.
 state/

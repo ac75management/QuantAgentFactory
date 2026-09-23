@@ -18,6 +18,21 @@ RESEARCH_LANES = {"mt5_now", "future_market", "methodology", "agent_research", "
 REVIEW_DECISIONS = {"eligible", "needs_data", "rejected"}
 IMPLEMENTATION_TYPES = {"replication", "adaptation"}
 ADAPTATION_DIMENSIONS = {"vehicle", "instrument", "session", "frequency", "portfolio", "costs"}
+CATALOG_DIRECTORY = Path("catalog/candidates")
+
+
+def candidate_path(root, candidate_id):
+    """Canonical, Git-tracked path for a catalog candidate."""
+    return Path(root) / CATALOG_DIRECTORY / f"{candidate_id}.json"
+
+
+def _existing_candidate_path(root, candidate_id):
+    """Read old ignored records during migration, but never write new data there."""
+    canonical_path = candidate_path(root, candidate_id)
+    if canonical_path.exists():
+        return canonical_path
+    legacy_path = Path(root) / "state/catalog" / f"{candidate_id}.json"
+    return legacy_path if legacy_path.exists() else canonical_path
 
 
 def _validate_candidate_id(candidate_id):
@@ -189,7 +204,7 @@ def add_candidate(candidate, root=ROOT):
         raise ValueError("Una idea nueva debe iniciar con status captured")
     now = datetime.now(timezone.utc).isoformat()
     record = {**candidate, "candidate_id": candidate_id, "created_at": now, "assessment": assessment}
-    path = root / "state/catalog" / f"{candidate_id}.json"
+    path = candidate_path(root, candidate_id)
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         raise ValueError(f"El candidato {candidate_id} ya existe")
@@ -319,7 +334,7 @@ def _finish_evidence_task(registry, candidate_id, decision, relative_path):
 def review_candidate(candidate_id, review, root=ROOT):
     root = Path(root)
     _validate_candidate_id(candidate_id)
-    path = root / "state/catalog" / f"{candidate_id}.json"
+    path = _existing_candidate_path(root, candidate_id)
     if not path.exists():
         raise ValueError(f"Candidato inexistente: {candidate_id}")
     registry = Registry(root / "state/research.sqlite3")
@@ -335,19 +350,23 @@ def review_candidate(candidate_id, review, root=ROOT):
             comparable_existing = {k: v for k, v in existing.items() if k != "reviewed_at"}
             if comparable_existing != validated:
                 raise ValueError("El candidato ya tiene una revisión; no se sobrescribe evidencia")
-            _finish_evidence_task(registry, candidate_id, existing["decision"], str(path.relative_to(root)))
+            canonical_path = candidate_path(root, candidate_id)
+            if path != canonical_path:
+                write_json(canonical_path, candidate)
+            _finish_evidence_task(registry, candidate_id, existing["decision"], str(canonical_path.relative_to(root)))
             registry.db.execute("COMMIT")
-            return candidate, path
+            return candidate, canonical_path
         validated["reviewed_at"] = datetime.now(timezone.utc).isoformat()
         candidate["review"] = validated
         candidate["status"] = validated["decision"]
         if validated.get("primary_source_url"):
             candidate["primary_source_url"] = validated["primary_source_url"]
         candidate["assessment"] = assess_candidate(candidate, instruments)
-        write_json(path, candidate)
-        _finish_evidence_task(registry, candidate_id, validated["decision"], str(path.relative_to(root)))
+        canonical_path = candidate_path(root, candidate_id)
+        write_json(canonical_path, candidate)
+        _finish_evidence_task(registry, candidate_id, validated["decision"], str(canonical_path.relative_to(root)))
         registry.db.execute("COMMIT")
-        return candidate, path
+        return candidate, canonical_path
     except BaseException:
         if registry.db.in_transaction:
             registry.db.execute("ROLLBACK")
@@ -460,13 +479,13 @@ def promote_candidate(candidate_id, root=ROOT):
     """Create one registered hypothesis from one reviewed candidate, at most once."""
     root = Path(root)
     _validate_candidate_id(candidate_id)
-    candidate_path = root / "state/catalog" / f"{candidate_id}.json"
-    if not candidate_path.exists():
+    candidate_path_value = _existing_candidate_path(root, candidate_id)
+    if not candidate_path_value.exists():
         raise ValueError(f"Candidato inexistente: {candidate_id}")
     registry = Registry(root / "state/research.sqlite3")
     try:
         registry.db.execute("BEGIN IMMEDIATE")
-        candidate = read_json(candidate_path)
+        candidate = read_json(candidate_path_value)
         hypotheses_path = root / "config/hypotheses.json"
         payload = read_json(hypotheses_path) if hypotheses_path.exists() else {"version": 1, "hypotheses": []}
         rows = payload.get("hypotheses")
@@ -486,14 +505,15 @@ def promote_candidate(candidate_id, root=ROOT):
             registry_doc = _ensure_registry_row(root, existing, candidate, review)
             candidate["status"] = "promoted"
             candidate["hypothesis_id"] = existing["id"]
-            write_json(candidate_path, candidate)
+            canonical_path = candidate_path(root, candidate_id)
+            write_json(canonical_path, candidate)
             registry.queue_task(
                 "protocol:" + existing["id"], existing["id"], "contract", "protocol",
-                json.dumps([str(candidate_path.relative_to(root)), str(hypothesis_doc.relative_to(root)), str(registry_doc.relative_to(root))], ensure_ascii=False),
+                json.dumps([str(canonical_path.relative_to(root)), str(hypothesis_doc.relative_to(root)), str(registry_doc.relative_to(root))], ensure_ascii=False),
                 "Hipótesis registrada; falta contrato numérico antes de ejecutar.",
             )
             registry.db.execute("COMMIT")
-            return existing, candidate_path
+            return existing, canonical_path
 
         if candidate.get("status") != "eligible" or not candidate.get("review"):
             raise ValueError("Solo una idea revisada con estado eligible puede promocionarse")
@@ -539,14 +559,15 @@ def promote_candidate(candidate_id, root=ROOT):
         candidate["status"] = "promoted"
         candidate["hypothesis_id"] = hypothesis_id
         candidate["promoted_at"] = datetime.now(timezone.utc).isoformat()
-        write_json(candidate_path, candidate)
+        canonical_path = candidate_path(root, candidate_id)
+        write_json(canonical_path, candidate)
         registry.queue_task(
             "protocol:" + hypothesis_id, hypothesis_id, "contract", "protocol",
-            json.dumps([str(candidate_path.relative_to(root)), str(hypothesis_doc.relative_to(root)), str(registry_doc.relative_to(root))], ensure_ascii=False),
+            json.dumps([str(canonical_path.relative_to(root)), str(hypothesis_doc.relative_to(root)), str(registry_doc.relative_to(root))], ensure_ascii=False),
             "Hipótesis registrada; falta contrato numérico antes de ejecutar.",
         )
         registry.db.execute("COMMIT")
-        return hypothesis, candidate_path
+        return hypothesis, canonical_path
     except BaseException:
         if registry.db.in_transaction:
             registry.db.execute("ROLLBACK")
@@ -557,9 +578,17 @@ def promote_candidate(candidate_id, root=ROOT):
 
 def list_candidates(root=ROOT):
     rows = []
-    for path in sorted((Path(root) / "state/catalog").glob("*.json")):
+    seen = set()
+    paths = list(sorted((Path(root) / CATALOG_DIRECTORY).glob("*.json")))
+    paths.extend(sorted((Path(root) / "state/catalog").glob("*.json")))
+    for path in paths:
         try:
-            rows.append(read_json(path))
+            row = read_json(path)
+            candidate_id = row.get("candidate_id")
+            if candidate_id in seen:
+                continue
+            seen.add(candidate_id)
+            rows.append(row)
         except (OSError, ValueError, json.JSONDecodeError):
             continue
     return rows

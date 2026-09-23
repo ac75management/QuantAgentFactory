@@ -13,7 +13,8 @@ Una hipótesis registrada se traduce a un contrato numérico, se ejecuta solo so
 
 ```mermaid
 flowchart TD
-    A[Idea / fuente externa] --> B[catálogo: qaf.cli catalog-add / catalog-review]
+    A[Fuentes externas] --> A1[source-sync periódico<br/>metadatos + deduplicación]
+    A1 --> B[catálogo Git: catalog/candidates<br/>catalog-add / catalog-review]
     B -- no elegible --> B0[Bloqueada con motivo, sin hipótesis]
     B -- elegible --> C[investigator: hipótesis + registro<br/>config/hypotheses.json]
     C --> D{¿Familia implementada en qaf/contracts.py?}
@@ -34,6 +35,8 @@ flowchart TD
 ```
 
 Los estados `J0`–`J3` y `H0` son decisiones de `qaf/validation.py::screening_gates` y `qaf/runner.py::execute`; se guardan en `reports/factory/runs/<run_id>/result.json`. `validator` traduce `BLOCKED_DATA` y las reservas sin confirmar a `INVALID_POR_DATOS` (CLAUDE.md regla 20) y actualiza el estado en `config/hypotheses.json` y su espejo `docs/hypotheses/_registry.md`.
+
+`source-sync` no es un agente ni una validación. Es una cosecha manual por lotes que guarda snapshots inmutables, deduplica por DOI/URL/repositorio-ruta y encola candidatos para `investigator`. Una actualización externa nunca sobreescribe la evidencia existente; abre una tarea de refresco. No hay promoción, contrato ni backtest automáticos.
 
 ## Orquestación: controlador de fases determinista (`qaf/pipeline.py`)
 No hay un quinto agente coordinador. El orden lo decide código de solo lectura que deriva la fase de cada hipótesis de sus artefactos y dice a qué agente le toca:
@@ -85,7 +88,7 @@ Antes de invocar un agente: `python -m qaf.pipeline --hypothesis <id> --as <agen
 
 | Agente | Lee | Escribe | Se detiene si... |
 |---|---|---|---|
-| investigator | catálogo `state/catalog/`, literatura, `config/hypotheses.json` | revisión de evidencia vía `qaf.cli catalog-review/promote` | la idea está fuera de alcance o no tiene fuente primaria |
+| investigator | catálogo versionado `catalog/candidates/`, snapshots `catalog/discoveries/`, literatura, `config/hypotheses.json` | revisión de evidencia vía `qaf.cli catalog-review/promote` | la idea está fuera de alcance o no tiene fuente primaria |
 | protocol | hipótesis, `config/instruments.json`, `docs/universe.md` | `docs/specs/<slug>.md` + `.json` | la familia no existe en `qaf` o la regla no es numérica |
 | engine | spec JSON, datos IS | `config/strategies/<hash>.json`, `reports/factory/runs/<run_id>/` (vía `qaf.cli`) | `check-spec` falla; nunca escribe backtests fuera de `qaf` |
 | validator | `result.json` | estado en `config/hypotheses.json` + espejo; veredicto | la decisión no es `READY_FOR_FROZEN_VALIDATION`; OOS está cerrado |

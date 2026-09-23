@@ -1,0 +1,7 @@
+{
+  "candidate_id": "IDEA-PILOT-DONCHIAN-ER-DAX",
+  "decision": "rejected",
+  "reviewer": "investigator",
+  "reason_code": "EXACT_RULE_NOT_VERIFIED",
+  "decision_reason": "La fuente de Wiley confirma que el libro trata por separado los sistemas de ruptura Donchian y el Efficiency Ratio, pero la evidencia accesible no demuestra que Kaufman publique la combinacion exacta propuesta, ni fija ventanas, umbral de ER, salida o sizing. Convertir esa idea en una estrategia exigiria inventar reglas y despues elegirlas con el backtest. Se conserva como idea rechazada; solo puede reabrirse con una pagina o fuente primaria que documente la regla combinada completa. No se crea hipotesis, contrato ni backtest."
+}
