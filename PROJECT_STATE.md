@@ -5,25 +5,24 @@ Foto del estado vigente arriba, bitácora corta abajo. La fase de cada hipótesi
 ## CURRENT OBJECTIVE
 Llevar una hipótesis de trading desde la idea hasta una estrategia validada con el método TIS (CFD/futuros, H1/H4/D1), sin conectar ningún bróker. Proyecto independiente de ZOO2.
 
-## CURRENT STATUS (2026-09-22 20:53)
-- **Hipótesis:** 7 registradas, ninguna ejecutable en cola.
+## CURRENT STATUS (2026-09-22 23:50)
+- **Hipótesis:** 9 registradas; la 009 espera contrato de `protocol`.
   - Descartadas en IS: 001 (XAUUSD D1), 003 (SP500 D1), 004 (US30 D1) y 006 (DAX H4).
   - Rechazada por Alexander: 005 (US30 H1).
-  - Bloqueadas por arquitectura: 002 (NAS100 D1, falta la familia de calendario) y 007 (XAUUSD D1 KAMA: la fuente no fija ER_Length, FastMA_Length ni la salida, y falta la familia KAMA).
+  - Bloqueadas por arquitectura: 002 (calendario), 007 (KAMA) y 008 (media con banda porcentual; reglas incompletas).
+  - Pendiente de `protocol`: 009 (EURUSD H1, reversión intradía con SMA(5), banda 0.1% y sesión NY).
   - Cero estrategias aprobadas y cero aperturas de OOS.
 - **Motor `qaf` 2.0.0:** filtro IS que falla cerrado, con estas puertas: AED por rotación (p<0.05), baseline del mismo capital 1x, sensibilidad ±10/20% con 200 vecinos, fricción ≥3.0, estrés ×2 y bootstrap. Las 28 particiones IS/OOS están selladas.
 - **OOS:** cerrado a propósito (`qaf/holdout.py`). Faltan los costos históricos (C4), el calendario, `price_basis`, el walk-forward real y el contrato congelado; ver `docs/VALIDATION_ROADMAP.md`.
 - **Catálogo** (`catalog/candidates/`, versionado):
-  - `IDEA-PILOT-KAMA-XAU-D1` se promovió a la 007.
-  - `IDEA-PILOT-DONCHIAN-ER-DAX` fue rechazada.
-  - `IDEA-PILOT-MABAND-EUR-H4` está `captured`, con una revisión de evidencia en cola para `investigator`.
-  - `source-sync` seguro: arXiv completo, Crossref como muestra por relevancia y árbol LEAN completo; los tres pasaron consulta real en `--dry-run`. Todavía no se ejecutó una extracción que escriba candidatos.
-- **Datos:** 10 símbolos `research` con H1/H4/D1, salvo EURUSD y USDJPY, que no tienen H1. `costs_verified: false` y `price_basis: unknown` en todos.
+  - 18 candidatos: 3 promovidos (007, 008 y 009) y 15 rechazados tras triaje/revisión.
+  - La primera extracción real agregó 15 candidatos; `source-sync` conserva el recorrido seguro y manual por lotes.
+- **Datos:** el contrato habilita 10 símbolos en H1/H4/D1, pero el manifest sellado carece de EURUSD/H1 y USDJPY/H1. `costs_verified: false` y `price_basis: unknown` en todos.
 - **Coordinación:** `AGENTS.md` + reservas SQLite + preflight. El workflow de CI existe, pero el repo no tiene remoto git, así que no corre.
-- **Pruebas:** suite completa verde (164).
+- **Pruebas:** suite completa verde (167).
 
 ## NEXT ACTION
-Invocar `investigator` sobre la tarea en cola `catalog:IDEA-PILOT-MABAND-EUR-H4`: revisar la fuente primaria y decidir si es elegible. Es el único trabajo desbloqueado sin una decisión de Alexander.
+Ejecutar `protocol` sobre la 009: congelar la regla publicada y declarar la familia de señal necesaria. Antes de `engine`, importar y sellar EURUSD/H1 sin abrir OOS.
 
 ## DECISIONS
 - Independiente de ZOO2: sin cuenta, capital ni bróker compartidos. (2026-09-21)
@@ -34,14 +33,16 @@ Invocar `investigator` sobre la tarea en cola `catalog:IDEA-PILOT-MABAND-EUR-H4`
 - La sensibilidad es diagnóstica y su política vive en `config/runner.json`. Solo cambia antes de una campaña nueva, nunca para rescatar un resultado. (2026-09-22)
 - Cambiar una regla o un parámetro después de ver resultados crea una hipótesis nueva, con otro ID. (2026-09-22)
 - No se agregan agentes de optimización, sizing o deploy hasta tener walk-forward y OOS. Tampoco agentes de investigación en paralelo. (2026-09-22)
+- **Operación continua/orquestación entre agentes: en espera.** Alexander pidió no construirla sin acuerdo previo de Claude y Codex (recordó que GPT ya lo había pedido antes). Señal de arranque acordada por las dos IA: una hipótesis completa las 5 fases y llega a `READY_FOR_FROZEN_VALIDATION`. Detalle en `docs/OPERATIONS.md`. (2026-09-22)
+- **Modelos por tarea: nivel barato por defecto.** Alto (Opus/Codex razonamiento alto) solo para método, auditoría o cambios al motor/costos/puertas/datos/OOS. Tabla en `docs/OPERATIONS.md`. (2026-09-22)
 - El catálogo se versiona en `catalog/`. `source-sync` es una cosecha manual por lotes, sin promoción ni backtest automáticos. (2026-09-22)
 - Toda fuente autoritativa tiene una sola copia; los espejos se generan o se verifican (`qaf.consistency`). (2026-09-22)
 
 ## OPEN QUESTIONS (decide Alexander)
-1. **007:** conseguir la evidencia de Kaufman para ER_Length, FastMA_Length y la salida (`docs/research_queue.md`) y decidir si se implementa la familia KAMA. Decidir también el riesgo de la spec: 1% frente al 0.5% de la política.
-2. **002:** implementar una familia de calendario o archivar la hipótesis.
-3. **EURUSD/USDJPY H1:** reimportar los 3 timeframes con un corte compatible con 2010+, o dejarlos en D1/H4.
-4. **Primera extracción real** de `source-sync` (`--limit 5`, hasta 15 candidatos).
+1. **009:** importar EURUSD/H1 y, tras el contrato de `protocol`, decidir si se implementa su familia SMA+banda+sesión.
+2. **007:** conseguir la evidencia de Kaufman para ER_Length, FastMA_Length y la salida (`docs/research_queue.md`) y decidir si se implementa la familia KAMA. Decidir también el riesgo de la spec: 1% frente al 0.5% de la política.
+3. **002:** implementar una familia de calendario o archivar la hipótesis.
+4. **USDJPY H1:** reimportar los 3 timeframes con un corte compatible con 2010+, o dejarlo en D1/H4.
 5. **Remoto git** (GitHub): sin remoto, el CI no corre.
 6. **Datos COT:** sin acceso, las hipótesis de Larry Williams que los requieren quedan descartadas.
 
@@ -106,3 +107,38 @@ Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover 
 ### 2026-09-22 21:06 — Revisión de las correcciones de Codex y recomendaciones (Claude-app)
 - Correcciones de Codex verificadas: reconciliación sin depender del fetch, escritura atómica exclusiva, arXiv lo reciente primero y fallos aislados por proveedor. Suite: 164/164.
 - `docs/CATALOG_AUTOMATION.md`: recomendación de Crossref (solo la muestra inicial) y procedimiento de triaje barato. `AGENTS.md`: 5 recomendaciones para ahorrar tokens, incluida la de compactar. `.gitignore`: `*.tmp`.
+
+### 2026-09-22 21:15 — Primera extracción real de source-sync (Claude-app, autorizada por Alexander)
+- `source-sync --limit 5`: 15 candidatos nuevos (5 de arXiv, 5 de Crossref, 5 de LEAN). Quedan en espera 325 de arXiv y 5 de LEAN para las próximas corridas.
+- arXiv falló una vez por timeout pasajero: el transporte solo reintentaba HTTP 429/503. Ahora también reintenta timeouts y errores de conexión (1 prueba). Suite: 165/165.
+
+### 2026-09-22 21:20 — Triaje de la primera extracción (Claude-investigator, subagente Sonnet)
+- De 16 en cola: 12 rechazadas por metadatos (fuera de alcance, sin dato disponible, o no es una regla de trading), 4 sobreviven `captured` para revisión completa: `IDEA-PILOT-MABAND-EUR-H4`, `IDEA-SRC-051A7EA057B3` (reversión intradía FX), `IDEA-SRC-CB192E3BD042` (reversión por IBS) e `IDEA-SRC-E1BFCE63DDA4` (reversión de gaps).
+- Suite: 165/165. Sin commit ni promoción.
+
+### 2026-09-22 21:35 — Punto objetivo con Codex: esperar antes de construir orquestación (Claude-app)
+- Alexander pidió consultar con Codex antes de seguir con la política de modelos/automatización, y verificar "OmniRoot".
+- Acuerdo: se espera a que una hipótesis llegue a `READY_FOR_FROZEN_VALIDATION` de punta a punta antes de construir el ciclo/interruptor.
+- "OmniRoot" no existe con ese nombre según Codex (documentación oficial de OpenAI); no se inventa una definición.
+- Niveles de modelo bajados: alto solo para auditoría o cambios de motor/costos/puertas/datos/OOS; investigator/protocol en nivel medio; mecánico en nivel barato.
+- `docs/OPERATIONS.md` actualizado con el punto objetivo y la tabla ajustada. Sin cambios de código.
+## 2026-09-22 — Protocol de hipótesis 008
+
+- La hipótesis EURUSD H4 de media móvil con banda porcentual quedó `blocked_architecture`.
+- La fuente disponible no fija periodo/tipo de media, ancho de banda, salida ni sizing, y `qaf` no implementa esa familia.
+- Se creó una spec humana bloqueada y una pregunta de investigación; no se generó JSON, no hubo backtest y OOS permaneció cerrado.
+- Verificación: 165 pruebas pasadas; consistencia, universo, pipeline y coordinación sin fallos. Preflight conserva solo la advertencia por cambios todavía no consolidados.
+
+### 2026-09-22 22:00 — Revisión completa de evidencia, hipótesis 008 (Claude-investigator, subagente Sonnet)
+- `IDEA-SRC-CB192E3BD042` (IBS): rechazada, es rebalanceo de cartera multi-activo, no una regla de un instrumento.
+- `IDEA-SRC-E1BFCE63DDA4` (gaps): rechazada, resolución de minutos y cartera dinámica — doble fuera de alcance.
+- `IDEA-SRC-051A7EA057B3` (reversión intradía FX): evidencia buena y dentro de alcance (paper real verificado), pero quedó `needs_data`/bloqueada por un bug de `qaf/catalog.py` — ver "Hallazgos cruzados" en AGENTS.md.
+- `IDEA-PILOT-MABAND-EUR-H4`: promovida. **Hipótesis 008** (`eurusd-h4-media-m-vil-con-banda-porcentual`), `blocked_architecture` — falta familia de señal (precio vs una MA ± banda %) en `qaf/signals.py`, y los valores numéricos exactos quedan como ambigüedad declarada.
+- Suite: 165/165. Sin commit.
+
+### 2026-09-22 23:55 — Catálogo reparado e hipótesis 009 promovida (Codex)
+- La revisión `needs_data` ahora puede corregirse sin borrar evidencia: la versión anterior queda en `review_history`.
+- El objetivo declarado se persiste y `research_lane` se recalcula; las revisiones finales continúan inmutables.
+- `IDEA-SRC-051A7EA057B3` quedó `promoted` como 009, EURUSD/H1, pendiente de `protocol`.
+- El manifest sellado aún no contiene EURUSD/H1; debe importarse antes de `engine`. OOS sigue cerrado.
+- Verificación: 167 pruebas, preflight/pipeline/consistencia sin fallos. Sin commit.

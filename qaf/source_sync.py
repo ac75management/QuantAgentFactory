@@ -13,7 +13,7 @@ import sqlite3
 import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode, urlparse
 from urllib.request import Request, urlopen
 from uuid import uuid4
@@ -82,6 +82,11 @@ class HttpTransport:
                 retry_after = error.headers.get("Retry-After")
                 delay = min(60, int(retry_after)) if retry_after and retry_after.isdigit() else 2 ** attempt
                 time.sleep(delay)
+            except (URLError, TimeoutError, ConnectionError):
+                # arXiv's API times out intermittently; the same query answers in <1 s on retry.
+                if attempt + 1 >= self.attempts:
+                    raise
+                time.sleep(2 ** attempt)
 
     def get_json(self, url, headers):
         return json.loads(self._get(url, headers).decode("utf-8"))

@@ -1,0 +1,64 @@
+{
+  "candidate_id": "IDEA-SRC-907F82B18B1B",
+  "name": "Share Class Mean Reversion Alpha",
+  "source_name": "QuantConnect LEAN Algorithm.Python",
+  "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/ShareClassMeanReversionAlpha.py",
+  "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/ShareClassMeanReversionAlpha.py",
+  "publication_date": null,
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": true,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "quantconnect_lean_examples",
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/Alphas/ShareClassMeanReversionAlpha.py",
+    "first_seen_at": "2026-09-23T02:10:43.644814+00:00",
+    "metadata_sha256": "f978cfddeace4d0cceeda69d371760e0a9a83b49d8ab35b789dffc02622651f0",
+    "snapshot_path": "catalog/discoveries/quantconnect_lean_examples/f978cfddeace4d0cceeda69d371760e0a9a83b49d8ab35b789dffc02622651f0.json",
+    "identity_keys": [
+      "repo-path:https://github.com/quantconnect/lean:algorithm.python/alphas/shareclassmeanreversionalpha.py",
+      "url:https://github.com/quantconnect/lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/algorithm.python/alphas/shareclassmeanreversionalpha.py"
+    ],
+    "work_key": null,
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/Alphas/ShareClassMeanReversionAlpha.py",
+    "license": "Apache-2.0",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:11:21.576637+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-907F82B18B1B",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "OUT_OF_SCOPE",
+    "decision_reason": "Triaje por metadatos: 'Share Class Mean Reversion' opera un par de clases de acciones de la misma empresa (trade relativo entre dos acciones individuales); sin CFD/futuro equivalente en config/instruments.json y es una estrategia de pares, no de un solo instrumento.",
+    "reviewed_at": "2026-09-23T02:16:09.895957+00:00"
+  }
+}

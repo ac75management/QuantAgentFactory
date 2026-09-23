@@ -284,8 +284,6 @@ def validate_review(review, candidate, instruments):
         return review
     if candidate.get("content_type") != "strategy":
         raise ValueError("Solo una estrategia puede declararse eligible para hipótesis")
-    if candidate.get("assessment", {}).get("research_lane") != "mt5_now":
-        raise ValueError("Solo el carril mt5_now puede promocionarse en la campaña actual")
 
     review["primary_source_url"] = _url(
         review.get("primary_source_url") or candidate.get("primary_source_url"),
@@ -347,15 +345,31 @@ def validate_review(review, candidate, instruments):
             raise ValueError("La adaptación cambia la frecuencia pero no declara esa dimensión")
     review["target_symbol"] = symbol
     review["target_timeframe"] = timeframe
+    candidate_with_target = dict(candidate)
+    candidate_with_target["proposed_targets"] = [
+        *candidate.get("proposed_targets", []),
+        {"symbol": symbol, "timeframe": timeframe},
+    ]
+    deduplicated = {
+        (item["symbol"].upper(), item["timeframe"].upper()): item
+        for item in candidate_with_target["proposed_targets"]
+    }
+    candidate_with_target["proposed_targets"] = list(deduplicated.values())
+    if assess_candidate(candidate_with_target, instruments)["research_lane"] != "mt5_now":
+        raise ValueError("Solo el carril mt5_now puede promocionarse en la campaña actual")
     return review
 
 
 def _finish_evidence_task(registry, candidate_id, decision, relative_path):
     task_id = "catalog:" + candidate_id
     row = registry.db.execute("SELECT status FROM tasks WHERE task_id=?", (task_id,)).fetchone()
-    if not row or row["status"] in {"completed", "blocked", "failed", "cancelled"}:
+    if not row:
         return
     status = "blocked" if decision == "needs_data" else "completed"
+    if row["status"] == status:
+        return
+    if row["status"] in {"completed", "failed", "cancelled"}:
+        return
     registry.finish_task(
         task_id,
         status,
@@ -383,18 +397,32 @@ def review_candidate(candidate_id, review, root=ROOT):
         if existing:
             comparable_existing = {k: v for k, v in existing.items() if k != "reviewed_at"}
             if comparable_existing != validated:
-                raise ValueError("El candidato ya tiene una revisión; no se sobrescribe evidencia")
-            canonical_path = candidate_path(root, candidate_id)
-            if path != canonical_path:
-                write_json(canonical_path, candidate)
-            _finish_evidence_task(registry, candidate_id, existing["decision"], str(canonical_path.relative_to(root)))
-            registry.db.execute("COMMIT")
-            return candidate, canonical_path
+                if existing.get("decision") != "needs_data":
+                    raise ValueError("El candidato ya tiene una revisión final; no se sobrescribe evidencia")
+                history = candidate.setdefault("review_history", [])
+                if not isinstance(history, list):
+                    raise ValueError("review_history del candidato es inválido")
+                history.append(existing)
+            else:
+                canonical_path = candidate_path(root, candidate_id)
+                if path != canonical_path:
+                    write_json(canonical_path, candidate)
+                _finish_evidence_task(registry, candidate_id, existing["decision"], str(canonical_path.relative_to(root)))
+                registry.db.execute("COMMIT")
+                return candidate, canonical_path
         validated["reviewed_at"] = datetime.now(timezone.utc).isoformat()
         candidate["review"] = validated
         candidate["status"] = validated["decision"]
         if validated.get("primary_source_url"):
             candidate["primary_source_url"] = validated["primary_source_url"]
+        if validated["decision"] == "eligible":
+            target = {
+                "symbol": validated["target_symbol"],
+                "timeframe": validated["target_timeframe"],
+            }
+            targets = candidate.get("proposed_targets", [])
+            if target not in targets:
+                candidate["proposed_targets"] = [*targets, target]
         candidate["assessment"] = assess_candidate(candidate, instruments)
         canonical_path = candidate_path(root, candidate_id)
         write_json(canonical_path, candidate)

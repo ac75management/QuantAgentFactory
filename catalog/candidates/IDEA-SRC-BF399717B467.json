@@ -1,0 +1,63 @@
+{
+  "candidate_id": "IDEA-SRC-BF399717B467",
+  "name": "A Continuous-Time Analysis of Momentum and Mean Reversion in the BIST100 Index",
+  "source_name": "Crossref Strategy Discovery",
+  "source_url": "https://doi.org/10.16951/trendbusecon.1815580",
+  "primary_source_url": "https://doi.org/10.16951/trendbusecon.1815580",
+  "publication_date": "2026-07-15",
+  "access_level": "unknown",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "crossref_strategy_discovery",
+    "upstream_id": "10.16951/trendbusecon.1815580",
+    "first_seen_at": "2026-09-23T02:10:43.644814+00:00",
+    "metadata_sha256": "534588c3e54058007a409d2aeffab82226e9147d613ba5ad62e689094410cd65",
+    "snapshot_path": "catalog/discoveries/crossref_strategy_discovery/534588c3e54058007a409d2aeffab82226e9147d613ba5ad62e689094410cd65.json",
+    "identity_keys": [
+      "doi:10.16951/trendbusecon.1815580",
+      "url:https://doi.org/10.16951/trendbusecon.1815580"
+    ],
+    "work_key": "work:a continuous time analysis of momentum and mean reversion in the bist100 index|yerli",
+    "source_revision": null,
+    "repository_url": null,
+    "source_path": null,
+    "license": "metadata_open_content_license_per_record",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:11:18.472396+00:00",
+  "assessment": {
+    "score": 55,
+    "verdict": "needs_information",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-BF399717B467",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "DATA_UNAVAILABLE",
+    "decision_reason": "Triaje por metadatos: 'BIST100 Index' (Bolsa de Estambul) no tiene instrumento equivalente en config/instruments.json; QAF no tiene datos ni contrato de costos para ese indice.",
+    "reviewed_at": "2026-09-23T02:16:11.918993+00:00"
+  }
+}

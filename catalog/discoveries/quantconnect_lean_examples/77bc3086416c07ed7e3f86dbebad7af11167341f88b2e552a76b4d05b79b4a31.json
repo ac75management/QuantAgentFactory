@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "provider_id": "quantconnect_lean_examples",
+  "retrieved_at": "2026-09-23T02:10:43.644814+00:00",
+  "metadata_sha256": "77bc3086416c07ed7e3f86dbebad7af11167341f88b2e552a76b4d05b79b4a31",
+  "record": {
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/Alphas/PriceGapMeanReversionAlpha.py",
+    "title": "Price Gap Mean Reversion Alpha",
+    "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/PriceGapMeanReversionAlpha.py",
+    "doi": null,
+    "authors": [],
+    "publication_date": null,
+    "categories": [
+      "source_code"
+    ],
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/Alphas/PriceGapMeanReversionAlpha.py",
+    "blob_sha": "6cc1dd3e04f5c0dcb188190c234b09bc14871047",
+    "code_available": true,
+    "access_level": "public",
+    "license": "Apache-2.0"
+  }
+}

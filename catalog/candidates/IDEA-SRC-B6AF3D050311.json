@@ -1,0 +1,64 @@
+{
+  "candidate_id": "IDEA-SRC-B6AF3D050311",
+  "name": "Correlation emergence in two coupled simulated limit order books",
+  "source_name": "arXiv Quantitative Finance",
+  "source_url": "https://arxiv.org/abs/2408.03181",
+  "primary_source_url": "https://arxiv.org/abs/2408.03181",
+  "publication_date": "2024-08-06",
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "arxiv_qfin",
+    "upstream_id": "2408.03181",
+    "first_seen_at": "2026-09-23T02:12:08.136866+00:00",
+    "metadata_sha256": "b8c0029fe6dc07b8c801e9af764c05c9f9ecdd1769b48d7f765e939121302bd6",
+    "snapshot_path": "catalog/discoveries/arxiv_qfin/b8c0029fe6dc07b8c801e9af764c05c9f9ecdd1769b48d7f765e939121302bd6.json",
+    "identity_keys": [
+      "arxiv:2408.03181",
+      "url:https://arxiv.org/abs/2408.03181"
+    ],
+    "work_key": "work:correlation emergence in two coupled simulated limit order books|bauer",
+    "source_revision": "2026-08-07T11:32:41Z",
+    "repository_url": null,
+    "source_path": null,
+    "license": "per_record_review_required",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:12:08.392285+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-B6AF3D050311",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "OUT_OF_SCOPE",
+    "decision_reason": "Triaje por metadatos: 'Correlation emergence in two coupled simulated limit order books' es un estudio de microestructura sobre libros de ordenes simulados; requiere datos de profundidad de mercado que QAF no tiene y no es una regla de trading a H1/H4/D1.",
+    "reviewed_at": "2026-09-23T02:16:10.934282+00:00"
+  }
+}

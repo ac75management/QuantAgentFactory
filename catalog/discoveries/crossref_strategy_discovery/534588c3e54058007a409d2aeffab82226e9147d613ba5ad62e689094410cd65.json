@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "provider_id": "crossref_strategy_discovery",
+  "retrieved_at": "2026-09-23T02:10:43.644814+00:00",
+  "metadata_sha256": "534588c3e54058007a409d2aeffab82226e9147d613ba5ad62e689094410cd65",
+  "record": {
+    "upstream_id": "10.16951/trendbusecon.1815580",
+    "title": "A Continuous-Time Analysis of Momentum and Mean Reversion in the BIST100 Index",
+    "source_url": "https://doi.org/10.16951/trendbusecon.1815580",
+    "doi": "10.16951/trendbusecon.1815580",
+    "authors": [
+      "Çiğdem Yerli"
+    ],
+    "publication_date": "2026-07-15",
+    "venue": "Trends in Business and Economics",
+    "categories": [
+      "journal-article"
+    ],
+    "source_revision": null,
+    "code_available": false,
+    "access_level": "unknown",
+    "license": "metadata_open_content_license_per_record"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "candidate_id": "IDEA-SRC-2D3E80EABDCA",
+  "name": "Mean reversion trading on the naphtha crack",
+  "source_name": "Crossref Strategy Discovery",
+  "source_url": "https://doi.org/10.1016/j.eneco.2025.108620",
+  "primary_source_url": "https://doi.org/10.1016/j.eneco.2025.108620",
+  "publication_date": "2025-08-01",
+  "access_level": "unknown",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "crossref_strategy_discovery",
+    "upstream_id": "10.1016/j.eneco.2025.108620",
+    "first_seen_at": "2026-09-23T02:10:43.644814+00:00",
+    "metadata_sha256": "83bd2240b9ff4dc76b2922a21b1dd3840c01ec3ee0e32dc43131fa2359476771",
+    "snapshot_path": "catalog/discoveries/crossref_strategy_discovery/83bd2240b9ff4dc76b2922a21b1dd3840c01ec3ee0e32dc43131fa2359476771.json",
+    "identity_keys": [
+      "doi:10.1016/j.eneco.2025.108620",
+      "url:https://doi.org/10.1016/j.eneco.2025.108620"
+    ],
+    "work_key": "work:mean reversion trading on the naphtha crack|turquet",
+    "source_revision": null,
+    "repository_url": null,
+    "source_path": null,
+    "license": "metadata_open_content_license_per_record",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:11:18.405927+00:00",
+  "assessment": {
+    "score": 55,
+    "verdict": "needs_information",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-2D3E80EABDCA",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "DATA_UNAVAILABLE",
+    "decision_reason": "Triaje por metadatos: 'naphtha crack' es un spread de dos patas (nafta vs crudo) sin instrumento equivalente en config/instruments.json; QAF no tiene nafta como CFD/futuro ni datos de ese spread.",
+    "reviewed_at": "2026-09-23T02:16:07.076769+00:00"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "provider_id": "crossref_strategy_discovery",
+  "retrieved_at": "2026-09-23T02:10:43.644814+00:00",
+  "metadata_sha256": "5cb6f419d390685a4dc261d3e1cd2ecc955bb0073ceb2d77343bdedcf18d0c38",
+  "record": {
+    "upstream_id": "10.17261/pressacademia.2026.2034",
+    "title": "Bitcoin valuation through power law analysis: Evidence for long-term mean reversion and short-term momentum",
+    "source_url": "https://doi.org/10.17261/pressacademia.2026.2034",
+    "doi": "10.17261/pressacademia.2026.2034",
+    "authors": [
+      "Ilhan Kerem Senel",
+      "Faruk Yilmaz"
+    ],
+    "publication_date": "2026-06-30",
+    "venue": "Pressacademia",
+    "categories": [
+      "journal-article"
+    ],
+    "source_revision": null,
+    "code_available": false,
+    "access_level": "unknown",
+    "license": "metadata_open_content_license_per_record"
+  }
+}

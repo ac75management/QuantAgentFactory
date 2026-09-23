@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "provider_id": "quantconnect_lean_examples",
+  "retrieved_at": "2026-09-23T02:10:43.644814+00:00",
+  "metadata_sha256": "6ddc6fa721568525e37909d7abdfb203f87ec05ff1bcf54b2ab56cd34402ca01",
+  "record": {
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/Alphas/IntradayReversalCurrencyMarketsAlpha.py",
+    "title": "Intraday Reversal Currency Markets Alpha",
+    "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/IntradayReversalCurrencyMarketsAlpha.py",
+    "doi": null,
+    "authors": [],
+    "publication_date": null,
+    "categories": [
+      "source_code"
+    ],
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/Alphas/IntradayReversalCurrencyMarketsAlpha.py",
+    "blob_sha": "e61f6933f33c00806f82cf8976d7c10749ece06b",
+    "code_available": true,
+    "access_level": "public",
+    "license": "Apache-2.0"
+  }
+}

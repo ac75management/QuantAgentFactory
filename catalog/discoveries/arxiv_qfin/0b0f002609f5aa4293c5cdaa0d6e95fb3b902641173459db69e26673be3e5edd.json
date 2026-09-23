@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "provider_id": "arxiv_qfin",
+  "retrieved_at": "2026-09-23T02:12:08.136866+00:00",
+  "metadata_sha256": "0b0f002609f5aa4293c5cdaa0d6e95fb3b902641173459db69e26673be3e5edd",
+  "record": {
+    "upstream_id": "2407.09546",
+    "arxiv_id": "2407.09546",
+    "version": "v2",
+    "title": "A Reflective LLM-based Agent to Guide Zero-shot Cryptocurrency Trading",
+    "source_url": "https://arxiv.org/abs/2407.09546",
+    "doi": null,
+    "authors": [
+      "Yuan Li",
+      "Bingqiao Luo",
+      "Qian Wang",
+      "Nuo Chen",
+      "Xu Liu",
+      "Bingsheng He"
+    ],
+    "publication_date": "2024-06-27",
+    "categories": [
+      "q-fin.TR",
+      "cs.SI"
+    ],
+    "source_revision": "2026-08-17T04:30:26Z",
+    "code_available": false,
+    "access_level": "public",
+    "license": "per_record_review_required"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "provider_id": "quantconnect_lean_examples",
+  "retrieved_at": "2026-09-23T02:10:43.644814+00:00",
+  "metadata_sha256": "d684c1fb774945420546d1f7c855f0f5d8c58d63c72561c5ff924bd1cd543bfc",
+  "record": {
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/Alphas/GlobalEquityMeanReversionIBSAlpha.py",
+    "title": "Global Equity Mean Reversion I B S Alpha",
+    "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/GlobalEquityMeanReversionIBSAlpha.py",
+    "doi": null,
+    "authors": [],
+    "publication_date": null,
+    "categories": [
+      "source_code"
+    ],
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/Alphas/GlobalEquityMeanReversionIBSAlpha.py",
+    "blob_sha": "3be44c7e32c4e9ccd08edd4f581ef537e39a9aa7",
+    "code_available": true,
+    "access_level": "public",
+    "license": "Apache-2.0"
+  }
+}

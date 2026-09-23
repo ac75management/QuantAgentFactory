@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "provider_id": "arxiv_qfin",
+  "retrieved_at": "2026-09-23T02:12:08.136866+00:00",
+  "metadata_sha256": "78ec18accbe9ed40c2bc92c874ae8090ffc093b1ae387a9a2aa306dbde9bfca6",
+  "record": {
+    "upstream_id": "2608.21888",
+    "arxiv_id": "2608.21888",
+    "version": "v1",
+    "title": "Short-horizon mean reversion in cryptocurrency markets: a matched cross-market measurement",
+    "source_url": "https://arxiv.org/abs/2608.21888",
+    "doi": null,
+    "authors": [
+      "Nadav A. Kitron",
+      "Jonathan M. Wengrowicz"
+    ],
+    "publication_date": "2026-08-22",
+    "categories": [
+      "q-fin.TR",
+      "q-fin.ST"
+    ],
+    "source_revision": "2026-08-22T10:06:04Z",
+    "code_available": false,
+    "access_level": "public",
+    "license": "per_record_review_required"
+  }
+}

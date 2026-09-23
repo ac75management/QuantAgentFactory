@@ -716,3 +716,32 @@ def test_main_returns_nonzero_when_any_provider_failed(monkeypatch, capsys):
 
     assert source_sync_module.main() == 1
     assert '"failed": 1' in capsys.readouterr().out
+
+
+def test_http_transport_retries_timeouts_then_gives_up(monkeypatch):
+    import qaf.source_sync as source_sync
+    calls = []
+
+    class Response:
+        def __enter__(self):
+            return self
+        def __exit__(self, *_):
+            return False
+        def read(self):
+            return b'{"ok": true}'
+
+    def flaky(request, timeout):
+        calls.append(timeout)
+        if len(calls) < 3:
+            raise TimeoutError("The read operation timed out")
+        return Response()
+
+    monkeypatch.setattr(source_sync, "urlopen", flaky)
+    monkeypatch.setattr(source_sync.time, "sleep", lambda seconds: None)
+    assert source_sync.HttpTransport(attempts=3).get_json("https://example.org", {}) == {"ok": True}
+    assert len(calls) == 3
+
+    calls.clear()
+    monkeypatch.setattr(source_sync, "urlopen", lambda request, timeout: (_ for _ in ()).throw(TimeoutError("siempre")))
+    with pytest.raises(TimeoutError):
+        source_sync.HttpTransport(attempts=2).get_json("https://example.org", {})

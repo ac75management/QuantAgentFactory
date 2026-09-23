@@ -103,6 +103,49 @@
       "reason_code": "RULES_UNDERSPECIFIED_AND_FAMILY_NOT_IMPLEMENTED",
       "reason": "Protocol congeló fórmulas, giro, filtro, entradas, stop 6xATR(20), sizing 1% y fill causal en docs/specs/xauusd-d1-kama-tendencial-con-efficiency-ratio.md, pero la fuente registrada no declara los valores base de ER_Length ni de FastMA_Length ni una salida distinta del stop, y qaf no implementa una familia KAMA ni salida por señal opuesta. validate_spec rechaza el contrato previsto: 'Familia no implementada'. Sin JSON, sin backtest, OOS cerrado.",
       "next_action": "1) Evidencia de Kaufman (Smarter Trading 1995 / Trading Systems and Methods) para ER_Length, FastMA_Length y salida: docs/research_queue.md#kama-kaufman-valores-base-y-salida; 2) Alexander decide si se implementa la familia y la salida; 3) volver a pending y protocol genera el JSON sin cambiar lo congelado."
+    },
+    {
+      "id": "008",
+      "slug": "eurusd-h4-media-m-vil-con-banda-porcentual",
+      "created_at": "2026-09-22",
+      "candidate_id": "IDEA-PILOT-MABAND-EUR-H4",
+      "source": "Perry J. Kaufman — Trading Systems and Methods, 5th Edition",
+      "primary_source_url": "https://onlinelibrary.wiley.com/doi/book/10.1002/9781119202561",
+      "source_rule_id": "kaufman-ma-percentage-band-breakout",
+      "symbol": "EURUSD",
+      "timeframe": "H4",
+      "implementation_type": "adaptation",
+      "adaptation_dimensions": [
+        "costs",
+        "frequency",
+        "instrument"
+      ],
+      "evidence_fingerprint": "c2c0e64aa52a80016b77d76a25a554f64103a797a830f11d8e7e0bb7647eba5f",
+      "status": "blocked_architecture",
+      "reason_code": "RULES_UNDERSPECIFIED_AND_FAMILY_NOT_IMPLEMENTED",
+      "reason": "La fuente disponible no fija periodo y tipo de media, ancho de banda ni salida; qaf tampoco implementa la familia precio contra media con banda porcentual.",
+      "next_action": "Conseguir la regla primaria completa y luego decidir si se implementa la familia, sin elegir valores mediante el IS."
+    },
+    {
+      "id": "009",
+      "slug": "eurusd-h1-intraday-reversal-currency-markets-alpha",
+      "created_at": "2026-09-22",
+      "candidate_id": "IDEA-SRC-051A7EA057B3",
+      "source": "QuantConnect Corporation (implementación), Blake LeBaron, Yan Zhao (paper académico citado en el código fuente) — IntradayReversalCurrencyMarketsAlpha.py — QuantConnect LEAN, Algorithm.Python/Alphas, implementando la estrategia de LeBaron & Zhao, 'Foreign Exchange Reversals in New York Time' (también circulada como 'Intraday Foreign Exchange Reversals')",
+      "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/IntradayReversalCurrencyMarketsAlpha.py",
+      "source_rule_id": "lean-intraday-fx-reversal-sma-band-ny-session",
+      "symbol": "EURUSD",
+      "timeframe": "H1",
+      "implementation_type": "adaptation",
+      "adaptation_dimensions": [
+        "costs",
+        "vehicle"
+      ],
+      "evidence_fingerprint": "0894410b3edaf21c38e0d7ffc991a78226d40078e8ef90f352fd7300567c648f",
+      "status": "pending",
+      "reason_code": "AWAITING_PROTOCOL",
+      "reason": "La evidencia fue revisada; todavía no existe contrato ni backtest.",
+      "next_action": "Protocol debe congelar reglas numéricas o bloquear la hipótesis."
     }
   ]
 }

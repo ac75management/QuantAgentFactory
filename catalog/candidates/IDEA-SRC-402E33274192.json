@@ -1,0 +1,63 @@
+{
+  "candidate_id": "IDEA-SRC-402E33274192",
+  "name": "Filtering market signals: dynamic asset allocation with momentum and hidden mean reversion",
+  "source_name": "Crossref Strategy Discovery",
+  "source_url": "https://doi.org/10.1080/14697688.2026.2627261",
+  "primary_source_url": "https://doi.org/10.1080/14697688.2026.2627261",
+  "publication_date": "2026-03-10",
+  "access_level": "unknown",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "crossref_strategy_discovery",
+    "upstream_id": "10.1080/14697688.2026.2627261",
+    "first_seen_at": "2026-09-23T02:10:43.644814+00:00",
+    "metadata_sha256": "45ccfd727332018a93bcb5236749af248dc3b9f449fa72917534f8079f2d7adf",
+    "snapshot_path": "catalog/discoveries/crossref_strategy_discovery/45ccfd727332018a93bcb5236749af248dc3b9f449fa72917534f8079f2d7adf.json",
+    "identity_keys": [
+      "doi:10.1080/14697688.2026.2627261",
+      "url:https://doi.org/10.1080/14697688.2026.2627261"
+    ],
+    "work_key": "work:filtering market signals dynamic asset allocation with momentum and hidden mean reversion|altay",
+    "source_revision": null,
+    "repository_url": null,
+    "source_path": null,
+    "license": "metadata_open_content_license_per_record",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:11:18.536099+00:00",
+  "assessment": {
+    "score": 55,
+    "verdict": "needs_information",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-402E33274192",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "OUT_OF_SCOPE",
+    "decision_reason": "Triaje por metadatos: 'dynamic asset allocation' es asignacion/rebalanceo de cartera multi-activo, excluido explicitamente por CLAUDE.md (rebalanceo de cartera).",
+    "reviewed_at": "2026-09-23T02:16:08.006864+00:00"
+  }
+}

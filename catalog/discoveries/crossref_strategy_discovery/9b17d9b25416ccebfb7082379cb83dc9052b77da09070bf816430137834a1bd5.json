@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "provider_id": "crossref_strategy_discovery",
+  "retrieved_at": "2026-09-23T02:10:43.644814+00:00",
+  "metadata_sha256": "9b17d9b25416ccebfb7082379cb83dc9052b77da09070bf816430137834a1bd5",
+  "record": {
+    "upstream_id": "10.1016/j.eswa.2023.121472",
+    "title": "Online portfolio selection of integrating expert strategies based on mean reversion and trading volume",
+    "source_url": "https://doi.org/10.1016/j.eswa.2023.121472",
+    "doi": "10.1016/j.eswa.2023.121472",
+    "authors": [
+      "Hong Lin",
+      "Yong Zhang",
+      "Xingyu Yang"
+    ],
+    "publication_date": "2024-03-01",
+    "venue": "Expert Systems with Applications",
+    "categories": [
+      "journal-article"
+    ],
+    "source_revision": null,
+    "code_available": false,
+    "access_level": "unknown",
+    "license": "metadata_open_content_license_per_record"
+  }
+}

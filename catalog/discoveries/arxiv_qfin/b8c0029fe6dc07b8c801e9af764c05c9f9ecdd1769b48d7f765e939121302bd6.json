@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "provider_id": "arxiv_qfin",
+  "retrieved_at": "2026-09-23T02:12:08.136866+00:00",
+  "metadata_sha256": "b8c0029fe6dc07b8c801e9af764c05c9f9ecdd1769b48d7f765e939121302bd6",
+  "record": {
+    "upstream_id": "2408.03181",
+    "arxiv_id": "2408.03181",
+    "version": "v2",
+    "title": "Correlation emergence in two coupled simulated limit order books",
+    "source_url": "https://arxiv.org/abs/2408.03181",
+    "doi": null,
+    "authors": [
+      "Dominic Bauer",
+      "Derick Diana",
+      "Tim Gebbie"
+    ],
+    "publication_date": "2024-08-06",
+    "categories": [
+      "q-fin.TR",
+      "q-fin.CP"
+    ],
+    "source_revision": "2026-08-07T11:32:41Z",
+    "code_available": false,
+    "access_level": "public",
+    "license": "per_record_review_required"
+  }
+}

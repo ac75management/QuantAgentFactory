@@ -1,0 +1,64 @@
+{
+  "candidate_id": "IDEA-SRC-73F6EB14DCF4",
+  "name": "A Reflective LLM-based Agent to Guide Zero-shot Cryptocurrency Trading",
+  "source_name": "arXiv Quantitative Finance",
+  "source_url": "https://arxiv.org/abs/2407.09546",
+  "primary_source_url": "https://arxiv.org/abs/2407.09546",
+  "publication_date": "2024-06-27",
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "arxiv_qfin",
+    "upstream_id": "2407.09546",
+    "first_seen_at": "2026-09-23T02:12:08.136866+00:00",
+    "metadata_sha256": "0b0f002609f5aa4293c5cdaa0d6e95fb3b902641173459db69e26673be3e5edd",
+    "snapshot_path": "catalog/discoveries/arxiv_qfin/0b0f002609f5aa4293c5cdaa0d6e95fb3b902641173459db69e26673be3e5edd.json",
+    "identity_keys": [
+      "arxiv:2407.09546",
+      "url:https://arxiv.org/abs/2407.09546"
+    ],
+    "work_key": "work:a reflective llm based agent to guide zero shot cryptocurrency trading|li",
+    "source_revision": "2026-08-17T04:30:26Z",
+    "repository_url": null,
+    "source_path": null,
+    "license": "per_record_review_required",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:12:08.364173+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-73F6EB14DCF4",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "NOT_A_TRADING_RULE",
+    "decision_reason": "Triaje por metadatos: 'A Reflective LLM-based Agent...' estudia un agente LLM para trading zero-shot de cripto; es investigacion de agentes (agent_research), no documenta una regla de trading replicable, y el vehiculo (cripto) esta pending.",
+    "reviewed_at": "2026-09-23T02:16:08.973226+00:00"
+  }
+}

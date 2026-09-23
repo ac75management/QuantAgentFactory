@@ -1,0 +1,64 @@
+{
+  "candidate_id": "IDEA-SRC-7A4F383658EE",
+  "name": "Structural Limits of OHLCV-Based Intraday Momentum Signals in MNQ Futures: A Systematic Falsification Study",
+  "source_name": "arXiv Quantitative Finance",
+  "source_url": "https://arxiv.org/abs/2605.04004",
+  "primary_source_url": "https://arxiv.org/abs/2605.04004",
+  "publication_date": "2026-05-05",
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "arxiv_qfin",
+    "upstream_id": "2605.04004",
+    "first_seen_at": "2026-09-23T02:12:08.136866+00:00",
+    "metadata_sha256": "d6e49f98185652531e80b79eded1411f856398f336b2ed9e2e8de07b289e6353",
+    "snapshot_path": "catalog/discoveries/arxiv_qfin/d6e49f98185652531e80b79eded1411f856398f336b2ed9e2e8de07b289e6353.json",
+    "identity_keys": [
+      "arxiv:2605.04004",
+      "url:https://arxiv.org/abs/2605.04004"
+    ],
+    "work_key": "work:structural limits of ohlcv based intraday momentum signals in mnq futures a systematic falsification study|mesfin",
+    "source_revision": "2026-09-15T21:42:05Z",
+    "repository_url": null,
+    "source_path": null,
+    "license": "per_record_review_required",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:12:08.322661+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-7A4F383658EE",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "NOT_A_TRADING_RULE",
+    "decision_reason": "Triaje por metadatos: 'A Systematic Falsification Study' evalua limites estructurales de senales de momentum intradia en MNQ; es un estudio de metodologia/robustez que refuta senales, no propone una regla de trading documentada para replicar.",
+    "reviewed_at": "2026-09-23T02:16:09.437653+00:00"
+  }
+}

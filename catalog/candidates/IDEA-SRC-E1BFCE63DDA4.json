@@ -1,0 +1,97 @@
+{
+  "candidate_id": "IDEA-SRC-E1BFCE63DDA4",
+  "name": "Price Gap Mean Reversion Alpha",
+  "source_name": "QuantConnect LEAN Algorithm.Python",
+  "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/PriceGapMeanReversionAlpha.py",
+  "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/PriceGapMeanReversionAlpha.py",
+  "publication_date": null,
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": true,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "quantconnect_lean_examples",
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/Alphas/PriceGapMeanReversionAlpha.py",
+    "first_seen_at": "2026-09-23T02:10:43.644814+00:00",
+    "metadata_sha256": "77bc3086416c07ed7e3f86dbebad7af11167341f88b2e552a76b4d05b79b4a31",
+    "snapshot_path": "catalog/discoveries/quantconnect_lean_examples/77bc3086416c07ed7e3f86dbebad7af11167341f88b2e552a76b4d05b79b4a31.json",
+    "identity_keys": [
+      "repo-path:https://github.com/quantconnect/lean:algorithm.python/alphas/pricegapmeanreversionalpha.py",
+      "url:https://github.com/quantconnect/lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/algorithm.python/alphas/pricegapmeanreversionalpha.py"
+    ],
+    "work_key": null,
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/Alphas/PriceGapMeanReversionAlpha.py",
+    "license": "Apache-2.0",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:11:21.543052+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-E1BFCE63DDA4",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "OUT_OF_SCOPE_SUBHOURLY_AND_PORTFOLIO",
+    "decision_reason": "El código fuente real (verificado con WebFetch sobre el commit fijado 88bce0fc6f) muestra dos violaciones de alcance independientes y suficientes cada una para rechazar: (1) Frecuencia: usa Resolution.MINUTE, con `prediction_interval` de solo 5 períodos de la resolución (5 minutos), muy por debajo del piso de H1 que exige CLAUDE.md ('Excluido explícitamente: M30/M15, alta frecuencia/scalping'; este caso es incluso más agresivo que M15). (2) Portafolio: opera sobre un universo dinámico de las 25 acciones con mayor dollar-volume, reseleccionado semanalmente vía CoarseFundamentalUniverseSelectionModel, con EqualWeightingPortfolioConstructionModel — es una estrategia de rebalanceo de cartera multi-activo, explícitamente excluida. No se evalúa adaptación de vehículo ni de mercado porque el rechazo es estructural (frecuencia + portafolio), independiente de si el instrumento fuera CFD-compatible.",
+    "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/PriceGapMeanReversionAlpha.py",
+    "primary_source_title": "PriceGapMeanReversionAlpha.py — QuantConnect LEAN, Algorithm.Python/Alphas (ejemplo educativo de plataforma, no paper)",
+    "primary_source_authors": [
+      "QuantConnect Corporation"
+    ],
+    "source_rule_id": "lean-price-gap-minute-portfolio-us-equities",
+    "evidence_summary": "price_jump = (close/last_price) - 1, calculado a resolución de 1 minuto. Señal cuando abs(100*price_jump) > 3*volatility.current.value, donde volatility es una desviación estándar rodante sobre ~100 cierres previos (a nivel de minuto, no diario) — es decir, dispara ante un salto de precio intra-minuto mayor a 3 desviaciones estándar de esa ventana de minutos. Dirección: gap positivo -> insight DOWN (venta por reversión); gap negativo -> insight UP (compra por reversión). El insight expira a los 5 periodos de la resolución (5 minutos). Universo: hasta 25 acciones de EEUU por mayor dollar-volume, reseleccionadas semanalmente, con pesos iguales.",
+    "mechanism": "No se desarrolla mecanismo conductual porque el candidato se rechaza por alcance estructural (sub-horario y cartera) antes de llegar a esa etapa de análisis.",
+    "original_market": "Hasta 25 acciones de EEUU seleccionadas semanalmente por mayor dollar-volume",
+    "original_vehicle": "Acciones individuales (equities), selección dinámica cross-sectional con cartera de peso igual",
+    "original_instruments": [
+      "universo dinámico de hasta 25 acciones por dollar-volume (no fijado por símbolo, ver CoarseFundamentalUniverseSelectionModel)"
+    ],
+    "original_timeframes": [
+      "M1"
+    ],
+    "original_rules": [
+      "price_jump = (close / last_price) - 1, muestreado a resolución de 1 minuto.",
+      "Disparo: abs(100*price_jump) > 3 * desviación estándar rodante de ~100 cierres previos de 1 minuto.",
+      "Dirección contraria al gap (reversión): gap positivo -> DOWN, gap negativo -> UP.",
+      "Horizonte de holding: 5 períodos de la resolución de la señal (5 minutos).",
+      "Universo dinámico de hasta 25 acciones por dollar-volume, reseleccionado semanalmente, cartera de peso igual."
+    ],
+    "ambiguities": [],
+    "data_requirements": [
+      "OHLC de 1 minuto",
+      "dollar-volume por acción para selección semanal del universo"
+    ],
+    "cost_assumptions": [],
+    "limitations": [
+      "Resolución de 1 minuto y holding de 5 minutos, muy por debajo del piso H1 del proyecto (regla dura de alcance).",
+      "Estrategia de rebalanceo de cartera multi-activo, excluida explícitamente del alcance de CLAUDE.md."
+    ],
+    "reviewed_at": "2026-09-23T02:29:48.556768+00:00"
+  }
+}

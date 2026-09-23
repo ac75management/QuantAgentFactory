@@ -1,0 +1,64 @@
+{
+  "candidate_id": "IDEA-SRC-A6D72A6FB184",
+  "name": "Short-horizon mean reversion in cryptocurrency markets: a matched cross-market measurement",
+  "source_name": "arXiv Quantitative Finance",
+  "source_url": "https://arxiv.org/abs/2608.21888",
+  "primary_source_url": "https://arxiv.org/abs/2608.21888",
+  "publication_date": "2026-08-22",
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "arxiv_qfin",
+    "upstream_id": "2608.21888",
+    "first_seen_at": "2026-09-23T02:12:08.136866+00:00",
+    "metadata_sha256": "78ec18accbe9ed40c2bc92c874ae8090ffc093b1ae387a9a2aa306dbde9bfca6",
+    "snapshot_path": "catalog/discoveries/arxiv_qfin/78ec18accbe9ed40c2bc92c874ae8090ffc093b1ae387a9a2aa306dbde9bfca6.json",
+    "identity_keys": [
+      "arxiv:2608.21888",
+      "url:https://arxiv.org/abs/2608.21888"
+    ],
+    "work_key": "work:short horizon mean reversion in cryptocurrency markets a matched cross market measurement|kitron",
+    "source_revision": "2026-08-22T10:06:04Z",
+    "repository_url": null,
+    "source_path": null,
+    "license": "per_record_review_required",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:12:08.351174+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-A6D72A6FB184",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "DATA_UNAVAILABLE",
+    "decision_reason": "Triaje por metadatos: 'mean reversion in cryptocurrency markets: matched cross-market measurement' requiere datos cripto multi-exchange; BTCUSD/ETHUSD figuran 'pending' en config/instruments.json sin fuente ni datos habilitados en QAF.",
+    "reviewed_at": "2026-09-23T02:16:10.382775+00:00"
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "candidate_id": "IDEA-SRC-CB192E3BD042",
+  "name": "Global Equity Mean Reversion I B S Alpha",
+  "source_name": "QuantConnect LEAN Algorithm.Python",
+  "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/GlobalEquityMeanReversionIBSAlpha.py",
+  "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/GlobalEquityMeanReversionIBSAlpha.py",
+  "publication_date": null,
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": true,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "quantconnect_lean_examples",
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/Alphas/GlobalEquityMeanReversionIBSAlpha.py",
+    "first_seen_at": "2026-09-23T02:10:43.644814+00:00",
+    "metadata_sha256": "d684c1fb774945420546d1f7c855f0f5d8c58d63c72561c5ff924bd1cd543bfc",
+    "snapshot_path": "catalog/discoveries/quantconnect_lean_examples/d684c1fb774945420546d1f7c855f0f5d8c58d63c72561c5ff924bd1cd543bfc.json",
+    "identity_keys": [
+      "repo-path:https://github.com/quantconnect/lean:algorithm.python/alphas/globalequitymeanreversionibsalpha.py",
+      "url:https://github.com/quantconnect/lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/algorithm.python/alphas/globalequitymeanreversionibsalpha.py"
+    ],
+    "work_key": null,
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/Alphas/GlobalEquityMeanReversionIBSAlpha.py",
+    "license": "Apache-2.0",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:11:21.485464+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-CB192E3BD042",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "OUT_OF_SCOPE_PORTFOLIO_REBALANCE",
+    "decision_reason": "El código fuente real (verificado con WebFetch sobre el commit fijado 88bce0fc6f) muestra que GlobalEquityMeanReversionIBSAlpha NO es una regla de entrada/salida sobre un solo instrumento: es una selección cross-sectional diaria sobre un universo fijo de 31 ETFs de renta variable global (ECH, EEM, EFA, EPHE, EPP, EWA, EWC, EWG, EWH, EWI, EWJ, EWL, EWM, EWO, EWP, EWQ, EWS, EWT, EWU, EWY, EWZ, EZA, FXI, GXG, IDX, ILF, QQQ, RSX, SPY, THD), que cada día calcula IBS=(close-low)/(high-low) para cada ETF, emite señal DOWN para los `number_of_stocks` (2 por defecto) con IBS más alto y UP para los que tienen IBS más bajo, y reconstruye una cartera de peso igual (EqualWeightingPortfolioConstructionModel) sobre esos activos. Es, por construcción, una estrategia de rebalanceo de cartera multi-activo con selección relativa (ranking), no una regla técnica de un solo símbolo. CLAUDE.md excluye explícitamente 'estrategias de rebalanceo de cartera' del alcance del proyecto, sin excepción de vehículo. No se trata de un problema de adaptación de vehículo (equity->CFD): aunque IBS individual sí tiene respaldo académico independiente en índices/ETFs de renta variable (ver ambiguities/evidence_summary), la REGLA PUBLICADA que documenta este candidato es la versión cross-sectional de cartera, y no puedo inventar una regla de un solo instrumento que la fuente no define (no hay umbral numérico de IBS publicado aquí; el disparo es un ranking relativo entre 31 activos, no un umbral fijo). Se rechaza sin evaluar adaptación de vehículo ni timeframe.",
+    "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/Alphas/GlobalEquityMeanReversionIBSAlpha.py",
+    "primary_source_title": "GlobalEquityMeanReversionIBSAlpha.py — QuantConnect LEAN, Algorithm.Python/Alphas (ejemplo educativo de plataforma, no paper)",
+    "primary_source_authors": [
+      "QuantConnect Corporation"
+    ],
+    "source_rule_id": "lean-ibs-cross-sectional-equity-etf-portfolio",
+    "evidence_summary": "El archivo define IBS=(close-low)/(high-low) por ETF y cada día rankea los 31 ETFs del universo manualmente curado, emitiendo insights UP para los `number_of_stocks` (default 2) con IBS más bajo y DOWN para los que tienen IBS más alto; la construcción de cartera es EqualWeightingPortfolioConstructionModel, resolución Resolution.DAILY, horizonte de holding ~1 día (parámetro lookback=1). No publica un umbral numérico fijo de IBS: el disparo depende del ranking relativo entre los 31 activos ese día, no de un nivel absoluto. Búsqueda independiente confirma que el efecto IBS individual (no cross-sectional) sí tiene evidencia académica/cuantitativa fuera de este repositorio: Pagonidis, 'The IBS Effect: Mean Reversion in Equity ETFs' (NAAIM, ~2014) y 'The IBS Effect: Daily Mean Reversion of Equity Indices' (ResearchGate) documentan que un IBS bajo predice retornos next-day más altos en índices/ETFs de renta variable de EEUU, con el efecto 'funcionando bien en los últimos 30 años en acciones e índices de acciones, menos en otras clases de activo' y con evidencia de debilitamiento desde ~2013 (no confirmado estadísticamente al 99%). Esa evidencia respalda el MECANISMO de IBS en general, pero no la implementación cross-sectional multi-ETF que este candidato concreto documenta.",
+    "mechanism": "Se especula (sin verificarlo aquí porque el candidato se rechaza por alcance) que un cierre cerca del mínimo del rango diario refleja presión vendedora de corto plazo/liquidación que se agota, y que hacedores de mercado o arbitrajistas de reversión absorben esa presión, generando un rebote next-day; lo inverso para cierres cerca del máximo.",
+    "original_market": "31 ETFs de renta variable global listados en bolsas de EEUU (índices país/región: ECH, EEM, EFA, EPHE, EPP, EWA, EWC, EWG, EWH, EWI, EWJ, EWL, EWM, EWO, EWP, EWQ, EWS, EWT, EWU, EWY, EWZ, EZA, FXI, GXG, IDX, ILF, QQQ, RSX, SPY, THD)",
+    "original_vehicle": "ETFs de renta variable (equities), selección cross-sectional con cartera de peso igual",
+    "original_instruments": [
+      "ECH",
+      "EEM",
+      "EFA",
+      "EPHE",
+      "EPP",
+      "EWA",
+      "EWC",
+      "EWG",
+      "EWH",
+      "EWI",
+      "EWJ",
+      "EWL",
+      "EWM",
+      "EWO",
+      "EWP",
+      "EWQ",
+      "EWS",
+      "EWT",
+      "EWU",
+      "EWY",
+      "EWZ",
+      "EZA",
+      "FXI",
+      "GXG",
+      "IDX",
+      "ILF",
+      "QQQ",
+      "RSX",
+      "SPY",
+      "THD"
+    ],
+    "original_timeframes": [
+      "D1"
+    ],
+    "original_rules": [
+      "IBS = (close - low) / (high - low) calculado diariamente por ETF sobre un universo manualmente curado de 31 ETFs.",
+      "Ranking diario: emitir insight DOWN para los `number_of_stocks` (default 2) ETFs con IBS más alto; UP para los `number_of_stocks` con IBS más bajo.",
+      "Construcción de cartera: EqualWeightingPortfolioConstructionModel (peso igual entre las posiciones activas).",
+      "Resolución Resolution.DAILY; horizonte de holding controlado por `lookback` (default 1 día)."
+    ],
+    "ambiguities": [
+      "La fuente no publica un umbral numérico absoluto de IBS; el disparo depende del ranking relativo diario entre los 31 activos del universo, no reproducible como regla de un solo símbolo sin inventar un umbral.",
+      "La literatura independiente de IBS (Pagonidis, Alvarez Quant Trading, Kinlay) sí documenta un efecto de un solo instrumento con evidencia estadística, pero usando umbrales/deciles distintos a los de este candidato; sería un candidato de investigación separado, no una réplica de esta fuente."
+    ],
+    "data_requirements": [
+      "OHLC diario de 31 ETFs"
+    ],
+    "cost_assumptions": [],
+    "limitations": [
+      "Estrategia de rebalanceo de cartera multi-activo, excluida explícitamente del alcance de CLAUDE.md independientemente del vehículo.",
+      "No define un umbral de entrada reproducible en un solo instrumento."
+    ],
+    "reviewed_at": "2026-09-23T02:29:47.202039+00:00"
+  }
+}

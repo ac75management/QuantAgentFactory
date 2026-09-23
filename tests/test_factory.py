@@ -544,6 +544,46 @@ def test_catalog_review_and_promotion_are_controlled_and_idempotent(tmp_path,ins
     assert next(task for task in tasks if task['task_id'].startswith('catalog:'))['status']=='completed'
 
 
+def test_catalog_needs_data_review_can_be_revised_with_a_verified_target(tmp_path,instrument):
+    _catalog_root(tmp_path,instrument)
+    candidate=_catalog_candidate()
+    candidate['instruments']=[]
+    candidate['original_asset_classes']=['unknown']
+    candidate['proposed_targets']=[]
+    record,_=add_candidate(candidate,tmp_path)
+    assert record['assessment']['research_lane']=='future_market'
+
+    blocked_review={
+        'candidate_id':record['candidate_id'],'decision':'needs_data','reviewer':'investigator',
+        'reason_code':'TARGET_NOT_CLASSIFIED',
+        'decision_reason':'La evidencia identifica el objetivo, pero la captura automática no pudo clasificarlo.'
+    }
+    review_candidate(record['candidate_id'],blocked_review,tmp_path)
+    revised,_=review_candidate(record['candidate_id'],_eligible_review(record['candidate_id']),tmp_path)
+
+    registry=Registry(tmp_path/'state/research.sqlite3')
+    try: task=next(row for row in registry.tasks() if row['task_id']==f"catalog:{record['candidate_id']}")
+    finally: registry.close()
+    assert revised['status']=='eligible'
+    assert revised['proposed_targets']==[{'symbol':'XAUUSD','timeframe':'D1'}]
+    assert revised['assessment']['research_lane']=='mt5_now'
+    assert revised['review_history'][0]['decision']=='needs_data'
+    assert task['status']=='completed'
+
+
+def test_catalog_final_review_cannot_be_replaced(tmp_path,instrument):
+    _catalog_root(tmp_path,instrument)
+    record,_=add_candidate(_catalog_candidate(),tmp_path)
+    review_candidate(record['candidate_id'],_eligible_review(record['candidate_id']),tmp_path)
+    replacement=_eligible_review(record['candidate_id'])
+    replacement['decision_reason']='Intento de reemplazar una revisión final ya registrada.'
+
+    with pytest.raises(ValueError,match='revisión final'):
+        review_candidate(record['candidate_id'],replacement,tmp_path)
+    stored=read_json(tmp_path/'catalog/candidates'/f"{record['candidate_id']}.json")
+    assert stored['review']['decision_reason']!=replacement['decision_reason']
+
+
 def test_catalog_duplicate_evidence_and_noneligible_are_blocked(tmp_path,instrument):
     _catalog_root(tmp_path,instrument)
     first,_=add_candidate(_catalog_candidate(),tmp_path)

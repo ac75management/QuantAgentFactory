@@ -24,6 +24,13 @@ Nota: la herramienta externa no importa (Gemini, Copilot u otra) — lo único q
 
 ## Preguntas pendientes
 
+### kaufman-media-banda-regla-completa — PENDIENTE
+- Pregunta: ¿Qué periodo y tipo de media, ancho porcentual, momento de entrada, regla de salida, stop y sizing define Kaufman para la estrategia de precio contra media con banda porcentual?
+- Origen: protocol, hipótesis #008 / `docs/specs/eurusd-h4-media-m-vil-con-banda-porcentual.md`, 2026-09-22
+- Fuentes esperadas: *Trading Systems and Methods*, edición y página; se acepta una fuente secundaria solo si cita esa página de forma comprobable
+- Qué debe traer el informe: cita, definiciones matemáticas completas, variantes claramente separadas y qué parte se publicó antes del IS
+- Criterio de rechazo: valores por defecto de plataformas, blogs sin página primaria o valores elegidos mirando resultados
+
 ### kama-kaufman-valores-base-y-salida — PENDIENTE
 - Pregunta: ¿Qué valores de ER_Length y FastMA_Length (con SlowMA_Length = 30) y qué regla de salida distinta del stop (señal opuesta, stop-and-reverse, take profit, salida por tiempo u otra) define Perry Kaufman para el sistema AMA/KAMA con giro y filtro en Smarter Trading (1995) y/o Trading Systems and Methods? ¿Declara también la inicialización de la AMA y el timeframe de sus ejemplos?
 - Origen: protocol, hipótesis #007 / `docs/specs/xauusd-d1-kama-tendencial-con-efficiency-ratio.md` (secciones 8 y 14), 2026-09-22. `docs/research_external/` no contiene informe previo (verificado).

@@ -1,0 +1,63 @@
+{
+  "candidate_id": "IDEA-SRC-337B27A949EF",
+  "name": "Bitcoin valuation through power law analysis: Evidence for long-term mean reversion and short-term momentum",
+  "source_name": "Crossref Strategy Discovery",
+  "source_url": "https://doi.org/10.17261/pressacademia.2026.2034",
+  "primary_source_url": "https://doi.org/10.17261/pressacademia.2026.2034",
+  "publication_date": "2026-06-30",
+  "access_level": "unknown",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "crossref_strategy_discovery",
+    "upstream_id": "10.17261/pressacademia.2026.2034",
+    "first_seen_at": "2026-09-23T02:10:43.644814+00:00",
+    "metadata_sha256": "5cb6f419d390685a4dc261d3e1cd2ecc955bb0073ceb2d77343bdedcf18d0c38",
+    "snapshot_path": "catalog/discoveries/crossref_strategy_discovery/5cb6f419d390685a4dc261d3e1cd2ecc955bb0073ceb2d77343bdedcf18d0c38.json",
+    "identity_keys": [
+      "doi:10.17261/pressacademia.2026.2034",
+      "url:https://doi.org/10.17261/pressacademia.2026.2034"
+    ],
+    "work_key": "work:bitcoin valuation through power law analysis evidence for long term mean reversion and short term momentum|senel",
+    "source_revision": null,
+    "repository_url": null,
+    "source_path": null,
+    "license": "metadata_open_content_license_per_record",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T02:11:18.460390+00:00",
+  "assessment": {
+    "score": 55,
+    "verdict": "needs_information",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-337B27A949EF",
+    "decision": "rejected",
+    "reviewer": "investigator",
+    "reason_code": "NOT_A_TRADING_RULE",
+    "decision_reason": "Triaje por metadatos: el titulo describe un marco de valoracion (power law) de Bitcoin, no una regla de entrada/salida; ademas BTCUSD esta 'pending' en config/instruments.json sin datos habilitados.",
+    "reviewed_at": "2026-09-23T02:16:07.534815+00:00"
+  }
+}
