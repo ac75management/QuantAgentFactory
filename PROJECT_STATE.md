@@ -10,19 +10,19 @@ Llevar una hipótesis de trading desde la idea hasta una estrategia validada con
   - Descartadas en IS: 001 (XAUUSD D1), 003 (SP500 D1), 004 (US30 D1) y 006 (DAX H4).
   - Rechazada por Alexander: 005 (US30 H1).
   - Bloqueadas por arquitectura: 002 (calendario), 007 (KAMA) y 008 (media con banda porcentual; reglas incompletas).
-  - Pendiente de engine: 009 (EURUSD H1, reversión intradía con SMA(5), banda 0.1% y sesión NY); la estrategia ya está registrada y la adaptación de riesgo quedó congelada antes del IS.
+  - Bloqueada por datos: 009 (EURUSD H1, reversión intradía con SMA(5), banda 0.1% y sesión NY); Gate 0 rechazó el histórico pre-euro sin procedencia explícita.
   - Cero estrategias aprobadas y cero aperturas de OOS.
 - **Motor `qaf` 2.0.0:** filtro IS que falla cerrado, con estas puertas: AED por rotación (p<0.05), baseline del mismo capital 1x, sensibilidad ±10/20% con 200 vecinos, fricción ≥3.0, estrés ×2 y bootstrap. Las 28 particiones IS/OOS están selladas.
 - **OOS:** cerrado a propósito (`qaf/holdout.py`). Faltan los costos históricos (C4), el calendario, `price_basis`, el walk-forward real y el contrato congelado; ver `docs/VALIDATION_ROADMAP.md`.
 - **Catálogo** (`catalog/candidates/`, versionado):
   - 18 candidatos: 3 promovidos (007, 008 y 009) y 15 rechazados tras triaje/revisión.
   - La primera extracción real agregó 15 candidatos; `source-sync` conserva el recorrido seguro y manual por lotes.
-- **Datos:** el contrato habilita 10 símbolos en H1/H4/D1, pero el manifest sellado carece de EURUSD/H1 y USDJPY/H1. El lote EURUSD/H1 disponible empieza en 2010-08-18, después del corte EURUSD ya sellado (2010-02-17); `qaf.ingest` falla cerrado y no sobrescribe particiones. `costs_verified: false` y `price_basis: unknown` en todos.
+- **Datos:** el contrato habilita 10 símbolos en H1/H4/D1; EURUSD/H1 fue extraído directamente de MT5 (174.540 barras, 1990-01-02 a 2026-09-23), importado y sellado con corte 2010-02-17, pero Gate 0 falla por barras anteriores a 1999. USDJPY/H1 sigue ausente. `costs_verified: false` y `price_basis: unknown` en todos.
 - **Coordinación:** `AGENTS.md` + reservas SQLite + preflight. El workflow de CI existe, pero el repo no tiene remoto git, así que no corre.
 - **Pruebas:** suite completa verde (173).
 
 ## NEXT ACTION
-Resolver la incompatibilidad de corte EURUSD (reimportación controlada de todas sus temporalidades con un corte común posterior a 2010-08-18, o decisión explícita de no usar 009); después importar/sellar H1 y ejecutar Gate 0 + IS. La corrida no puede abrir OOS ni aprobar una estrategia.
+Autorizar un rebaselining recuperable de EURUSD/H1 con fecha mínima 1999-01-01, archivando la partición actual y generando un nuevo sello; después repetir Gate 0 e IS. La corrida no puede abrir OOS ni aprobar una estrategia.
 
 ## DECISIONS
 - Independiente de ZOO2: sin cuenta, capital ni bróker compartidos. (2026-09-21)
@@ -170,3 +170,17 @@ Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover 
 - `qaf.pipeline` confirma 009 en `NEEDS_IS_RUN`; el registro de estrategia ya existe.
 - El antiguo hallazgo de `catalog.py` quedó resuelto: la revisión recalcula `research_lane` con el objetivo declarado y hay prueba de regresión.
 - Se corrigió la foto vigente para que no indique que 009 espera registro.
+
+### 2026-09-23 00:45 — Extracción EURUSD/H1 desde MT5 (Codex)
+- MT5 Darwinex entregó 174.540 barras H1 desde 1990-01-02 hasta 2026-09-23; el terminal estaba conectado y `trade_allowed=false`.
+- Se creó un lote raw independiente y se importó sin tocar D1/H4 ni sus sellos.
+- La partición EURUSD/H1 quedó sellada con 71.425 barras IS y 103.115 OOS, corte 2010-02-17.
+- El estado de 009 volvió a `pending`; siguiente actor: engine para Gate 0 e IS. OOS continúa cerrado.
+
+### 2026-09-23 00:48 — Gate 0 EURUSD/H1 (Codex)
+- La calidad OHLC, UTC, orden y frecuencia pasó; el calendario quedó en reserva.
+- Gate 0 falló cerrado por `pre_euro_provenance`: la serie empieza en 1990 y no se debe tratar como EUR/USD real antes de 1999.
+- No se sobrescribió ni recortó la partición sellada. Queda pendiente autorización para un rebaselining recuperable desde 1999-01-01.
+### 2026-09-23 00:42 — Gate inicial de datos (Claude-app)
+- Antes de la extracción, EURUSD/H1 no existía en el manifest y 009 quedó bloqueada por `IS_DATASET_MISSING`.
+- La extracción posterior resolvió la ausencia física del dataset; Gate 0 volvió a bloquear por procedencia pre-euro, que es la causa vigente documentada arriba.
