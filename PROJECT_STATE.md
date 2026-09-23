@@ -5,12 +5,12 @@ Foto del estado vigente arriba, bitácora corta abajo. La fase de cada hipótesi
 ## CURRENT OBJECTIVE
 Llevar una hipótesis de trading desde la idea hasta una estrategia validada con el método TIS (CFD/futuros, H1/H4/D1), sin conectar ningún bróker. Proyecto independiente de ZOO2.
 
-## CURRENT STATUS (2026-09-23 00:30)
-- **Hipótesis:** 9 registradas; la 009 ya tiene contrato ejecutable y espera registro/Gate 0.
+## CURRENT STATUS (2026-09-23 00:28)
+- **Hipótesis:** 9 registradas; la 009 ya tiene contrato ejecutable y registrado, pendiente de resolver los datos antes de Gate 0.
   - Descartadas en IS: 001 (XAUUSD D1), 003 (SP500 D1), 004 (US30 D1) y 006 (DAX H4).
   - Rechazada por Alexander: 005 (US30 H1).
   - Bloqueadas por arquitectura: 002 (calendario), 007 (KAMA) y 008 (media con banda porcentual; reglas incompletas).
-  - Pendiente de engine: 009 (EURUSD H1, reversión intradía con SMA(5), banda 0.1% y sesión NY); familia implementada y adaptación de riesgo congelada antes del IS.
+  - Pendiente de engine: 009 (EURUSD H1, reversión intradía con SMA(5), banda 0.1% y sesión NY); la estrategia ya está registrada y la adaptación de riesgo quedó congelada antes del IS.
   - Cero estrategias aprobadas y cero aperturas de OOS.
 - **Motor `qaf` 2.0.0:** filtro IS que falla cerrado, con estas puertas: AED por rotación (p<0.05), baseline del mismo capital 1x, sensibilidad ±10/20% con 200 vecinos, fricción ≥3.0, estrés ×2 y bootstrap. Las 28 particiones IS/OOS están selladas.
 - **OOS:** cerrado a propósito (`qaf/holdout.py`). Faltan los costos históricos (C4), el calendario, `price_basis`, el walk-forward real y el contrato congelado; ver `docs/VALIDATION_ROADMAP.md`.
@@ -164,3 +164,9 @@ Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover 
 - La nueva familia añade horarios y zona IANA, que no son parámetros numéricos libres.
 - `qaf.validation.parameter_sensitivity` ahora perturba solo campos numéricos y reporta los estructurales sin modificarlos.
 - Suite completa: 173 pruebas pasadas; consistencia y pipeline sin violaciones.
+
+### 2026-09-23 00:28 — Auditoría de continuidad (Codex)
+- `qaf.preflight` pasa, el árbol está limpio y no hay reservas activas.
+- `qaf.pipeline` confirma 009 en `NEEDS_IS_RUN`; el registro de estrategia ya existe.
+- El antiguo hallazgo de `catalog.py` quedó resuelto: la revisión recalcula `research_lane` con el objetivo declarado y hay prueba de regresión.
+- Se corrigió la foto vigente para que no indique que 009 espera registro.
