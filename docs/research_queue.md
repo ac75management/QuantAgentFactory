@@ -24,6 +24,12 @@ Nota: la herramienta externa no importa (Gemini, Copilot u otra) — lo único q
 
 ## Preguntas pendientes
 
+### sma-band-session-family-009 — RESPONDIDA (Alexander, 2026-09-23)
+- Decisión: implementar `sma_band_session` y conservar la regla LEAN; no usar `trend_cross` como sustituto.
+- Evidencia de implementación: `qaf/contracts.py`, `qaf/signals.py`, `qaf/engine.py` y `tests/test_engine_session.py`.
+- Adaptación previa al IS: ATR14, stop 1.5×ATR, target 3×ATR, riesgo 0.5% y `max_holding=6` como red de seguridad; la salida primaria sigue siendo la primera apertura H1 posterior a 15:01 NY.
+- Rechazo de variantes: no elegir stop, sizing ni parámetros mirando resultados IS; OOS permanece cerrado.
+
 ### kaufman-media-banda-regla-completa — PENDIENTE
 - Pregunta: ¿Qué periodo y tipo de media, ancho porcentual, momento de entrada, regla de salida, stop y sizing define Kaufman para la estrategia de precio contra media con banda porcentual?
 - Origen: protocol, hipótesis #008 / `docs/specs/eurusd-h4-media-m-vil-con-banda-porcentual.md`, 2026-09-22

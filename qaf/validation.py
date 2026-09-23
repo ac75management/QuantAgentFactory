@@ -67,12 +67,14 @@ def parameter_sensitivity(df, spec, c, base_net_pnl, policy):
     La spec original debe quedar dentro de su vecindad, no en su pico aislado.
     """
     params = spec["parameters"]
+    numeric_params = {name: value for name, value in params.items() if _finite(value)}
+    structural_params = sorted(name for name in params if name not in numeric_params)
     one_at_a_time = []
-    for name in sorted(params):
-        seen = {params[name]}
+    for name in sorted(numeric_params):
+        seen = {numeric_params[name]}
         for step in SENSITIVITY_STEPS:
-            value = _scaled(params[name], step)
-            if _is_int(params[name]) and value == params[name]:
+            value = _scaled(numeric_params[name], step)
+            if _is_int(numeric_params[name]) and value == numeric_params[name]:
                 value += 1 if step > 0 else -1
             if value in seen:
                 continue
@@ -89,15 +91,16 @@ def parameter_sensitivity(df, spec, c, base_net_pnl, policy):
     iterations = policy["sensitivity_mc_iterations"]
     spread = policy["sensitivity_mc_range"]
     for _ in range(iterations):
-        changes = {name: _scaled(value, rng.uniform(-spread, spread)) for name, value in params.items()}
+        changes = {name: _scaled(value, rng.uniform(-spread, spread)) for name, value in numeric_params.items()}
         neighbor, _ = _neighbor(spec, changes)
         if neighbor is None:
             invalid += 1
             continue
         pnls.append(summarize(simulate(df, neighbor, c))["net_pnl"])
 
-    out = {"method": "Uno a la vez (-20/-10/+10/+20%) y Montecarlo conjunto uniforme en +-20% sobre todos los parámetros; sin selección de vecinos",
-           "one_at_a_time": one_at_a_time, "monte_carlo_iterations": iterations,
+    out = {"method": "Uno a la vez (-20/-10/+10/+20%) y Montecarlo conjunto uniforme en +-20% sobre parámetros numéricos; los estructurales no se perturban",
+           "one_at_a_time": one_at_a_time, "structural_parameters": structural_params,
+           "numeric_parameters": sorted(numeric_params), "monte_carlo_iterations": iterations,
            "monte_carlo_valid": len(pnls), "monte_carlo_invalid": invalid, "original_net_pnl": base_net_pnl,
            "max_original_percentile": policy["sensitivity_max_original_percentile"],
            "min_positive_share": policy["sensitivity_min_positive_share"],

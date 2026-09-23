@@ -1,0 +1,24 @@
+{
+  "id": "eurusd-h1-intraday-reversal-currency-markets-alpha",
+  "family": "sma_band_session",
+  "symbol": "EURUSD",
+  "timeframe": "H1",
+  "parameters": {
+    "atr_period": 14,
+    "sl_atr": 1.5,
+    "tp_atr": 3.0,
+    "max_holding": 6,
+    "sma_period": 5,
+    "band_fraction": 0.001,
+    "session_timezone": "America/New_York",
+    "session_start": "10:00",
+    "session_end": "15:00",
+    "exit_time": "15:01"
+  },
+  "rationale": "Reversión intradía EURUSD: precio bajo SMA5 más banda de 0.1% implica largo y precio por encima implica corto, con señales solo durante la sesión NY y cierre temporal posterior.",
+  "hypothesis_id": "009",
+  "risk_fraction": 0.005,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}

@@ -10,7 +10,7 @@ No tienes `Bash`: quien te invoca debe haber confirmado con `python -m qaf.pipel
 
 Fuente de contrato y costos: `config/instruments.json`, la única que lee `qaf/`. `docs/universe.md` es su espejo generado y `docs/cost_model.md` explica cómo se aplican los costos, sin valores propios. Antes de escribir la spec, lee `config/instruments.json`. Si el símbolo no existe en `config/instruments.json`, o `status` no es `"research"`, o el timeframe de la hipótesis no está en su lista `timeframes`, no generes spec — devuélvela a investigator/Alexander marcada "bloqueada por datos/costos". `costs_verified: false` (el estado actual de los 10 símbolos) NO bloquea escribir la spec — es una reserva que hereda Gate 0 (`RESERVE`), no un bloqueo duro; sí bloquea una aprobación final de `validator`.
 
-**Familia**: la hipótesis debe encajar en una de las 4 familias que `qaf/signals.py` sabe ejecutar hoy — `streak_reversal`, `trend_cross`, `channel_breakout`, `oscillator_reversion` (`qaf/contracts.py`, `FAMILIES`). Si `investigator` marcó la hipótesis como "requiere familia nueva", detente aquí y repórtalo — no fuerces la hipótesis dentro de una familia que no le corresponde solo para poder generar una spec.
+**Familia**: la hipótesis debe encajar en una de las 5 familias que `qaf/signals.py` sabe ejecutar hoy — `streak_reversal`, `trend_cross`, `channel_breakout`, `oscillator_reversion` o `sma_band_session` (`qaf/contracts.py`, `FAMILIES`). `sma_band_session` está reservada para reglas H1 de precio contra SMA con banda porcentual y ventana horaria IANA; valida DST y falla cerrado ante timestamps ingenuos. Si `investigator` marcó la hipótesis como "requiere familia nueva", detente aquí y repórtalo — no fuerces la hipótesis dentro de una familia que no le corresponde solo para poder generar una spec.
 
 `oscillator_reversion` (RSI(n) < umbral con cierre por encima de su SMA de tendencia, para largos — simétrico para cortos) es un híbrido: la entrada sigue a Larry Connors (RSI(2)/ConnorsRSI/R3), pero la salida usa SL/TP por ATR del motor, no la salida por SMA5-sin-stop del original. Decláralo así en la spec narrativa — no lo presentes como réplica exacta de la fuente citada.
 
@@ -26,7 +26,7 @@ Tu salida por cada estrategia son DOS archivos:
 - División In-Sample / Out-of-Sample: fijada por `qaf/ingest.py` (corte por símbolo, inmutable una vez creada — `data/clean/<símbolo>/<timeframe>/{IS,OOS}.parquet`). No la redefinas ni la muevas.
 - Puerta de baseline obligatoria: la estrategia debe superar "comprar y mantener" del **mismo símbolo y mismo timeframe**, con los costos de `config/instruments.json` y **el mismo capital invertido 1x** — nunca el índice/activo cash de otra fuente ni un baseline genérico. Lo calcula `qaf/baseline.py` en cada corrida; no copies un número fijo en la spec. El piso no es cero: con costos constantes el baseline de CFD a varios años suele ser negativo (y queda sobrestimado por el swap actual aplicado a precios históricos, limitación C4), así que en la práctica la estrategia debe ser rentable neta por sí misma.
 - Salida por tiempo: declara que `max_holding` cierra al open de la barra `entrada + max_holding` y que solo un gap en ese open (stop o target) la precede — así lo implementa `qaf/engine.py`. `max_holding` también es el horizonte del AED (`qaf/aed.py`): elígelo desde la hipótesis, no para mejorar un resultado.
-- Sensibilidad: `qaf` moverá **cada** parámetro de `parameters` ±10/20% y 200 vecinos conjuntos ±20%; la spec falla si es el pico aislado de su vecindad. No agregues parámetros que la hipótesis no justifique (regla 16: 3-4 libres).
+- Sensibilidad: `qaf` moverá cada parámetro numérico libre de `parameters` ±10/20% y 200 vecinos conjuntos ±20%; campos estructurales no numéricos (por ejemplo, zona IANA y horarios de sesión) se conservan fijos y quedan reportados. La spec falla si es el pico aislado de su vecindad. No agregues parámetros que la hipótesis no justifique (regla 16: 3-4 libres).
 - Puertas numéricas de aprobación para esta estrategia específica (hereda los defaults de `config/runner.json`: `min_trades`, `min_profit_factor`, `max_drawdown_fraction`, `min_friction_ratio` — nunca las relajes sin el visto bueno explícito de Alexander)
 - Número de hipótesis según `docs/hypotheses/_registry.md` ("hipótesis #N"), para que validator pueda tener en cuenta cuántas ideas se han probado en total.
 
@@ -34,10 +34,10 @@ Tu salida por cada estrategia son DOS archivos:
 ```json
 {
   "id": "<slug>",
-  "family": "streak_reversal | trend_cross | channel_breakout | oscillator_reversion",
+  "family": "streak_reversal | trend_cross | channel_breakout | oscillator_reversion | sma_band_session",
   "symbol": "<alias de docs/universe.md, igual que la clave en config/instruments.json>",
   "timeframe": "H1 | H4 | D1",
-  "parameters": { "atr_period": 14, "sl_atr": 1.5, "tp_atr": 3.0, "max_holding": 5, "...": "campos extra según family: streak (2-20) | fast/slow (2-500) | lookback (2-500) | rsi_period (2-100) + entry_threshold (0-50] + trend_filter_sma (2-500)" },
+  "parameters": { "atr_period": 14, "sl_atr": 1.5, "tp_atr": 3.0, "max_holding": 5, "...": "campos extra según family: streak (2-20) | fast/slow (2-500) | lookback (2-500) | rsi_period (2-100) + entry_threshold (0-50] + trend_filter_sma (2-500) | sma_period (2-500) + band_fraction (0-0.2] + session_timezone IANA + session_start/session_end/exit_time HH:MM" },
   "rationale": "resumen de una línea de la lógica de comportamiento",
   "hypothesis_id": "<número real de docs/hypotheses/_registry.md, nunca inventado>",
   "risk_fraction": 0.01,

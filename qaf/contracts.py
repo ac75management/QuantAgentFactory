@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 TIMEFRAMES = {"H1": 60, "H4": 240, "D1": 1440}
 SWAP_SCHEDULES = {"triple", "daily_equal"}
 MARGIN_MODES = {"cfd_notional", "forex_base_account", "forex_base_quote"}
-FAMILIES = {"streak_reversal", "trend_cross", "channel_breakout", "oscillator_reversion"}
+FAMILIES = {"streak_reversal", "trend_cross", "channel_breakout", "oscillator_reversion", "sma_band_session"}
 
 
 def positive(value, name, zero=False):
@@ -56,6 +56,28 @@ def validate_spec(spec):
             raise ValueError("entry_threshold fuera de (0, 50]")
         if not isinstance(p.get("trend_filter_sma"), int) or not 2 <= p["trend_filter_sma"] <= 500:
             raise ValueError("trend_filter_sma invalido")
+    if spec["family"] == "sma_band_session":
+        if spec["timeframe"] != "H1":
+            raise ValueError("sma_band_session requiere timeframe H1")
+        if not isinstance(p.get("sma_period"), int) or not 2 <= p["sma_period"] <= 500:
+            raise ValueError("sma_period invalido")
+        positive(p.get("band_fraction"), "band_fraction")
+        if p["band_fraction"] > 0.2:
+            raise ValueError("band_fraction fuera de (0, 0.2]")
+        for key in ("session_start", "session_end", "exit_time"):
+            value = p.get(key)
+            if not isinstance(value, str) or not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", value):
+                raise ValueError(f"{key} invalido: se espera HH:MM en 24h")
+        if p["session_start"] >= p["session_end"]:
+            raise ValueError("session_start debe ser anterior a session_end")
+        if p["exit_time"] <= p["session_end"]:
+            raise ValueError("exit_time debe ser posterior a session_end")
+        if not isinstance(p.get("session_timezone"), str) or not p["session_timezone"].strip():
+            raise ValueError("session_timezone ausente")
+        try:
+            ZoneInfo(p["session_timezone"])
+        except (ZoneInfoNotFoundError, KeyError, TypeError, ValueError):
+            raise ValueError("session_timezone invalida")
     return spec
 
 

@@ -143,9 +143,9 @@
       ],
       "evidence_fingerprint": "0894410b3edaf21c38e0d7ffc991a78226d40078e8ef90f352fd7300567c648f",
       "status": "pending",
-      "reason_code": "AWAITING_PROTOCOL",
-      "reason": "La evidencia fue revisada; todavía no existe contrato ni backtest.",
-      "next_action": "Protocol debe congelar reglas numéricas o bloquear la hipótesis."
+      "reason_code": "AWAITING_ENGINE",
+      "reason": "La familia sma_band_session fue implementada con pruebas causales; el contrato conserva la regla LEAN y documenta por separado la adaptación de stop, take-profit y max_holding.",
+      "next_action": "Engine debe validar y registrar docs/specs/eurusd-h1-intraday-reversal-currency-markets-alpha.json; después importar EURUSD/H1 y ejecutar Gate 0 e IS sin abrir OOS."
     }
   ]
 }

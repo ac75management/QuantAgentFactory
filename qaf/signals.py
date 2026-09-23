@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from zoneinfo import ZoneInfo
 
 
 def atr(df, period):
@@ -32,6 +33,23 @@ def rsi(df, period):
     result[(avg_loss == 0) & (avg_gain == 0)] = 50.0
     result[(avg_loss == 0) & (avg_gain > 0)] = 100.0
     return result
+
+
+def _local_minutes(df, timezone):
+    """Convertir tiempo a hora local; timestamps ingenuos fallan cerrado."""
+    times = pd.to_datetime(df["time"])
+    if times.dt.tz is None:
+        raise ValueError("sma_band_session requiere timestamps con zona horaria")
+    try:
+        local = times.dt.tz_convert(ZoneInfo(timezone))
+    except Exception as error:
+        raise ValueError(f"No se pudo convertir la zona horaria de sesión: {timezone}") from error
+    return local.dt.hour.to_numpy() * 60 + local.dt.minute.to_numpy()
+
+
+def _clock_minutes(value):
+    hour, minute = (int(part) for part in value.split(":"))
+    return hour * 60 + minute
 
 
 def generate(df, spec):
@@ -68,6 +86,21 @@ def generate(df, spec):
         # create a fresh entry after an unrelated exit.
         signal[(previous >= lower) & (r < lower) & (closes > trend)] = 1
         signal[(previous <= upper) & (r > upper) & (closes < trend)] = -1
+    elif family == "sma_band_session":
+        local_minutes = _local_minutes(df, p["session_timezone"])
+        start = _clock_minutes(p["session_start"])
+        end = _clock_minutes(p["session_end"])
+        sma = df.close.rolling(p["sma_period"]).mean().to_numpy()
+        closes = df.close.to_numpy(dtype=float)
+        previous_direction = 0
+        threshold = sma * (1.0 + p["band_fraction"])
+        for i in range(len(df)):
+            if not (start <= local_minutes[i] <= end) or not np.isfinite(threshold[i]):
+                continue
+            direction = 1 if closes[i] < threshold[i] else -1
+            if direction != previous_direction:
+                signal[i] = direction
+            previous_direction = direction
     if spec.get("direction") == "long":
         signal[signal < 0] = 0
     if spec.get("direction") == "short":

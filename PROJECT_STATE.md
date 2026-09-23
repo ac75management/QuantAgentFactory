@@ -5,24 +5,24 @@ Foto del estado vigente arriba, bitácora corta abajo. La fase de cada hipótesi
 ## CURRENT OBJECTIVE
 Llevar una hipótesis de trading desde la idea hasta una estrategia validada con el método TIS (CFD/futuros, H1/H4/D1), sin conectar ningún bróker. Proyecto independiente de ZOO2.
 
-## CURRENT STATUS (2026-09-22 23:50)
-- **Hipótesis:** 9 registradas; la 009 espera contrato de `protocol`.
+## CURRENT STATUS (2026-09-23 00:30)
+- **Hipótesis:** 9 registradas; la 009 ya tiene contrato ejecutable y espera registro/Gate 0.
   - Descartadas en IS: 001 (XAUUSD D1), 003 (SP500 D1), 004 (US30 D1) y 006 (DAX H4).
   - Rechazada por Alexander: 005 (US30 H1).
   - Bloqueadas por arquitectura: 002 (calendario), 007 (KAMA) y 008 (media con banda porcentual; reglas incompletas).
-  - Pendiente de `protocol`: 009 (EURUSD H1, reversión intradía con SMA(5), banda 0.1% y sesión NY).
+  - Pendiente de engine: 009 (EURUSD H1, reversión intradía con SMA(5), banda 0.1% y sesión NY); familia implementada y adaptación de riesgo congelada antes del IS.
   - Cero estrategias aprobadas y cero aperturas de OOS.
 - **Motor `qaf` 2.0.0:** filtro IS que falla cerrado, con estas puertas: AED por rotación (p<0.05), baseline del mismo capital 1x, sensibilidad ±10/20% con 200 vecinos, fricción ≥3.0, estrés ×2 y bootstrap. Las 28 particiones IS/OOS están selladas.
 - **OOS:** cerrado a propósito (`qaf/holdout.py`). Faltan los costos históricos (C4), el calendario, `price_basis`, el walk-forward real y el contrato congelado; ver `docs/VALIDATION_ROADMAP.md`.
 - **Catálogo** (`catalog/candidates/`, versionado):
   - 18 candidatos: 3 promovidos (007, 008 y 009) y 15 rechazados tras triaje/revisión.
   - La primera extracción real agregó 15 candidatos; `source-sync` conserva el recorrido seguro y manual por lotes.
-- **Datos:** el contrato habilita 10 símbolos en H1/H4/D1, pero el manifest sellado carece de EURUSD/H1 y USDJPY/H1. `costs_verified: false` y `price_basis: unknown` en todos.
+- **Datos:** el contrato habilita 10 símbolos en H1/H4/D1, pero el manifest sellado carece de EURUSD/H1 y USDJPY/H1. El lote EURUSD/H1 disponible empieza en 2010-08-18, después del corte EURUSD ya sellado (2010-02-17); `qaf.ingest` falla cerrado y no sobrescribe particiones. `costs_verified: false` y `price_basis: unknown` en todos.
 - **Coordinación:** `AGENTS.md` + reservas SQLite + preflight. El workflow de CI existe, pero el repo no tiene remoto git, así que no corre.
-- **Pruebas:** suite completa verde (167).
+- **Pruebas:** suite completa verde (173).
 
 ## NEXT ACTION
-Ejecutar `protocol` sobre la 009: congelar la regla publicada y declarar la familia de señal necesaria. Antes de `engine`, importar y sellar EURUSD/H1 sin abrir OOS.
+Resolver la incompatibilidad de corte EURUSD (reimportación controlada de todas sus temporalidades con un corte común posterior a 2010-08-18, o decisión explícita de no usar 009); después importar/sellar H1 y ejecutar Gate 0 + IS. La corrida no puede abrir OOS ni aprobar una estrategia.
 
 ## DECISIONS
 - Independiente de ZOO2: sin cuenta, capital ni bróker compartidos. (2026-09-21)
@@ -142,3 +142,25 @@ Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover 
 - `IDEA-SRC-051A7EA057B3` quedó `promoted` como 009, EURUSD/H1, pendiente de `protocol`.
 - El manifest sellado aún no contiene EURUSD/H1; debe importarse antes de `engine`. OOS sigue cerrado.
 - Verificación: 167 pruebas, preflight/pipeline/consistencia sin fallos. Sin commit.
+
+### 2026-09-23 00:10 — Protocol de hipótesis 009 (Codex)
+- La regla LEAN quedó congelada: SMA(5), banda 0.1%, cambio de dirección y sesión 10:00–15:00 NY con salida 15:01.
+- No se generó JSON: `qaf` no tiene una familia precio/SMA+banda+sesión y no se forzó dentro de `trend_cross`.
+- 009 pasó a `blocked_architecture`; la especificación bloqueada y la pregunta de diseño quedaron documentadas.
+- OOS no se abrió y no se ejecutó engine.
+
+### 2026-09-23 00:30 — Familia `sma_band_session` y contrato 009 (Codex, autorizado por Alexander)
+- Implementados contrato, señales causales con IANA/DST y salida temporal en el motor; 5 pruebas nuevas cubren expiración y no-look-ahead.
+- La adaptación previa al IS congela ATR14, SL 1.5×, TP 3×, riesgo 0.5% y max_holding 6; no se eligió mirando resultados.
+- 009 salió de `blocked_architecture`; JSON y narrativa están listos para `engine`.
+- Suite de regresión: 172 pruebas pasadas. OOS continúa cerrado.
+
+### 2026-09-23 00:45 — Auditoría de datos EURUSD/H1 (Codex)
+- El lote raw existe, pero comienza 2010-08-18 y no alcanza el corte EURUSD ya sellado de 2010-02-17.
+- `qaf.ingest` devolvió `INSUFFICIENT_BEFORE_FIXED_CUTOFF` y preservó intactas las particiones existentes.
+- No se abrió OOS ni se ejecutó backtest; la reimportación de D1/H4/H1 requiere una decisión explícita por su efecto sobre sellos históricos.
+
+### 2026-09-23 00:55 — Auditoría de sensibilidad (Codex)
+- La nueva familia añade horarios y zona IANA, que no son parámetros numéricos libres.
+- `qaf.validation.parameter_sensitivity` ahora perturba solo campos numéricos y reporta los estructurales sin modificarlos.
+- Suite completa: 173 pruebas pasadas; consistencia y pipeline sin violaciones.

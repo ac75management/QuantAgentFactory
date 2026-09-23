@@ -1,8 +1,22 @@
 import math
 import numpy as np
+import pandas as pd
+from zoneinfo import ZoneInfo
 from .contracts import validate_spec, validate_instrument
 from .costs import execution_cost, financing, margin_cash_per_lot, price_cash
 from .signals import atr, generate
+
+
+def _clock_minutes(value):
+    hour, minute = (int(part) for part in value.split(":"))
+    return hour * 60 + minute
+
+
+def _local_timestamp(value, timezone):
+    timestamp = pd.Timestamp(value)
+    if timestamp.tzinfo is None:
+        raise ValueError("sma_band_session requiere timestamps con zona horaria")
+    return timestamp.tz_convert(ZoneInfo(timezone))
 
 
 def resolve_exit(direction, opening, high, low, stop, target):
@@ -39,7 +53,7 @@ def simulate(df, spec, instrument, stress=1.0, start_bar=0, signals_override=Non
     a = atr(df, p["atr_period"])
     balance, position = initial, None
     trades, curve = [], []
-    skipped = {"volume_or_margin": 0, "warmup": 0, "nonpositive_equity": 0}
+    skipped = {"volume_or_margin": 0, "warmup": 0, "nonpositive_equity": 0, "session_expired": 0}
     times = df.time.tolist()
     o, h, l, closes = (df[k].to_numpy(dtype=float) for k in ("open", "high", "low", "close"))
     for i in range(start_bar, len(df)):
@@ -64,10 +78,22 @@ def simulate(df, spec, instrument, stress=1.0, start_bar=0, signals_override=Non
                 if lots < c["volume_min"]:
                     skipped["volume_or_margin"] += 1
                 else:
-                    spread, slip, commission = execution_cost(o[i], lots, c, stress)
-                    position = {"entry_bar": i, "entry_time": str(times[i]), "entry_price": o[i], "direction": direction, "lots": lots, "stop": o[i] - direction * stop_distance, "target": o[i] + direction * p["tp_atr"] * a[i-1], "spread_cost": spread, "slippage_cost": slip, "commission_cost": commission, "financing_cashflow": 0.0, "dividend_cashflow": 0.0, "risk_cash": risk_cash}
-                    balance -= spread + slip + commission
-                    exposed_this_bar = True
+                    expired = False
+                    if spec["family"] == "sma_band_session":
+                        signal_local = _local_timestamp(times[i - 1], p["session_timezone"])
+                        fill_local = _local_timestamp(times[i], p["session_timezone"])
+                        exit_minute = _clock_minutes(p["exit_time"])
+                        expired = (fill_local.date() == signal_local.date()
+                                   and fill_local.hour * 60 + fill_local.minute >= exit_minute)
+                    if expired:
+                        skipped["session_expired"] += 1
+                    else:
+                        spread, slip, commission = execution_cost(o[i], lots, c, stress)
+                        position = {"entry_bar": i, "entry_time": str(times[i]), "entry_price": o[i], "direction": direction, "lots": lots, "stop": o[i] - direction * stop_distance, "target": o[i] + direction * p["tp_atr"] * a[i-1], "spread_cost": spread, "slippage_cost": slip, "commission_cost": commission, "financing_cashflow": 0.0, "dividend_cashflow": 0.0, "risk_cash": risk_cash}
+                        position["entry_local_date"] = (_local_timestamp(times[i], p["session_timezone"]).date().isoformat()
+                                                         if spec["family"] == "sma_band_session" else None)
+                        balance -= spread + slip + commission
+                        exposed_this_bar = True
         if position is not None:
             pos = position
             exit_price, reason = resolve_exit(pos["direction"], o[i], h[i], l[i], pos["stop"], pos["target"])
@@ -78,6 +104,13 @@ def simulate(df, spec, instrument, stress=1.0, start_bar=0, signals_override=Non
                 # Deciding at the open based on later intrabar prices would be look-ahead.
                 if reason not in ("STOP_GAP", "TARGET_GAP_CONSERVATIVE"):
                     exit_price, reason = o[i], "TIME"
+            if spec["family"] == "sma_band_session":
+                local = _local_timestamp(times[i], p["session_timezone"])
+                exit_minute = _clock_minutes(p["exit_time"])
+                if (local.date().isoformat() == pos["entry_local_date"]
+                        and local.hour * 60 + local.minute >= exit_minute
+                        and reason not in ("STOP_GAP", "TARGET_GAP_CONSERVATIVE")):
+                    exit_price, reason = o[i], "SESSION_EXIT"
             if balance + price_cash(pos["direction"] * (o[i] - pos["entry_price"]), c, pos["lots"]) <= 0:
                 exit_price, reason = o[i], "INSOLVENT_OPEN"
             if exit_price is None and i == len(df)-1:
