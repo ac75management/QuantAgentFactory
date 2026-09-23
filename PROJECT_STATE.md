@@ -5,24 +5,24 @@ Foto del estado vigente arriba, bitácora corta abajo. La fase de cada hipótesi
 ## CURRENT OBJECTIVE
 Llevar una hipótesis de trading desde la idea hasta una estrategia validada con el método TIS (CFD/futuros, H1/H4/D1), sin conectar ningún bróker. Proyecto independiente de ZOO2.
 
-## CURRENT STATUS (2026-09-23 00:28)
-- **Hipótesis:** 9 registradas; la 009 ya tiene contrato ejecutable y registrado, pendiente de resolver los datos antes de Gate 0.
+## CURRENT STATUS (2026-09-23 01:02)
+- **Hipótesis:** 9 registradas; la 009 ya tiene contrato ejecutable y fue descartada en IS tras rebaselining post-euro.
   - Descartadas en IS: 001 (XAUUSD D1), 003 (SP500 D1), 004 (US30 D1) y 006 (DAX H4).
   - Rechazada por Alexander: 005 (US30 H1).
   - Bloqueadas por arquitectura: 002 (calendario), 007 (KAMA) y 008 (media con banda porcentual; reglas incompletas).
-  - Bloqueada por datos: 009 (EURUSD H1, reversión intradía con SMA(5), banda 0.1% y sesión NY); Gate 0 rechazó el histórico pre-euro sin procedencia explícita.
+  - Descartada en IS: 009 (EURUSD H1, reversión intradía con SMA(5), banda 0.1% y sesión NY); la partición post-euro falló las puertas de rentabilidad, riesgo, AED y sensibilidad.
   - Cero estrategias aprobadas y cero aperturas de OOS.
 - **Motor `qaf` 2.0.0:** filtro IS que falla cerrado, con estas puertas: AED por rotación (p<0.05), baseline del mismo capital 1x, sensibilidad ±10/20% con 200 vecinos, fricción ≥3.0, estrés ×2 y bootstrap. Las 28 particiones IS/OOS están selladas.
 - **OOS:** cerrado a propósito (`qaf/holdout.py`). Faltan los costos históricos (C4), el calendario, `price_basis`, el walk-forward real y el contrato congelado; ver `docs/VALIDATION_ROADMAP.md`.
 - **Catálogo** (`catalog/candidates/`, versionado):
   - 18 candidatos: 3 promovidos (007, 008 y 009) y 15 rechazados tras triaje/revisión.
   - La primera extracción real agregó 15 candidatos; `source-sync` conserva el recorrido seguro y manual por lotes.
-- **Datos:** el contrato habilita 10 símbolos en H1/H4/D1; EURUSD/H1 fue extraído directamente de MT5 (174.540 barras, 1990-01-02 a 2026-09-23), importado y sellado con corte 2010-02-17, pero Gate 0 falla por barras anteriores a 1999. USDJPY/H1 sigue ausente. `costs_verified: false` y `price_basis: unknown` en todos.
+- **Datos:** el contrato habilita 10 símbolos en H1/H4/D1; EURUSD/H1 fue rebaselinizado de forma recuperable desde 1999-01-04 (172.204 barras raw; 69.089 IS) y sellado con corte 2010-02-17. La partición anterior quedó en `data/archive/rebaseline_1999_20260923T0557425681811Z/`. USDJPY/H1 sigue ausente. `costs_verified: false` y `price_basis: unknown` en todos.
 - **Coordinación:** `AGENTS.md` + reservas SQLite + preflight. El workflow de CI existe, pero el repo no tiene remoto git, así que no corre.
 - **Pruebas:** suite completa verde (173).
 
 ## NEXT ACTION
-Autorizar un rebaselining recuperable de EURUSD/H1 con fecha mínima 1999-01-01, archivando la partición actual y generando un nuevo sello; después repetir Gate 0 e IS. La corrida no puede abrir OOS ni aprobar una estrategia.
+No reabrir 009. La siguiente línea de trabajo es seleccionar una hipótesis distinta con reglas completas (007/008 siguen bloqueadas por arquitectura/evidencia) o incorporar una nueva estrategia del catálogo; toda nueva variante de 009 exige otro ID y evidencia independiente. OOS sigue cerrado.
 
 ## DECISIONS
 - Independiente de ZOO2: sin cuenta, capital ni bróker compartidos. (2026-09-21)
@@ -39,7 +39,7 @@ Autorizar un rebaselining recuperable de EURUSD/H1 con fecha mínima 1999-01-01,
 - Toda fuente autoritativa tiene una sola copia; los espejos se generan o se verifican (`qaf.consistency`). (2026-09-22)
 
 ## OPEN QUESTIONS (decide Alexander)
-1. **009:** importar EURUSD/H1 y, tras el contrato de `protocol`, decidir si se implementa su familia SMA+banda+sesión.
+1. **009:** cerrada en IS; no rescatar mediante ajustes. Solo una hipótesis nueva con evidencia independiente podría reutilizar la familia.
 2. **007:** conseguir la evidencia de Kaufman para ER_Length, FastMA_Length y la salida (`docs/research_queue.md`) y decidir si se implementa la familia KAMA. Decidir también el riesgo de la spec: 1% frente al 0.5% de la política.
 3. **002:** implementar una familia de calendario o archivar la hipótesis.
 4. **USDJPY H1:** reimportar los 3 timeframes con un corte compatible con 2010+, o dejarlo en D1/H4.
@@ -181,6 +181,12 @@ Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover 
 - La calidad OHLC, UTC, orden y frecuencia pasó; el calendario quedó en reserva.
 - Gate 0 falló cerrado por `pre_euro_provenance`: la serie empieza en 1990 y no se debe tratar como EUR/USD real antes de 1999.
 - No se sobrescribió ni recortó la partición sellada. Queda pendiente autorización para un rebaselining recuperable desde 1999-01-01.
+
+### 2026-09-23 01:02 — Rebaseline y corrida IS de 009 (Codex)
+- Se archivó la partición pre-euro en `data/archive/rebaseline_1999_20260923T0557425681811Z/`; la nueva fuente MT5/Darwinex empieza en 1999-01-04 y se selló sin sobrescribir el resto del universo.
+- Gate 0 pasó la integridad estructural; calendario, `price_basis` y procedencia quedaron como reservas explícitas.
+- La corrida `bd88c3eade6e17931ba83eef` descartó 009: net P&L -47.359, PF 0.80, DD 47.6%, AED p=0.851 y sensibilidad 0% positiva.
+- OOS no se abrió. La hipótesis queda cerrada; no se recomienda ajustar parámetros para rescatarla.
 ### 2026-09-23 00:42 — Gate inicial de datos (Claude-app)
 - Antes de la extracción, EURUSD/H1 no existía en el manifest y 009 quedó bloqueada por `IS_DATASET_MISSING`.
 - La extracción posterior resolvió la ausencia física del dataset; Gate 0 volvió a bloquear por procedencia pre-euro, que es la causa vigente documentada arriba.

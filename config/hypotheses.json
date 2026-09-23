@@ -142,10 +142,10 @@
         "vehicle"
       ],
       "evidence_fingerprint": "0894410b3edaf21c38e0d7ffc991a78226d40078e8ef90f352fd7300567c648f",
-      "status": "blocked_data",
-      "reason_code": "PRE_EURO_PROVENANCE",
-      "reason": "Gate 0 falló cerrado porque EURUSD/H1 contiene histórico anterior a 1999 sin procedencia económica explícita; la serie no se recorta automáticamente.",
-      "next_action": "Autorizar un rebaselining recuperable de EURUSD/H1 con fecha mínima 1999-01-01 (o aportar procedencia histórica equivalente) y repetir Gate 0."
+      "status": "discarded_is",
+      "reason_code": "NO_PRE_COST_EDGE",
+      "reason": "Con la partición post-euro, la regla falló antes de costos y después de costos: net P&L IS -47.359, PF 0.80, drawdown 47.6%, AED p=0.851 y 0% de vecinos sensibles positivos. No se rescata ajustando parámetros.",
+      "next_action": "Archivar esta regla y no abrir OOS; una variación requiere una hipótesis nueva con evidencia independiente."
     }
   ]
 }
