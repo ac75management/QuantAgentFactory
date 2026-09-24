@@ -148,6 +148,20 @@ Solo trabajos en curso o bloqueados. Al liberar, borra tu fila: el resultado va 
 **Riesgos residuales:**
 1. Sensibilidad ±10/20% cuenta como N trials separados — si se corre sin límite, N crece rápido
 2. `daily_max_trials` solo actúa en esta campaña; no suma campañas previas (futuro: bonferroni global)
+
+### 2026-09-24 11:30 UTC — DESBLOQUEO: Decisiones cerradas, higiene completada, LISTO_PAUSA (Claude)
+
+**Decisiones aplicadas:**
+1. **Sensibilidad:** Diagnóstico solo, sin campañas ±10/20% ahora. Flujo documentado en `docs/SENSITIVITY_DIAGNOSTIC.md`.
+2. **Costos:** Estado actual documentado en `docs/COSTS_STATUS.md`. NO reabrir 001–011. NO nueva extracción MT5 obligatoria.
+3. **CI:** Workflow `tests.yml` existe; autorizado tests on push a master (solo tests, sin forzar).
+4. **Higiene ligera:**
+   - Suite: **191 tests passed** (100%)
+   - Registry: `data/trials_registry.jsonl` versionado (29 trials, JSONL append-only)
+   - Docs: `SENSITIVITY_DIAGNOSTIC.md` + `COSTS_STATUS.md` creados; no docs rotos
+   - Preflight: verde
+
+**Próximo estado:** LISTO_PAUSA — awaiting Alexander para OOS/presupuesto/008 solo. Laboratorio en pausa operativa; cero nuevos IS ni agentes sin autorización.
 3. Registry no bloquea, solo audita — la decisión de parar/seguir sigue siendo Alexander
 4. Reescrituras de histórico post-sello no se detectarían (segunda fuente pendiente)
 

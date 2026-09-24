@@ -99,6 +99,16 @@ Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover 
 
 **CHECKLIST DE PAUSA ALCANZADO. SIGUIENTE PASO: DECISIONES DE ALEXANDER.**
 
+### 2026-09-24 11:30 — LISTO_PAUSA: Higiene completada, decisiones aplicadas (Claude)
+
+**Decisiones cerradas (Alexander ausente):**
+- Sensibilidad: diagnóstico only → `docs/SENSITIVITY_DIAGNOSTIC.md`
+- Costos: estado documentado → `docs/COSTS_STATUS.md`
+- CI: tests.yml autorizado, push-on-test permitido
+- Higiene: suite 191✓, registry versionado, no docs rotos
+
+**Estado:** Laboratorio en pausa operativa. Registry en remoto, CLI operativo, suite verde, AGENTS/PROJECT_STATE al día. Cero nuevos IS, cero agentes. Awaiting Alexander para: OOS abierto, presupuesto/capital, 008 (EURUSD/H4 datos) solo.
+
 - ✓ Registry en remoto + backfill 29 runs (commit 11089b1, e843ddd)
 - ✓ CLI `count-trials` operativo: 29 trials registrados, agrupados por hypothesis/family
 - ✓ AGENTS.md restaurado, coherente y actualizado
