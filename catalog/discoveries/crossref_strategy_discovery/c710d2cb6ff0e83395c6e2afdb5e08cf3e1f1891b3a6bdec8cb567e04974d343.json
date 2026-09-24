@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "provider_id": "crossref_strategy_discovery",
+  "retrieved_at": "2026-09-23T14:17:59.445981+00:00",
+  "metadata_sha256": "c710d2cb6ff0e83395c6e2afdb5e08cf3e1f1891b3a6bdec8cb567e04974d343",
+  "record": {
+    "upstream_id": "10.1504/ijnvo.2026.10081245",
+    "title": "Business Trading Strategy Optimisation and Risk Control Based on Reinforcement Learning",
+    "source_url": "https://doi.org/10.1504/ijnvo.2026.10081245",
+    "doi": "10.1504/ijnvo.2026.10081245",
+    "authors": [
+      "Mengrui Bao"
+    ],
+    "publication_date": "2026-01-01",
+    "venue": "International Journal of Networking and Virtual Organisations",
+    "categories": [
+      "journal-article"
+    ],
+    "source_revision": null,
+    "code_available": false,
+    "access_level": "unknown",
+    "license": "metadata_open_content_license_per_record"
+  }
+}

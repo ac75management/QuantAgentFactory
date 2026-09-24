@@ -1,0 +1,39 @@
+{
+  "name": "Breakout de canal de 20 barras (DAX, H4)",
+  "source_name": "Quantpedia — Breakout Strategies",
+  "source_url": "https://quantpedia.com/strategies/breakout/",
+  "primary_source_url": "https://quantpedia.com/strategies/breakout/",
+  "publication_date": "2020-03-01",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "indices"
+  ],
+  "original_timeframes": [
+    "H4"
+  ],
+  "proposed_targets": [
+    {
+      "symbol": "DAX",
+      "timeframe": "H4"
+    },
+    {
+      "symbol": "SP500",
+      "timeframe": "H4"
+    }
+  ],
+  "rules_summary": "Enter long si close > max(high, 20 barras); exit si close < min(low, 20 barras).",
+  "code_available": false,
+  "scope_status": "eligible_for_review",
+  "notes": "Alcance H4, CFD. Familia channel_breakout (similar a 005 rechazada, pero H4 no H1).",
+  "candidate_id": "IDEA-QPD-506B5BD8191CEAAC",
+  "status": "rejected",
+  "created_at": "2026-09-24T05:26:15.205054+00:00",
+  "review": {
+    "candidate_id": "IDEA-QPD-506B5BD8191CEAAC",
+    "decision": "rejected",
+    "reviewer": "Claude",
+    "reason_code": "USER_REJECTED_FAMILY",
+    "decision_reason": "Familia channel_breakout fue rechazada por el usuario en hipótesis 005 (US30/H1). Aunque esta candidata propone H4 vs. H1 en 005, el rechazo fue de la familia, no del timeframe. Cambiar solo la frecuencia no constituye nueva hipótesis. Rechazada para la campaña actual.",
+    "reviewed_at": "2026-09-24T05:32:00+00:00"
+  }
+}

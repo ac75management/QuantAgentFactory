@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 TIMEFRAMES = {"H1": 60, "H4": 240, "D1": 1440}
 SWAP_SCHEDULES = {"triple", "daily_equal"}
 MARGIN_MODES = {"cfd_notional", "forex_base_account", "forex_base_quote"}
-FAMILIES = {"streak_reversal", "trend_cross", "channel_breakout", "oscillator_reversion", "sma_band_session"}
+FAMILIES = {"streak_reversal", "trend_cross", "channel_breakout", "oscillator_reversion", "sma_band_session", "ma_band_breakout", "calendar_window", "volatility_based", "kama_turn"}
 
 
 def positive(value, name, zero=False):
@@ -78,6 +78,30 @@ def validate_spec(spec):
             ZoneInfo(p["session_timezone"])
         except (ZoneInfoNotFoundError, KeyError, TypeError, ValueError):
             raise ValueError("session_timezone invalida")
+    if spec["family"] == "ma_band_breakout":
+        if not isinstance(p.get("ma_period"), int) or not 2 <= p["ma_period"] <= 500:
+            raise ValueError("ma_period invalido")
+        positive(p.get("band_fraction"), "band_fraction")
+        if p["band_fraction"] > 0.2:
+            raise ValueError("band_fraction fuera de (0, 0.2]")
+    if spec["family"] == "calendar_window":
+        if spec["timeframe"] != "D1":
+            raise ValueError("calendar_window requiere timeframe D1")
+        if spec.get("direction", "both") != "long":
+            raise ValueError("calendar_window turn-of-month requiere direction long")
+    if spec["family"] == "volatility_based":
+        if not isinstance(p.get("atr_period"), int) or not 2 <= p["atr_period"] <= 200:
+            raise ValueError("atr_period invalido para volatility_based")
+        positive(p.get("atr_multiple"), "atr_multiple")
+        if not 0 < p["atr_multiple"] <= 3.0:
+            raise ValueError("atr_multiple fuera de (0, 3.0]")
+    if spec["family"] == "kama_turn":
+        for key in ("ER_Length", "FastMA_Length", "SlowMA_Length"):
+            if not isinstance(p.get(key), int) or not 2 <= p[key] <= 500:
+                raise ValueError(f"{key} invalido para kama_turn: debe ser entero en [2, 500]")
+        positive(p.get("filter_std_multiplier", 0.01), "filter_std_multiplier")
+        if p.get("filter_std_multiplier", 0.01) > 0.5:
+            raise ValueError("filter_std_multiplier fuera de (0, 0.5]")
     return spec
 
 

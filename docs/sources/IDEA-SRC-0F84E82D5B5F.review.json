@@ -1,0 +1,7 @@
+{
+  "candidate_id": "IDEA-SRC-0F84E82D5B5F",
+  "decision": "rejected",
+  "reviewer": "investigator",
+  "reason_code": "OUT_OF_SCOPE",
+  "decision_reason": "La fuente primaria describe una regla teórica a escala de segundos que requiere observar el gap entre el precio medio del libro y un precio eficiente latente, además de paridad de ticks, spread y dinámica de saltos del libro de órdenes. QAF opera OHLC de CFDs en H1, H4 o D1 y no dispone de libro de órdenes ni del precio eficiente exógeno; adaptar la regla exigiría sustituir la variable central y dejaría de ser una réplica. El propio artículo califica como conjetura la reducción del proceso de saltos a la banda óptima. Se rechaza para la campaña MT5 actual; no se crea hipótesis, contrato ni backtest y OOS permanece cerrado. Fuente verificada: https://arxiv.org/abs/2608.00885, resumen y metadatos de la versión 1 del 1 de agosto de 2026."
+}

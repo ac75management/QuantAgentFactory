@@ -1,0 +1,13 @@
+{
+  "id": "eurusd-h4-media-m-vil-con-banda-porcentual",
+  "family": "ma_band_breakout",
+  "symbol": "EURUSD",
+  "timeframe": "H4",
+  "parameters": {"atr_period": 14, "sl_atr": 1.5, "tp_atr": 3.0, "max_holding": 20, "ma_period": 21, "band_fraction": 0.025},
+  "rationale": "Ruptura de banda porcentual en EURUSD H4: media móvil de 21 períodos con banda de 2.5% filtra ruido cerca de la media antes de capturar continuaciones. Parámetros de Kaufman (1987/1998).",
+  "hypothesis_id": "008",
+  "risk_fraction": 0.005,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}

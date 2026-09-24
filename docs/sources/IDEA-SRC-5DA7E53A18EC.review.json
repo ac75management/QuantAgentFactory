@@ -1,0 +1,12 @@
+{
+  "candidate_id": "IDEA-SRC-5DA7E53A18EC",
+  "decision": "rejected",
+  "reviewer": "Codex",
+  "reason_code": "OUT_OF_DOMAIN",
+  "decision_reason": "La fuente del editor identifica el DOI como la nota 'India’s Tech Strategy Gains Momentum', en New Electronics, sección News Analysis, p. 10. Su resumen trata del crecimiento de India como centro de innovación y fabricación impulsado por electrónica, semiconductores, investigación e inversión industrial. No estudia precios, retornos ni reglas de trading; el título Crossref fue una coincidencia léxica engañosa.",
+  "primary_source_url": "https://www.magonlinelibrary.com/toc/newe/59/3",
+  "primary_source_title": "India’s Tech Strategy Gains Momentum",
+  "primary_source_authors": ["Neil Tyler"],
+  "publication": "New Electronics, vol. 59, issue 3, 1 March 2026, News Analysis, p. 10",
+  "evidence_note": "Tabla de contenidos del editor: https://www.magonlinelibrary.com/toc/newe/59/3; DOI confirmado: 10.12968/S0047-9624(26)60232-5."
+}

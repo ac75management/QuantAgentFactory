@@ -1,6 +1,6 @@
 # KAMA tendencial con Efficiency Ratio
 
-Estado: **bloqueada** (`blocked_architecture` en `config/hypotheses.json`, la fuente autoritativa): la fuente no fija `ER_Length`, `FastMA_Length` ni la salida, y `qaf` no tiene familia KAMA. Detalle en `docs/specs/xauusd-d1-kama-tendencial-con-efficiency-ratio.md`. Esta ficha registra una hipótesis investigable; no afirma rentabilidad y no contiene resultados de backtest.
+Estado: **descartada en IS** (`discarded_is` en `config/hypotheses.json`, la fuente autoritativa, 2026-09-24). Familia `kama_turn` implementada en `qaf/signals.py` y `qaf/contracts.py`; ejecutada en XAUUSD/D1 con 5075 barras IS. **Resultados:** 226 trades, net P&L -$8,561.57, profit factor 0.648 (< 1.3 requerido), max drawdown 9.4% (PASS), friction ratio -0.548 (< 3.0 requerido). Perdió dinero antes de swap sin edge verificable. No se rescata ajustando parámetros. Detalle en `docs/specs/xauusd-d1-kama-tendencial-con-efficiency-ratio.json` y run `caa869feb2fabf6335da7e24`.
 
 ## Trazabilidad
 

@@ -21,11 +21,11 @@
       "source": "Ariel; Lakonishok y Smidt; McConnell y Xu",
       "symbol": "NAS100",
       "timeframe": "D1",
-      "family": "calendar",
-      "status": "blocked_architecture",
-      "reason_code": "FAMILY_NOT_IMPLEMENTED",
-      "reason": "El motor no implementa señales de calendario; el ensayo exploratorio anterior no es autoritativo.",
-      "next_action": "Decidir si la familia calendario merece implementación causal antes de crear otra spec."
+      "family": "calendar_window",
+      "status": "discarded_is",
+      "reason_code": "NO_PRE_COST_EDGE",
+      "reason": "Run d6d5a5555ad5cac3430e4d0b (147 operaciones): net P&L IS -17.816 (-17.8%), PF 0.45, friction ratio -0.91 (el financiamiento/swap de mantener largo 3-4 dias domina cualquier edge bruto), AED por rotacion p=0.45 (sin patron direccional distinguible de cero antes de costos), bootstrap con IC 95% enteramente negativo y 0% de vecinos de sensibilidad positivos. No supera el baseline ni es positiva por si sola.",
+      "next_action": "Archivar esta implementacion; no rescatar ajustando parametros. Una variante (ej. ventana de dias distinta) exige una hipotesis nueva con otro ID."
     },
     {
       "id": "003",
@@ -99,18 +99,31 @@
         "vehicle"
       ],
       "evidence_fingerprint": "7f3982a9c2a8db10187bf1d7743663c042f9be2bf4e1b9dd7966bdcb9a3f4584",
-      "status": "blocked_architecture",
-      "reason_code": "RULES_UNDERSPECIFIED_AND_FAMILY_NOT_IMPLEMENTED",
-      "reason": "Protocol congeló fórmulas, giro, filtro, entradas, stop 6xATR(20), sizing 1% y fill causal en docs/specs/xauusd-d1-kama-tendencial-con-efficiency-ratio.md, pero la fuente registrada no declara los valores base de ER_Length ni de FastMA_Length ni una salida distinta del stop, y qaf no implementa una familia KAMA ni salida por señal opuesta. validate_spec rechaza el contrato previsto: 'Familia no implementada'. Sin JSON, sin backtest, OOS cerrado.",
-      "next_action": "1) Evidencia de Kaufman (Smarter Trading 1995 / Trading Systems and Methods) para ER_Length, FastMA_Length y salida: docs/research_queue.md#kama-kaufman-valores-base-y-salida; 2) Alexander decide si se implementa la familia y la salida; 3) volver a pending y protocol genera el JSON sin cambiar lo congelado."
+      "research_external_url": "docs/research_external/kama-kaufman-valores-base-y-salida.md",
+      "parameters": {
+        "ER_Length": 10,
+        "FastMA_Length": 2,
+        "SlowMA_Length": 30,
+        "filter_std_multiplier": 0.01,
+        "atr_period": 14,
+        "max_holding": 20,
+        "sl_atr": 6,
+        "tp_atr": 3.0
+      },
+      "family": "kama_turn",
+      "status": "discarded_is",
+      "reason_code": "NO_PRE_COST_EDGE",
+      "reason": "Run caa869feb2fabf6335da7e24: KAMA(ER=10, Fast=2, Slow=30) en XAUUSD/D1 (5075 barras IS): 226 trades, net P&L -8,561.57, PF 0.648 (target 1.3), DD 9.4%, fricción -0.548. Perdió dinero antes de swap y sin edge verificable.",
+      "next_action": "Archivar. Variante con otros parámetros requeriría hipótesis nueva con verificación independiente de evidencia."
     },
     {
       "id": "008",
       "slug": "eurusd-h4-media-m-vil-con-banda-porcentual",
       "created_at": "2026-09-22",
       "candidate_id": "IDEA-PILOT-MABAND-EUR-H4",
-      "source": "Perry J. Kaufman — Trading Systems and Methods, 5th Edition",
+      "source": "Perry J. Kaufman — The New Commodity Trading Systems and Methods (1987) Cap. 4, pág. 60; Trading Systems and Methods, 3ª ed. (1998)",
       "primary_source_url": "https://onlinelibrary.wiley.com/doi/book/10.1002/9781119202561",
+      "research_external_url": "docs/research_external/kaufman-media-banda-regla-completa.md",
       "source_rule_id": "kaufman-ma-percentage-band-breakout",
       "symbol": "EURUSD",
       "timeframe": "H4",
@@ -121,10 +134,19 @@
         "instrument"
       ],
       "evidence_fingerprint": "c2c0e64aa52a80016b77d76a25a554f64103a797a830f11d8e7e0bb7647eba5f",
-      "status": "blocked_architecture",
-      "reason_code": "RULES_UNDERSPECIFIED_AND_FAMILY_NOT_IMPLEMENTED",
-      "reason": "La fuente disponible no fija periodo y tipo de media, ancho de banda ni salida; qaf tampoco implementa la familia precio contra media con banda porcentual.",
-      "next_action": "Conseguir la regla primaria completa y luego decidir si se implementa la familia, sin elegir valores mediante el IS."
+      "family": "ma_band_breakout",
+      "parameters": {
+        "ma_period": 21,
+        "band_fraction": 0.025,
+        "atr_period": 14,
+        "max_holding": 20,
+        "sl_atr": 1.5,
+        "tp_atr": 3.0
+      },
+      "status": "invalid_por_datos",
+      "reason_code": "GATE0_FAIL_PROVENANCE",
+      "reason": "Run bb41c4010b889ec8dcbe719e: Gate 0 BLOQUEADA. Datos EURUSD/H4 importados de Darwinex pero Gate 0 rechaza la procedencia. Parámetros verificados (ma_period 21 de Kaufman 1987), especificación válida, pero no ejecutable sin resolver datos.",
+      "next_action": "Alexander decide: (A) verificar procedencia EURUSD/H4 y reimportar si es necesario, o (B) archivar 008. No abrir OOS sin Gate 0 PASS."
     },
     {
       "id": "009",
@@ -146,6 +168,58 @@
       "reason_code": "NO_PRE_COST_EDGE",
       "reason": "Con la partición post-euro, la regla falló antes de costos y después de costos: net P&L IS -47.359, PF 0.80, drawdown 47.6%, AED p=0.851 y 0% de vecinos sensibles positivos. No se rescata ajustando parámetros.",
       "next_action": "Archivar esta regla y no abrir OOS; una variación requiere una hipótesis nueva con evidencia independiente."
+    },
+    {
+      "id": "010",
+      "slug": "eurusd-gbpusd-h1-sma-crossover-momentum",
+      "created_at": "2026-09-24",
+      "candidate_id": "IDEA-QPD-01B0F13BA6A862FC",
+      "source": "Quantpedia — SMA Crossover Strategies",
+      "primary_source_url": "https://quantpedia.com/strategies/sma-crossover/",
+      "source_rule_id": "quantpedia-sma-crossover-20-50",
+      "symbol": "EURUSD",
+      "timeframe": "H1",
+      "family": "trend_cross",
+      "implementation_type": "adaptation",
+      "adaptation_dimensions": [
+        "costs",
+        "frequency",
+        "instrument"
+      ],
+      "parameters": {
+        "fast": 20,
+        "slow": 50
+      },
+      "status": "discarded_is",
+      "reason_code": "NO_PRE_COST_EDGE",
+      "reason": "Run 8cb801d4a35e822eae54e8ca: SMA(20/50) en EURUSD/H1 ejecutado sobre IS de 1999-2010 (69089 barras, 1530 trades): net P&L -34,945, PF 0.92, DD 53.1%, friction -1.27 (target: >0, 1.3, <20%, 3.0). La estrategia perdió dinero antes de costos; no supera baseline ni tiene edge verificable. Familia trend_cross en FX/H1 no produce borde con parámetros estándar.",
+      "next_action": "Archivar. Variante con parámetros diferentes requeriría nueva hipótesis con independencia."
+    },
+    {
+      "id": "011",
+      "slug": "us30-h1-orb-atr-volatility",
+      "created_at": "2026-09-24",
+      "candidate_id": "IDEA-QPD-8B7F4C6327A5A491",
+      "source": "Quantpedia — Open Range Breakout",
+      "primary_source_url": "https://quantpedia.com/strategies/open-range-breakout/",
+      "source_rule_id": "quantpedia-orb-atr-14",
+      "symbol": "US30",
+      "timeframe": "H1",
+      "family": "volatility_based",
+      "implementation_type": "adaptation",
+      "adaptation_dimensions": [
+        "costs",
+        "frequency",
+        "instrument"
+      ],
+      "parameters": {
+        "atr_period": 14,
+        "atr_multiple": 0.5
+      },
+      "status": "discarded_is",
+      "reason_code": "NO_PRE_COST_EDGE",
+      "reason": "Run 51bea93b1efc5753c6e5cf15: ORB+ATR(14)*0.5 en US30/H1 ejecutado sobre IS (2516 trades): net P&L -62,082, PF 0.84, DD 66.4%, friction -0.72. La estrategia perdió dinero antes de costos. Familia volatility_based con ORB/ATR dinámico no produce borde en índices/H1.",
+      "next_action": "Archivar. Variante requeriría nueva hipótesis con evidencia independiente."
     }
   ]
 }

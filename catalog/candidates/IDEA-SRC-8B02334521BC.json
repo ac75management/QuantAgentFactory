@@ -1,0 +1,74 @@
+{
+  "candidate_id": "IDEA-SRC-8B02334521BC",
+  "name": "High-frequency intraday trading for battery storages",
+  "source_name": "arXiv Quantitative Finance",
+  "source_url": "https://arxiv.org/abs/2504.06932",
+  "primary_source_url": "https://arxiv.org/abs/2504.06932",
+  "publication_date": "2025-04-09",
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "arxiv_qfin",
+    "upstream_id": "2504.06932",
+    "first_seen_at": "2026-09-23T14:17:59.445981+00:00",
+    "metadata_sha256": "dfc9ffce88fa2477c43992cce8a4ff2ccb912f860ce460477a45d762fdf51b4b",
+    "snapshot_path": "catalog/discoveries/arxiv_qfin/dfc9ffce88fa2477c43992cce8a4ff2ccb912f860ce460477a45d762fdf51b4b.json",
+    "identity_keys": [
+      "arxiv:2504.06932",
+      "doi:10.1016/j.apenergy.2026.128550",
+      "url:https://arxiv.org/abs/2504.06932"
+    ],
+    "work_key": "work:high frequency intraday trading for battery storages|schaurecker",
+    "source_revision": "2026-07-31T14:47:59Z",
+    "repository_url": null,
+    "source_path": null,
+    "license": "per_record_review_required",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T14:18:02.433966+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-8B02334521BC",
+    "decision": "rejected",
+    "reviewer": "Codex",
+    "reason_code": "OUT_OF_SCOPE",
+    "decision_reason": "La fuente optimiza baterias en el mercado electrico intradia continuo usando libro completo de ordenes y reaccion a eventos en milisegundos. El propio resultado depende criticamente de la velocidad; viola el minimo H1 y requiere datos y un activo ajenos al universo QAF.",
+    "primary_source_url": "https://arxiv.org/abs/2504.06932",
+    "primary_source_title": "High-frequency intraday trading for battery storages",
+    "primary_source_authors": [
+      "David Schaurecker",
+      "David Wozabal",
+      "Nils Lohndorf",
+      "Thorsten Staake"
+    ],
+    "evidence_note": "El resumen primario especifica mercado electrico continuo, libro de ordenes completo, resolucion de milisegundos y una ventaja que cae al reoptimizar cada hora o minuto.",
+    "reviewed_at": "2026-09-23T22:50:02.839956+00:00"
+  }
+}

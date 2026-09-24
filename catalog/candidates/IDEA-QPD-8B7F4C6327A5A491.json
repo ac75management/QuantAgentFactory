@@ -1,0 +1,37 @@
+{
+  "name": "ATR dinámico en ORB (Open Range Breakout, US30 H1)",
+  "source_name": "Quantpedia — Open Range Breakout",
+  "source_url": "https://quantpedia.com/strategies/open-range-breakout/",
+  "primary_source_url": "https://quantpedia.com/strategies/open-range-breakout/",
+  "publication_date": "2021-01-15",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "indices"
+  ],
+  "original_timeframes": [
+    "D1"
+  ],
+  "proposed_targets": [
+    {
+      "symbol": "US30",
+      "timeframe": "H1"
+    }
+  ],
+  "rules_summary": "ORB: enter si close > open + ATR(14)*0.5; exit si close < open - ATR(14)*0.5.",
+  "code_available": false,
+  "scope_status": "eligible_for_review",
+  "notes": "Alcance H1, CFD. Familia volatility_based. Distinción vs. 005 (channel_breakout).",
+  "candidate_id": "IDEA-QPD-8B7F4C6327A5A491",
+  "status": "promoted",
+  "created_at": "2026-09-24T05:26:15.206054+00:00",
+  "hypothesis_id": "011",
+  "family": "volatility_based",
+  "review": {
+    "candidate_id": "IDEA-QPD-8B7F4C6327A5A491",
+    "decision": "promoted",
+    "reviewer": "Claude",
+    "reason_code": "ELIGIBLE_FOR_PROTOCOL",
+    "decision_reason": "Open Range Breakout con ATR dinámico es familia volatility_based no probada aún en el proyecto. Alcance H1/D1 en US30 dentro del universo. Mecanismo: ORB (apertura) + ATR(14) para nivel de entrada/salida (distinto a canales estáticos 005). Fuente Quantpedia verificable. Promovida para investigación de parámetros y construcción de protocolo.",
+    "reviewed_at": "2026-09-24T05:32:00+00:00"
+  }
+}

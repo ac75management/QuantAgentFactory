@@ -1,0 +1,39 @@
+{
+  "name": "RSI Oversold/Overbought en índices (H4)",
+  "source_name": "Quantpedia — RSI(14) estrategia clásica",
+  "source_url": "https://quantpedia.com/strategies/rsi-2-strategy/",
+  "primary_source_url": "https://quantpedia.com/strategies/rsi-2-strategy/",
+  "publication_date": "2020-01-01",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "indices"
+  ],
+  "original_timeframes": [
+    "D1"
+  ],
+  "proposed_targets": [
+    {
+      "symbol": "SP500",
+      "timeframe": "H4"
+    },
+    {
+      "symbol": "NAS100",
+      "timeframe": "H4"
+    }
+  ],
+  "rules_summary": "RSI(2) en D1: enter long RSI < 30, exit RSI > 70. Clásico mean reversion de Connors.",
+  "code_available": false,
+  "scope_status": "eligible_for_review",
+  "notes": "Alcance H4/D1, CFD. Requiere verificar si es distinto de 003 (ya descartada por edge débil).",
+  "candidate_id": "IDEA-QPD-CA8EFE22A705919F",
+  "status": "rejected",
+  "created_at": "2026-09-24T05:26:15.204048+00:00",
+  "review": {
+    "candidate_id": "IDEA-QPD-CA8EFE22A705919F",
+    "decision": "rejected",
+    "reviewer": "Claude",
+    "reason_code": "WEAK_EDGE_VERIFIED_IN_SIMILAR",
+    "decision_reason": "RSI(2) mean reversion en índices fue ya verificada en hipótesis 003 (SP500/D1), que falló en IS por edge bruto insuficiente (AED p=0.90). Cambiar timeframe a H4 no constituye nueva evidencia; la adaptación solo cambia la frecuencia de señales, no el mecanismo. Rechazada para la campaña actual.",
+    "reviewed_at": "2026-09-24T05:30:00+00:00"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "provider_id": "arxiv_qfin",
+  "retrieved_at": "2026-09-23T14:17:59.445981+00:00",
+  "metadata_sha256": "dfc9ffce88fa2477c43992cce8a4ff2ccb912f860ce460477a45d762fdf51b4b",
+  "record": {
+    "upstream_id": "2504.06932",
+    "arxiv_id": "2504.06932",
+    "version": "v4",
+    "title": "High-frequency intraday trading for battery storages",
+    "source_url": "https://arxiv.org/abs/2504.06932",
+    "doi": "10.1016/j.apenergy.2026.128550",
+    "authors": [
+      "David Schaurecker",
+      "David Wozabal",
+      "Nils Löhndorf",
+      "Thorsten Staake"
+    ],
+    "publication_date": "2025-04-09",
+    "categories": [
+      "q-fin.TR",
+      "eess.SY",
+      "math.OC"
+    ],
+    "source_revision": "2026-07-31T14:47:59Z",
+    "code_available": false,
+    "access_level": "public",
+    "license": "per_record_review_required"
+  }
+}

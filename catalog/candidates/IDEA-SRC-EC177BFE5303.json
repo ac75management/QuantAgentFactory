@@ -1,0 +1,70 @@
+{
+  "candidate_id": "IDEA-SRC-EC177BFE5303",
+  "name": "M A C D Trend Algorithm",
+  "source_name": "QuantConnect LEAN Algorithm.Python",
+  "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/MACDTrendAlgorithm.py",
+  "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/MACDTrendAlgorithm.py",
+  "publication_date": null,
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": true,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "quantconnect_lean_examples",
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/MACDTrendAlgorithm.py",
+    "first_seen_at": "2026-09-23T14:17:59.445981+00:00",
+    "metadata_sha256": "ed1de3844bbe80f52bfa85ccee0754f04756095aa76962b44e3d40c33e480c00",
+    "snapshot_path": "catalog/discoveries/quantconnect_lean_examples/ed1de3844bbe80f52bfa85ccee0754f04756095aa76962b44e3d40c33e480c00.json",
+    "identity_keys": [
+      "repo-path:https://github.com/quantconnect/lean:algorithm.python/macdtrendalgorithm.py",
+      "url:https://github.com/quantconnect/lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/algorithm.python/macdtrendalgorithm.py"
+    ],
+    "work_key": null,
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/MACDTrendAlgorithm.py",
+    "license": "Apache-2.0",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T14:18:09.514804+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-EC177BFE5303",
+    "decision": "rejected",
+    "reviewer": "Codex",
+    "reason_code": "DEMO_NOT_EVIDENCE",
+    "decision_reason": "El archivo se declara explicitamente una demostracion simple del indicador MACD. Opera SPY diario entre 2004 y 2015 con parametros y tolerancia codificados, pero no documenta una hipotesis causal, costos, comparacion estadistica ni robustez; una demo de API no es evidencia primaria de un edge.",
+    "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/MACDTrendAlgorithm.py",
+    "primary_source_title": "MACDTrendAlgorithm.py",
+    "primary_source_authors": [
+      "QuantConnect Corporation"
+    ],
+    "evidence_note": "El codigo lo etiqueta como simple indicator demonstration algorithm of MACD y usa SPY D1, MACD(12,26,9) y una tolerancia fija.",
+    "reviewed_at": "2026-09-23T22:50:03.282871+00:00"
+  }
+}

@@ -1,6 +1,6 @@
-# Spec: xauusd-d1-kama-tendencial-con-efficiency-ratio
+# Hipótesis 007: XAUUSD D1 — KAMA Tendencial con Efficiency Ratio
 
-**Estado: BLOQUEADA — no ejecutable en qaf; contrato JSON no generado.**
+**Estado: LISTO PARA VALIDACIÓN IS**
 
 - Hipótesis: **#007** de `docs/hypotheses/_registry.md` (espejo de `config/hypotheses.json`, `id: "007"`, estado `pending` al escribir esta spec).
 - Hipótesis origen: `docs/hypotheses/xauusd-d1-kama-tendencial-con-efficiency-ratio.md`. Revisión de fuente: `docs/sources/pilot-001-kama-xauusd-d1.review.json` (`source_rule_id: oxford-kama-turn-filter-atr6`).

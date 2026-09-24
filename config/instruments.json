@@ -299,10 +299,11 @@
     "max_leverage": 10,
     "price_basis": "unknown",
     "calendar_verified": false,
-    "provenance_verified": false,
+    "provenance_verified": true,
     "costs_verified": false,
-    "as_of": "2026-09-22",
+    "as_of": "2026-09-24",
     "source_snapshot": "docs/cost_snapshots/20260922_1122.json",
+    "provenance_notes": "Darwinex histórico EURUSD/H1-H4-D1, 1999-01-04 a 2026-09-22, verificado (filtrado pre-1999, rebaseline 2026-09-24)",
     "reserves": [
       "Spread puntual y slippage supuesto; no distribución histórica",
       "Referencia mid supuesta; bid/ask pendiente",
@@ -310,7 +311,10 @@
       "Rollover NY 17:00 supuesto para barras del proveedor; sesiones pendientes",
       "Tick value y conversiones constantes del escenario; no reconstrucción histórica",
       "Unidad histórica de swaps/divisa pendiente; no habilitar validación"
-    ]
+    ],
+    "spread_csv": "data/spreads/EURUSD_H1_spread.csv",
+    "spread_method": "per_bar",
+    "spread_source": "MT5 histórico real"
   },
   "GBPUSD": {
     "status": "research",
@@ -355,7 +359,10 @@
       "Rollover NY 17:00 supuesto para barras del proveedor; sesiones pendientes",
       "Tick value y conversiones constantes del escenario; no reconstrucción histórica",
       "Unidad histórica de swaps/divisa pendiente; no habilitar validación"
-    ]
+    ],
+    "spread_csv": "data/spreads/GBPUSD_H1_spread.csv",
+    "spread_method": "per_bar",
+    "spread_source": "MT5 histórico real"
   },
   "PETROLEO": {
     "status": "research",
@@ -444,7 +451,10 @@
       "Rollover NY 17:00 supuesto para barras del proveedor; sesiones pendientes",
       "Tick value y conversiones constantes del escenario; no reconstrucción histórica",
       "Dividendos no modelados: falta serie de ajustes; solo exploración"
-    ]
+    ],
+    "spread_csv": "data/spreads/DAX_H1_spread.csv",
+    "spread_method": "per_bar",
+    "spread_source": "MT5 histórico real"
   },
   "BTCUSD": {
     "status": "pending",

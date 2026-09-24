@@ -1,4 +1,11 @@
-# Bitácora histórica de PROJECT_STATE.md (hasta 2026-09-22 20:00)
+# Bitácora histórica de PROJECT_STATE.md (base hasta 2026-09-22 20:00 y entradas compactadas posteriores)
+
+### 2026-09-22 20:10 — Limpieza del proyecto (Claude-app, autorizada por Alexander)
+- Quitados `docs/archive/pre_factory_v2/`, scripts retirados, copias de pilotos, el stub de calidad y la lectura antigua de `state/catalog/`.
+- Movidos informes y propuestas a sus carpetas de archivo; los resultados locales quedaron fuera de versión.
+- Reescritos los documentos que contradecían al código y deduplicado el protocolo de coordinación en `AGENTS.md`.
+- El catálogo pasó a fallar visiblemente ante archivos ilegibles y la anomalía histórica 001 dejó de advertir.
+- Suite: 146 pasados / 0 fallidos.
 
 Copia íntegra, sin editar, de `PROJECT_STATE.md` antes de la limpieza del 2026-09-22. Es historia: las secciones CURRENT STATUS y NEXT ACTION de abajo **no** describen el estado vigente, que está en `PROJECT_STATE.md` y en `python -m qaf.pipeline`.
 

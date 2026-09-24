@@ -1,0 +1,70 @@
+{
+  "candidate_id": "IDEA-SRC-158F64189C27",
+  "name": "AI and Exchange Rate Predictability",
+  "source_name": "arXiv Quantitative Finance",
+  "source_url": "https://arxiv.org/abs/2608.00761",
+  "primary_source_url": "https://arxiv.org/abs/2608.00761",
+  "publication_date": "2026-08-01",
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "arxiv_qfin",
+    "upstream_id": "2608.00761",
+    "first_seen_at": "2026-09-23T14:17:59.445981+00:00",
+    "metadata_sha256": "f0bd85c96e157fb53bf3393de03e195135bf32e5908521f735418d1a269925fb",
+    "snapshot_path": "catalog/discoveries/arxiv_qfin/f0bd85c96e157fb53bf3393de03e195135bf32e5908521f735418d1a269925fb.json",
+    "identity_keys": [
+      "arxiv:2608.00761",
+      "url:https://arxiv.org/abs/2608.00761"
+    ],
+    "work_key": "work:ai and exchange rate predictability|izadyar",
+    "source_revision": "2026-08-01T16:50:04Z",
+    "repository_url": null,
+    "source_path": null,
+    "license": "per_record_review_required",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T14:18:02.403714+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-158F64189C27",
+    "decision": "rejected",
+    "reviewer": "Codex",
+    "reason_code": "DATA_AND_PORTFOLIO_OUT_OF_SCOPE",
+    "decision_reason": "La fuente estudia una cartera transversal que compra monedas con fundamentales fuertes y vende monedas con fundamentales debiles. La senal depende de publicaciones macroeconomicas y razonamiento de modelos generativos, no de OHLC de un solo CFD H1/H4/D1; QAF no dispone de esos datos ni de esa arquitectura y no corresponde inventar una adaptacion tecnica.",
+    "primary_source_url": "https://arxiv.org/abs/2608.00761",
+    "primary_source_title": "AI and Exchange Rate Predictability",
+    "primary_source_authors": [
+      "Amin Izadyar"
+    ],
+    "evidence_note": "El resumen primario declara prediccion transversal de retornos de divisas a partir de publicaciones economicas procesadas por ChatGPT y DeepSeek, con posiciones long/short entre monedas.",
+    "reviewed_at": "2026-09-23T22:50:01.535688+00:00"
+  }
+}

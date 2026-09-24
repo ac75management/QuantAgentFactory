@@ -3,10 +3,11 @@ import os
 import re
 from datetime import date, datetime, timezone
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from uuid import uuid4
 
 from .contracts import TIMEFRAMES
+from .coordination import Coordination
 from .io import ROOT, digest, read_json, write_json, write_json_exclusive
 from .registry import Registry
 
@@ -50,6 +51,10 @@ def _url(value, name, required=True):
     parsed = urlparse(value.strip())
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise ValueError(f"{name} debe ser una URL http(s)")
+    try:
+        parsed.port
+    except ValueError as error:
+        raise ValueError(f"{name} contiene un puerto inválido") from error
     return value.strip()
 
 
@@ -63,6 +68,46 @@ def _target_pairs(candidate):
         for symbol in candidate.get("instruments", [])
         for timeframe in candidate.get("original_timeframes", [])
     }
+
+
+def _canonical_source_url(value):
+    """Normalize common URL noise for advisory duplicate matching only."""
+    parsed = urlparse(value.strip())
+    host = (parsed.hostname or "").lower()
+    if host == "dx.doi.org":
+        host = "doi.org"
+    port = parsed.port
+    netloc = host if port is None or (parsed.scheme.lower(), port) in {("http", 80), ("https", 443)} else f"{host}:{port}"
+    query = sorted(
+        (key, val) for key, val in parse_qsl(parsed.query, keep_blank_values=True)
+        if not key.lower().startswith("utm_") and key.lower() not in {"fbclid", "gclid"}
+    )
+    return urlunparse((parsed.scheme.lower(), netloc, parsed.path.rstrip("/"), "", urlencode(query), ""))
+
+
+def _candidate_url_keys(candidate):
+    return {
+        _canonical_source_url(candidate[key])
+        for key in ("source_url", "primary_source_url")
+        if candidate.get(key)
+    }
+
+
+def _possible_candidate_duplicates(candidate, candidates):
+    keys = _candidate_url_keys(candidate)
+    matches = []
+    for existing in candidates:
+        if existing.get("candidate_id") == candidate.get("candidate_id"):
+            continue
+        shared = keys & _candidate_url_keys(existing)
+        if shared:
+            matches.append({
+                "candidate_id": existing["candidate_id"],
+                "name": existing.get("name", ""),
+                "status": existing.get("status", "unknown"),
+                "matched_urls": sorted(shared),
+            })
+    return matches
 
 
 def validate_candidate(candidate):
@@ -192,27 +237,47 @@ def add_candidate(candidate, root=ROOT, before_write=None):
         candidate_id = "IDEA-" + uuid4().hex[:10].upper()
     if candidate["status"] != "captured":
         raise ValueError("Una idea nueva debe iniciar con status captured")
-    now = datetime.now(timezone.utc).isoformat()
-    record = {**candidate, "candidate_id": candidate_id, "created_at": now, "assessment": assessment}
-    path = candidate_path(root, candidate_id)
-    if before_write:
-        before_write()
+    lease = None
+    agent = None
+    checkpoint = before_write
+    if checkpoint is None:
+        lease = Coordination(root)
+        agent = f"catalog-add:{os.getpid()}:{uuid4().hex}"
+        try:
+            lease.claim(agent, ("catalog/candidates",), "Captura manual y detección de posibles duplicados")
+        except BaseException:
+            lease.close()
+            raise
+        checkpoint = lambda: lease.heartbeat(agent, ("catalog/candidates",))
     try:
-        write_json_exclusive(path, record)
-    except FileExistsError as error:
-        raise ValueError(f"El candidato {candidate_id} ya existe") from error
-    if before_write:
-        before_write()
-    registry = Registry(root / "state/research.sqlite3")
-    try:
-        registry.queue_task(
-            "catalog:" + candidate_id, candidate_id, "evidence_review", "investigator",
-            json.dumps([str(path.relative_to(root))], ensure_ascii=False),
-            "Idea catalogada; revisar fuente primaria y reglas antes de crear una hipótesis.",
+        assessment["possible_duplicates"] = _possible_candidate_duplicates(
+            {**candidate, "candidate_id": candidate_id}, list_candidates(root)
         )
+        now = datetime.now(timezone.utc).isoformat()
+        record = {**candidate, "candidate_id": candidate_id, "created_at": now, "assessment": assessment}
+        path = candidate_path(root, candidate_id)
+        checkpoint()
+        try:
+            write_json_exclusive(path, record)
+        except FileExistsError as error:
+            raise ValueError(f"El candidato {candidate_id} ya existe") from error
+        checkpoint()
+        registry = Registry(root / "state/research.sqlite3")
+        try:
+            registry.queue_task(
+                "catalog:" + candidate_id, candidate_id, "evidence_review", "investigator",
+                json.dumps([str(path.relative_to(root))], ensure_ascii=False),
+                "Idea catalogada; revisar fuente primaria, posibles duplicados y reglas antes de crear una hipótesis.",
+            )
+        finally:
+            registry.close()
+        return record, path
     finally:
-        registry.close()
-    return record, path
+        if lease is not None:
+            try:
+                lease.release(agent, ("catalog/candidates",), "candidato capturado")
+            finally:
+                lease.close()
 
 
 def acknowledge_refresh(candidate_id, fingerprint, root=ROOT):

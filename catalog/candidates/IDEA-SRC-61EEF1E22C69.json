@@ -1,0 +1,92 @@
+{
+  "candidate_id": "IDEA-SRC-61EEF1E22C69",
+  "name": "Futures Momentum Algorithm",
+  "source_name": "QuantConnect LEAN Algorithm.Python",
+  "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/FuturesMomentumAlgorithm.py",
+  "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/FuturesMomentumAlgorithm.py",
+  "publication_date": null,
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": true,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "quantconnect_lean_examples",
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/FuturesMomentumAlgorithm.py",
+    "first_seen_at": "2026-09-23T14:17:59.445981+00:00",
+    "metadata_sha256": "2ce9ff8787f0d6a9bdc192363227e3c4ab242fece14df3f85c823b42378ff103",
+    "snapshot_path": "catalog/discoveries/quantconnect_lean_examples/2ce9ff8787f0d6a9bdc192363227e3c4ab242fece14df3f85c823b42378ff103.json",
+    "identity_keys": [
+      "repo-path:https://github.com/quantconnect/lean:algorithm.python/futuresmomentumalgorithm.py",
+      "url:https://github.com/quantconnect/lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/algorithm.python/futuresmomentumalgorithm.py"
+    ],
+    "work_key": null,
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/FuturesMomentumAlgorithm.py",
+    "license": "Apache-2.0",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T14:18:09.480606+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-61EEF1E22C69",
+    "decision": "rejected",
+    "reviewer": "Codex",
+    "reason_code": "OUT_OF_SCOPE",
+    "decision_reason": "La fuente primaria es un ejemplo educativo del repositorio QuantConnect LEAN, marcado expresamente como 'strategy example'; no es un estudio ni presenta evidencia de rentabilidad. El código usa un cruce de EMA 20/60 calculadas sobre SPY diario para generar señales sobre futuros E-mini del S&P 500, con un ejemplo de enero a agosto de 2016 y una regla particular de selección de contrato. El universo actual de QAF no incluye ese futuro y la ficha no propone un objetivo compatible. No hay base para promover el ejemplo como estrategia de trading investigada; se rechaza del catálogo de estrategias, aunque el código puede servir como referencia técnica separada.",
+    "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/FuturesMomentumAlgorithm.py",
+    "primary_source_title": "FuturesMomentumAlgorithm.py — QuantConnect LEAN",
+    "primary_source_authors": [
+      "QuantConnect Corporation"
+    ],
+    "evidence_summary": "El encabezado comenta que el ejemplo demuestra cómo operar futuros E-mini del S&P 500 usando una acción para generar señales. El código fija SPY diario, EMA rápida de 20 y lenta de 60, una tolerancia 0.1%, y abre un futuro cuando la rápida queda suficientemente por encima de la lenta; liquida si la condición bajista se cumple. El filtro selecciona contratos con expiración a más de 90 días y toma uno según la expiración ordenada en el código. La muestra escrita para el ejemplo es 2016-01-01 a 2016-08-18. El archivo no informa resultados fuera de muestra, controles de robustez ni evidencia de edge.",
+    "original_market": "SPY como señal y futuros E-mini del S&P 500 como vehículo de ejecución",
+    "original_vehicle": "Futuro E-mini con señal derivada de ETF de acciones",
+    "original_instruments": [
+      "SPY",
+      "E-mini S&P 500 futures"
+    ],
+    "original_timeframes": [
+      "D1"
+    ],
+    "original_rules": [
+      "El ejemplo calcula EMA(20) y EMA(60) sobre SPY diario.",
+      "Abre un contrato E-mini del S&P 500 cuando EMA(20) > EMA(60) * 1.001.",
+      "Liquida la posición cuando EMA(20) < EMA(60) * 1.001.",
+      "La lista de futuros se filtra por expiración superior a 90 días y se selecciona un contrato mediante ordenación por expiración.",
+      "La fuente identifica el archivo como ejemplo técnico, no como regla respaldada por un paper de resultados."
+    ],
+    "limitations": [
+      "No es evidencia primaria de una anomalía ni de rendimiento robusto.",
+      "SPY y futuros E-mini no están en el universo CFD/futuros vigente de QAF.",
+      "La ventana de fechas del ejemplo es corta y no incluye control de costos ni validación fuera de muestra.",
+      "La selección/rollover del contrato continuo no equivale a una serie de CFD y no debe trasladarse sin especificación nueva."
+    ],
+    "reviewed_at": "2026-09-23T21:44:48.525675+00:00"
+  }
+}

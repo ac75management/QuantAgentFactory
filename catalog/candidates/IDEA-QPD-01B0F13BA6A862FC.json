@@ -1,0 +1,41 @@
+{
+  "name": "Momentum cruzado SMA(20/50) en EURUSD (H1)",
+  "source_name": "Quantpedia — SMA Crossover Strategies",
+  "source_url": "https://quantpedia.com/strategies/sma-crossover/",
+  "primary_source_url": "https://quantpedia.com/strategies/sma-crossover/",
+  "publication_date": "2019-06-01",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "fx"
+  ],
+  "original_timeframes": [
+    "D1"
+  ],
+  "proposed_targets": [
+    {
+      "symbol": "EURUSD",
+      "timeframe": "H1"
+    },
+    {
+      "symbol": "GBPUSD",
+      "timeframe": "H1"
+    }
+  ],
+  "rules_summary": "SMA(20) cruza SMA(50): enter long si corta > larga, exit si corta < larga.",
+  "code_available": false,
+  "scope_status": "eligible_for_review",
+  "notes": "Alcance H1/D1, FX. Familia trend_cross potencial.",
+  "candidate_id": "IDEA-QPD-01B0F13BA6A862FC",
+  "status": "promoted",
+  "created_at": "2026-09-24T05:26:15.205054+00:00",
+  "hypothesis_id": "010",
+  "family": "trend_cross",
+  "review": {
+    "candidate_id": "IDEA-QPD-01B0F13BA6A862FC",
+    "decision": "promoted",
+    "reviewer": "Claude",
+    "reason_code": "ELIGIBLE_FOR_PROTOCOL",
+    "decision_reason": "SMA(20/50) crossover es familia trend-following clásica sin data-snooping evidente. Alcance H1/H4/D1 en EURUSD/GBPUSD dentro del universo. Fuente Quantpedia verificable. Distinta a 004/006 (trend_cross ya probadas en índices D1, no en FX H1). Promovida para investigación de parámetros y construcción de protocolo.",
+    "reviewed_at": "2026-09-24T05:32:00+00:00"
+  }
+}

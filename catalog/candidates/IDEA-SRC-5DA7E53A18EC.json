@@ -1,0 +1,70 @@
+{
+  "candidate_id": "IDEA-SRC-5DA7E53A18EC",
+  "name": "India’s Tech Strategy Gains Momentum",
+  "source_name": "Crossref Strategy Discovery",
+  "source_url": "https://doi.org/10.12968/s0047-9624(26)60232-5",
+  "primary_source_url": "https://www.magonlinelibrary.com/toc/newe/59/3",
+  "publication_date": "2026-03-01",
+  "access_level": "unknown",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "crossref_strategy_discovery",
+    "upstream_id": "10.12968/s0047-9624(26)60232-5",
+    "first_seen_at": "2026-09-23T14:17:59.445981+00:00",
+    "metadata_sha256": "c25ab88ff079cf9f56ba636ad69701dc856824e53c3a191e6da6fa85793d88bb",
+    "snapshot_path": "catalog/discoveries/crossref_strategy_discovery/c25ab88ff079cf9f56ba636ad69701dc856824e53c3a191e6da6fa85793d88bb.json",
+    "identity_keys": [
+      "doi:10.12968/s0047-9624(26)60232-5",
+      "url:https://doi.org/10.12968/s0047-9624(26)60232-5"
+    ],
+    "work_key": "work:india s tech strategy gains momentum|tyler",
+    "source_revision": null,
+    "repository_url": null,
+    "source_path": null,
+    "license": "metadata_open_content_license_per_record",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T14:18:06.660507+00:00",
+  "assessment": {
+    "score": 55,
+    "verdict": "needs_information",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-5DA7E53A18EC",
+    "decision": "rejected",
+    "reviewer": "Codex",
+    "reason_code": "OUT_OF_DOMAIN",
+    "decision_reason": "La fuente del editor identifica el DOI como la nota 'India’s Tech Strategy Gains Momentum', en New Electronics, sección News Analysis, p. 10. Su resumen trata del crecimiento de India como centro de innovación y fabricación impulsado por electrónica, semiconductores, investigación e inversión industrial. No estudia precios, retornos ni reglas de trading; el título Crossref fue una coincidencia léxica engañosa.",
+    "primary_source_url": "https://www.magonlinelibrary.com/toc/newe/59/3",
+    "primary_source_title": "India’s Tech Strategy Gains Momentum",
+    "primary_source_authors": [
+      "Neil Tyler"
+    ],
+    "publication": "New Electronics, vol. 59, issue 3, 1 March 2026, News Analysis, p. 10",
+    "evidence_note": "Tabla de contenidos del editor: https://www.magonlinelibrary.com/toc/newe/59/3; DOI confirmado: 10.12968/S0047-9624(26)60232-5.",
+    "reviewed_at": "2026-09-23T19:26:17.792281+00:00"
+  }
+}

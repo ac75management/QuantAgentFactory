@@ -1,0 +1,11 @@
+{
+  "candidate_id": "IDEA-SRC-5E80238C4223",
+  "decision": "rejected",
+  "reviewer": "Codex",
+  "reason_code": "NO_REPRODUCIBLE_TRADING_RULE",
+  "decision_reason": "La referencia recuperable solo aporta un titulo general sobre optimizacion y control de riesgo con reinforcement learning en una revista de organizaciones virtuales. No identifica instrumento, frecuencia, muestra, variables, regla falsable ni codigo; por tanto no permite formular una hipotesis financiera reproducible sin inventar el contenido esencial.",
+  "primary_source_url": "https://doi.org/10.1504/ijnvo.2026.10081245",
+  "primary_source_title": "Business Trading Strategy Optimisation and Risk Control Based on Reinforcement Learning",
+  "primary_source_authors": ["Bao"],
+  "evidence_note": "El DOI y los metadatos no exponen reglas ni contexto empirico suficiente; la fuente primaria completa no resulto accesible durante la revision."
+}

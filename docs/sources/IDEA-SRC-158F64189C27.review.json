@@ -1,0 +1,11 @@
+{
+  "candidate_id": "IDEA-SRC-158F64189C27",
+  "decision": "rejected",
+  "reviewer": "Codex",
+  "reason_code": "DATA_AND_PORTFOLIO_OUT_OF_SCOPE",
+  "decision_reason": "La fuente estudia una cartera transversal que compra monedas con fundamentales fuertes y vende monedas con fundamentales debiles. La senal depende de publicaciones macroeconomicas y razonamiento de modelos generativos, no de OHLC de un solo CFD H1/H4/D1; QAF no dispone de esos datos ni de esa arquitectura y no corresponde inventar una adaptacion tecnica.",
+  "primary_source_url": "https://arxiv.org/abs/2608.00761",
+  "primary_source_title": "AI and Exchange Rate Predictability",
+  "primary_source_authors": ["Amin Izadyar"],
+  "evidence_note": "El resumen primario declara prediccion transversal de retornos de divisas a partir de publicaciones economicas procesadas por ChatGPT y DeepSeek, con posiciones long/short entre monedas."
+}

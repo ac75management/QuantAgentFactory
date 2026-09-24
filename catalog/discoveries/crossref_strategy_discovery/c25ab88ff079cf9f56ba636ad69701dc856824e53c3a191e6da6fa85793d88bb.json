@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "provider_id": "crossref_strategy_discovery",
+  "retrieved_at": "2026-09-23T14:17:59.445981+00:00",
+  "metadata_sha256": "c25ab88ff079cf9f56ba636ad69701dc856824e53c3a191e6da6fa85793d88bb",
+  "record": {
+    "upstream_id": "10.12968/s0047-9624(26)60232-5",
+    "title": "India’s Tech Strategy Gains Momentum",
+    "source_url": "https://doi.org/10.12968/s0047-9624(26)60232-5",
+    "doi": "10.12968/s0047-9624(26)60232-5",
+    "authors": [
+      "Neil Tyler"
+    ],
+    "publication_date": "2026-03-01",
+    "venue": "New Electronics",
+    "categories": [
+      "journal-article"
+    ],
+    "source_revision": null,
+    "code_available": false,
+    "access_level": "unknown",
+    "license": "metadata_open_content_license_per_record"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "name": "Turn of the Month en indices bursatiles (CFD)",
+  "source_name": "Quantpedia",
+  "source_url": "https://quantpedia.com/strategies/turn-of-the-month-in-equity-indexes",
+  "primary_source_url": "http://papers.ssrn.com/sol3/papers.cfm?abstract_id=917884",
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "equity_index"
+  ],
+  "instruments": [
+    "SPY"
+  ],
+  "original_timeframes": [
+    "D1"
+  ],
+  "proposed_targets": [
+    {
+      "symbol": "SP500",
+      "timeframe": "D1"
+    },
+    {
+      "symbol": "US30",
+      "timeframe": "D1"
+    },
+    {
+      "symbol": "NAS100",
+      "timeframe": "D1"
+    },
+    {
+      "symbol": "DAX",
+      "timeframe": "D1"
+    }
+  ],
+  "data_requirements": [
+    "OHLC",
+    "calendar"
+  ],
+  "rules_summary": "Comprar el indice 1 dia (algunas fuentes citan 4 dias) antes del ultimo dia habil del mes y vender al cierre del 3er dia habil del mes siguiente; el resto de los dias del mes no se mantiene posicion. Efecto de calendario documentado en mas de 30 mercados, replicado con datos 1926-2005 (Xu & McConnell 2006, basado en el hallazgo original de Lakonishok & Smidt 1988). Quantpedia lo clasifica como: 1 solo instrumento operado, regla simple, confianza fuerte, compatible con CFD/futuros ademas de ETF. Ningun modelo de riesgo ni explicacion causal definitiva; se atribuye tentativamente a flujos de caja mensuales de fondos de pension reinvertidos en renta variable.",
+  "code_available": false,
+  "status": "rejected",
+  "candidate_id": "IDEA-98890471BE",
+  "created_at": "2026-09-23T23:53:18.147500+00:00",
+  "assessment": {
+    "score": 100,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "mt5_now",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Existe un objetivo explícito habilitado en el universo de investigación.",
+      "El marco original está disponible.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": []
+  },
+  "review": {
+    "candidate_id": "IDEA-98890471BE",
+    "decision": "rejected",
+    "reviewer": "Claude-loop",
+    "reason_code": "HYPOTHESIS_TESTED_AND_DISCARDED",
+    "decision_reason": "Esta evidencia (Quantpedia, Xu & McConnell 2006 sobre Lakonishok & Smidt 1988) corrobora el mismo mecanismo que la hipotesis 002 (nas100-d1-turn-of-month-flow), ya registrada de forma independiente con la misma fuente academica. La familia calendar_window se implemento y la 002 corrio IS: DISCARDED_IS (run d6d5a5555ad5cac3430e4d0b, net P&L -17816, PF 0.45, AED p=0.45, friction ratio -0.91 por el swap de mantener largo). No se crea una hipotesis nueva sobre la misma regla/objetivo ya probada; ver PROJECT_STATE.md bitacora 2026-09-24.",
+    "reviewed_at": "2026-09-24T01:15:38.899464+00:00"
+  }
+}

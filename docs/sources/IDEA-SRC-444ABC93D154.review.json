@@ -1,0 +1,11 @@
+{
+  "candidate_id": "IDEA-SRC-444ABC93D154",
+  "decision": "rejected",
+  "reviewer": "Codex",
+  "reason_code": "OUT_OF_SCOPE",
+  "decision_reason": "El trabajo se define sobre acciones del S&P 500 y optimizacion media-varianza de cartera. Ese universo y la construccion multi-activo quedan fuera del alcance vigente de CFDs/futuros por instrumento y de la prohibicion de estrategias de rebalanceo de cartera; no se fuerza una conversion al indice CFD.",
+  "primary_source_url": "https://doi.org/10.54254/2754-1169/2026.37275",
+  "primary_source_title": "Evaluating Time-Series Momentum in S&P 500 Stocks: Mean-Variance Optimization, Transaction Costs, and Market Regimes",
+  "primary_source_authors": ["Dai"],
+  "evidence_note": "Los metadatos primarios identifican acciones S&P 500, optimizacion media-varianza, costos y regimenes como objeto del estudio."
+}

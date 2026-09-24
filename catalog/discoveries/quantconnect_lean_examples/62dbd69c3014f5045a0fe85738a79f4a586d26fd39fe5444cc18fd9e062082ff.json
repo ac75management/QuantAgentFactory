@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "provider_id": "quantconnect_lean_examples",
+  "retrieved_at": "2026-09-23T14:17:59.445981+00:00",
+  "metadata_sha256": "62dbd69c3014f5045a0fe85738a79f4a586d26fd39fe5444cc18fd9e062082ff",
+  "record": {
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/ETFGlobalRotationAlgorithm.py",
+    "title": "E T F Global Rotation Algorithm",
+    "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/ETFGlobalRotationAlgorithm.py",
+    "doi": null,
+    "authors": [],
+    "publication_date": null,
+    "categories": [
+      "source_code"
+    ],
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/ETFGlobalRotationAlgorithm.py",
+    "blob_sha": "41d7498adaf188bf70d23dc51ae780cbd8a72cca",
+    "code_available": true,
+    "access_level": "public",
+    "license": "Apache-2.0"
+  }
+}

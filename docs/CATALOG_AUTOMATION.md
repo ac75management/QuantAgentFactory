@@ -133,6 +133,8 @@ Copiar `docs/sources/strategy_candidate.template.json`, completar la ficha y eje
 .\.venv\Scripts\python.exe -m qaf.cli catalog-list
 ```
 
+`catalog-add` compara las URL declaradas (`source_url` y `primary_source_url`) con las fichas existentes y guarda posibles coincidencias en `assessment.possible_duplicates`; elimina diferencias comunes de mayúsculas del dominio, barra final y parámetros de seguimiento. La alerta es informativa: no bloquea ni rechaza la captura, porque URLs iguales pueden apuntar a versiones o usos distintos y una coincidencia no demuestra identidad de estrategia. Revisa los candidatos señalados antes de investigar o promover.
+
 Cuando `investigator` termine, copiar `docs/sources/evidence_review.template.json`, completar la revisión y ejecutar:
 
 ```powershell

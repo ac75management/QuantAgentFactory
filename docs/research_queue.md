@@ -24,6 +24,20 @@ Nota: la herramienta externa no importa (Gemini, Copilot u otra) — lo único q
 
 ## Preguntas pendientes
 
+### kaufman-media-banda-regla-completa — RESPONDIDA (Gemini Deep Research, 2026-09-24)
+- Decisión: período MA = 21 días, banda % = 2.5%, objetivo = 1% entry, stop = trailing o fixed (sin valor único especificado)
+- Ambigüedades resueltas: cuál timeframe de MA en H4, cuál mecanismo de stop queda a decisión de QAF
+- Evidencia de implementación: `docs/research_external/kaufman-media-banda-regla-completa.md`
+- Parámetros verificados de *The New Commodity Trading Systems and Methods* (1987, Cap. 4, pág. 60) y *Trading Systems and Methods* (3ª ed., 1998)
+- **Nota crítica:** el problema de datos EURUSD/H4 pre-1999 sigue pendiente; sin procedencia válida desde 1999, OOS no puede abrir
+
+### kama-kaufman-valores-base-y-salida — RESPONDIDA (Gemini Deep Research, 2026-09-24)
+- Decisión: ER_Length = 10 días, FastMA_Length = 2, SlowMA_Length = 30, salida = giro opuesto de AMA filtrado por std dev
+- Evidencia de implementación: `docs/research_external/kama-kaufman-valores-base-y-salida.md`
+- Parámetros verificados de *Smarter Trading* (1995)
+- Confianza: alta en valores numéricos; media en regla de filtro (Oxford propone 0.01×StdDev como concreción)
+- Próximo: protocol genera spec JSON con estos parámetros congelados; engine implementa familia KAMA si no existe
+
 ### sma-band-session-family-009 — RESPONDIDA (Alexander, 2026-09-23)
 - Decisión: implementar `sma_band_session` y conservar la regla LEAN; no usar `trend_cross` como sustituto.
 - Evidencia de implementación: `qaf/contracts.py`, `qaf/signals.py`, `qaf/engine.py` y `tests/test_engine_session.py`.

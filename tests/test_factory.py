@@ -502,6 +502,37 @@ def _catalog_root(tmp_path,instrument):
     (tmp_path/'docs/hypotheses/_registry.md').write_text('# Registro\n\n| # | slug | fecha | fuente/autor | activo/timeframe | estado |\n|---|---|---|---|---|---|\n')
 
 
+def test_catalog_add_warns_on_normalized_cross_field_url_duplicate_without_blocking(tmp_path,instrument):
+    _catalog_root(tmp_path,instrument)
+    first,_=add_candidate(_catalog_candidate(),tmp_path)
+    second_candidate=_catalog_candidate()
+    second_candidate['candidate_id']='IDEA-TEST0002'
+    second_candidate['name']='Same source found through another report'
+    second_candidate['source_url']='https://blog.example/strategy'
+    second_candidate['primary_source_url']='https://QUANTPEDIA.com/example/?utm_campaign=copy#rule'
+
+    second,_=add_candidate(second_candidate,tmp_path)
+
+    possible=second['assessment']['possible_duplicates']
+    assert second['status']=='captured'
+    assert len(possible)==1
+    assert possible[0]['candidate_id']==first['candidate_id']
+    assert possible[0]['matched_urls']==['https://quantpedia.com/example']
+
+
+def test_catalog_add_does_not_flag_unrelated_source_urls(tmp_path,instrument):
+    _catalog_root(tmp_path,instrument)
+    add_candidate(_catalog_candidate(),tmp_path)
+    unrelated=_catalog_candidate()
+    unrelated['candidate_id']='IDEA-TEST0002'
+    unrelated['source_url']='https://different.example/paper'
+    unrelated['primary_source_url']='https://doi.org/10.5555/unrelated'
+
+    record,_=add_candidate(unrelated,tmp_path)
+
+    assert record['assessment']['possible_duplicates']==[]
+
+
 def test_catalog_add_never_overwrites_existing_candidate(tmp_path,instrument):
     _catalog_root(tmp_path,instrument)
     original,_=add_candidate(_catalog_candidate(),tmp_path)

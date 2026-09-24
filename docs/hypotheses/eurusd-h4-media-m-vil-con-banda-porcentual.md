@@ -52,7 +52,7 @@ El candidato ya declaraba el objetivo EURUSD/H4. Se mantiene esa adaptación y s
 ## Límites de la evidencia
 
 - Ningún valor numérico de esta revisión (período de media, % de banda) debe tratarse como dato verificado de la fuente primaria; son referencias de fuentes secundarias sin cita de página, declaradas explícitamente como ambiguas.
-- La familia de señal necesaria ('precio cruza una media móvil ± una banda porcentual') no existe hoy en `qaf/contracts.py` (`FAMILIES = {streak_reversal, trend_cross, channel_breakout, oscillator_reversion}`). `trend_cross` exige DOS medias (rápida/lenta) y no expresa una banda porcentual sobre una sola media; ninguna familia actual lo cubre. Esta hipótesis requiere una familia nueva en `qaf/signals.py`, todavía no implementada, antes de que `protocol` pueda traducirla a spec ejecutable.
+- La familia `ma_band_breakout` fue autorizada e implementada después de esta revisión para expresar el cruce causal de una banda porcentual simétrica alrededor de una SMA en H1/H4/D1. Esto resuelve la arquitectura, no convierte los valores numéricos secundarios en evidencia primaria.
 - Extrapolación de riesgo: la técnica se documenta para sistemas diarios multi-activo institucionales (futuros/forex), no específicamente para EURUSD H4 vía CFD retail; es una adaptación, no una aplicación directa.
 
 ## Decisión de la revisión

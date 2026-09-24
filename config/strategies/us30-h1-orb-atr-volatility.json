@@ -1,0 +1,19 @@
+{
+  "id": "us30-h1-orb-atr-volatility",
+  "family": "volatility_based",
+  "symbol": "US30",
+  "timeframe": "H1",
+  "parameters": {
+    "atr_period": 14,
+    "atr_multiple": 0.5,
+    "max_holding": 20,
+    "sl_atr": 1.5,
+    "tp_atr": 3.0
+  },
+  "rationale": "ORB (Open Range Breakout) con ATR dinámico(14) en US30 H1: entrada larga si close > open + ATR*0.5, corta si close < open - ATR*0.5. Parámetros estándar de Quantpedia.",
+  "hypothesis_id": "011",
+  "risk_fraction": 0.005,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}

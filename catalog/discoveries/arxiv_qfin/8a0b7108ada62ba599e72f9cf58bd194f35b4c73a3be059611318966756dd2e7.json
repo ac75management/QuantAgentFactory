@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "provider_id": "arxiv_qfin",
+  "retrieved_at": "2026-09-23T14:17:59.445981+00:00",
+  "metadata_sha256": "8a0b7108ada62ba599e72f9cf58bd194f35b4c73a3be059611318966756dd2e7",
+  "record": {
+    "upstream_id": "2608.00885",
+    "arxiv_id": "2608.00885",
+    "version": "v1",
+    "title": "Optimal Trading of Microstructure Mean Reversion",
+    "source_url": "https://arxiv.org/abs/2608.00885",
+    "doi": null,
+    "authors": [
+      "Lucas Rabechini Amaral"
+    ],
+    "publication_date": "2026-08-01",
+    "categories": [
+      "q-fin.TR",
+      "q-fin.MF"
+    ],
+    "source_revision": "2026-08-01T22:23:23Z",
+    "code_available": false,
+    "access_level": "public",
+    "license": "per_record_review_required"
+  }
+}

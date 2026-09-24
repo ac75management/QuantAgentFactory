@@ -10,7 +10,7 @@ No tienes `Bash`: quien te invoca debe haber confirmado con `python -m qaf.pipel
 
 Fuente de contrato y costos: `config/instruments.json`, la única que lee `qaf/`. `docs/universe.md` es su espejo generado y `docs/cost_model.md` explica cómo se aplican los costos, sin valores propios. Antes de escribir la spec, lee `config/instruments.json`. Si el símbolo no existe en `config/instruments.json`, o `status` no es `"research"`, o el timeframe de la hipótesis no está en su lista `timeframes`, no generes spec — devuélvela a investigator/Alexander marcada "bloqueada por datos/costos". `costs_verified: false` (el estado actual de los 10 símbolos) NO bloquea escribir la spec — es una reserva que hereda Gate 0 (`RESERVE`), no un bloqueo duro; sí bloquea una aprobación final de `validator`.
 
-**Familia**: la hipótesis debe encajar en una de las 5 familias que `qaf/signals.py` sabe ejecutar hoy — `streak_reversal`, `trend_cross`, `channel_breakout`, `oscillator_reversion` o `sma_band_session` (`qaf/contracts.py`, `FAMILIES`). `sma_band_session` está reservada para reglas H1 de precio contra SMA con banda porcentual y ventana horaria IANA; valida DST y falla cerrado ante timestamps ingenuos. Si `investigator` marcó la hipótesis como "requiere familia nueva", detente aquí y repórtalo — no fuerces la hipótesis dentro de una familia que no le corresponde solo para poder generar una spec.
+**Familia**: la hipótesis debe encajar en una familia que `qaf/signals.py` sepa ejecutar (`qaf/contracts.py::FAMILIES`). `sma_band_session` está reservada para reglas H1 de reversión contra SMA con banda y sesión IANA. `ma_band_breakout` expresa ruptura/continuación al cruzar una banda porcentual simétrica alrededor de una SMA y admite H1/H4/D1. `calendar_window` expresa la ventana turn-of-month D1: señal larga en el día hábil anterior al último día hábil del mes, calculado solo con la fecha (lunes-viernes), y salida temporal tras cuatro barras; los festivos del mercado quedan sujetos a la reserva de calendario de Gate 0. Si `investigator` marcó la hipótesis como "requiere familia nueva" y la familia aún no existe, detente aquí y repórtalo — no fuerces la hipótesis dentro de una familia distinta.
 
 `oscillator_reversion` (RSI(n) < umbral con cierre por encima de su SMA de tendencia, para largos — simétrico para cortos) es un híbrido: la entrada sigue a Larry Connors (RSI(2)/ConnorsRSI/R3), pero la salida usa SL/TP por ATR del motor, no la salida por SMA5-sin-stop del original. Decláralo así en la spec narrativa — no lo presentes como réplica exacta de la fuente citada.
 
@@ -34,10 +34,10 @@ Tu salida por cada estrategia son DOS archivos:
 ```json
 {
   "id": "<slug>",
-  "family": "streak_reversal | trend_cross | channel_breakout | oscillator_reversion | sma_band_session",
+  "family": "streak_reversal | trend_cross | channel_breakout | oscillator_reversion | sma_band_session | ma_band_breakout | calendar_window",
   "symbol": "<alias de docs/universe.md, igual que la clave en config/instruments.json>",
   "timeframe": "H1 | H4 | D1",
-  "parameters": { "atr_period": 14, "sl_atr": 1.5, "tp_atr": 3.0, "max_holding": 5, "...": "campos extra según family: streak (2-20) | fast/slow (2-500) | lookback (2-500) | rsi_period (2-100) + entry_threshold (0-50] + trend_filter_sma (2-500) | sma_period (2-500) + band_fraction (0-0.2] + session_timezone IANA + session_start/session_end/exit_time HH:MM" },
+  "parameters": { "atr_period": 14, "sl_atr": 1.5, "tp_atr": 3.0, "max_holding": 5, "...": "campos extra según family: streak (2-20) | fast/slow (2-500) | lookback (2-500) | rsi_period (2-100) + entry_threshold (0-50] + trend_filter_sma (2-500) | sma_period (2-500) + band_fraction (0-0.2] + sesión IANA | ma_period (2-500) + band_fraction (0-0.2]" },
   "rationale": "resumen de una línea de la lógica de comportamiento",
   "hypothesis_id": "<número real de docs/hypotheses/_registry.md, nunca inventado>",
   "risk_fraction": 0.01,

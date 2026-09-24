@@ -1,0 +1,20 @@
+{
+  "id": "eurusd-h1-sma-crossover-momentum",
+  "family": "trend_cross",
+  "symbol": "EURUSD",
+  "timeframe": "H1",
+  "parameters": {
+    "fast": 20,
+    "slow": 50,
+    "atr_period": 14,
+    "max_holding": 20,
+    "sl_atr": 1.5,
+    "tp_atr": 3.0
+  },
+  "rationale": "SMA(20/50) crossover en EURUSD H1 para captar momentum de corto plazo en FX. Parámetros estándar de Quantpedia.",
+  "hypothesis_id": "010",
+  "risk_fraction": 0.005,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}

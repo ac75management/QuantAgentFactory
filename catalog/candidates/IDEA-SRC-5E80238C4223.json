@@ -1,0 +1,69 @@
+{
+  "candidate_id": "IDEA-SRC-5E80238C4223",
+  "name": "Business Trading Strategy Optimisation and Risk Control Based on Reinforcement Learning",
+  "source_name": "Crossref Strategy Discovery",
+  "source_url": "https://doi.org/10.1504/ijnvo.2026.10081245",
+  "primary_source_url": "https://doi.org/10.1504/ijnvo.2026.10081245",
+  "publication_date": "2026-01-01",
+  "access_level": "unknown",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": false,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "crossref_strategy_discovery",
+    "upstream_id": "10.1504/ijnvo.2026.10081245",
+    "first_seen_at": "2026-09-23T14:17:59.445981+00:00",
+    "metadata_sha256": "c710d2cb6ff0e83395c6e2afdb5e08cf3e1f1891b3a6bdec8cb567e04974d343",
+    "snapshot_path": "catalog/discoveries/crossref_strategy_discovery/c710d2cb6ff0e83395c6e2afdb5e08cf3e1f1891b3a6bdec8cb567e04974d343.json",
+    "identity_keys": [
+      "doi:10.1504/ijnvo.2026.10081245",
+      "url:https://doi.org/10.1504/ijnvo.2026.10081245"
+    ],
+    "work_key": "work:business trading strategy optimisation and risk control based on reinforcement learning|bao",
+    "source_revision": null,
+    "repository_url": null,
+    "source_path": null,
+    "license": "metadata_open_content_license_per_record",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T14:18:06.745109+00:00",
+  "assessment": {
+    "score": 55,
+    "verdict": "needs_information",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-5E80238C4223",
+    "decision": "rejected",
+    "reviewer": "Codex",
+    "reason_code": "NO_REPRODUCIBLE_TRADING_RULE",
+    "decision_reason": "La referencia recuperable solo aporta un titulo general sobre optimizacion y control de riesgo con reinforcement learning en una revista de organizaciones virtuales. No identifica instrumento, frecuencia, muestra, variables, regla falsable ni codigo; por tanto no permite formular una hipotesis financiera reproducible sin inventar el contenido esencial.",
+    "primary_source_url": "https://doi.org/10.1504/ijnvo.2026.10081245",
+    "primary_source_title": "Business Trading Strategy Optimisation and Risk Control Based on Reinforcement Learning",
+    "primary_source_authors": [
+      "Bao"
+    ],
+    "evidence_note": "El DOI y los metadatos no exponen reglas ni contexto empirico suficiente; la fuente primaria completa no resulto accesible durante la revision.",
+    "reviewed_at": "2026-09-23T22:50:02.406613+00:00"
+  }
+}

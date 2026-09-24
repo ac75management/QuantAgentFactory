@@ -1,0 +1,70 @@
+{
+  "candidate_id": "IDEA-SRC-FB03F670BF78",
+  "name": "E T F Global Rotation Algorithm",
+  "source_name": "QuantConnect LEAN Algorithm.Python",
+  "source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/ETFGlobalRotationAlgorithm.py",
+  "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/ETFGlobalRotationAlgorithm.py",
+  "publication_date": null,
+  "access_level": "public",
+  "content_type": "strategy",
+  "original_asset_classes": [
+    "unknown"
+  ],
+  "instruments": [],
+  "original_timeframes": [
+    "UNSPECIFIED"
+  ],
+  "proposed_targets": [],
+  "data_requirements": [],
+  "rules_summary": "Descubrimiento automático sin reglas verificadas. Investigator debe revisar la fuente primaria, clasificar el contenido y extraer reglas sin inventar parámetros.",
+  "code_available": true,
+  "status": "rejected",
+  "provenance": {
+    "provider_id": "quantconnect_lean_examples",
+    "upstream_id": "QuantConnect/Lean:Algorithm.Python/ETFGlobalRotationAlgorithm.py",
+    "first_seen_at": "2026-09-23T14:17:59.445981+00:00",
+    "metadata_sha256": "62dbd69c3014f5045a0fe85738a79f4a586d26fd39fe5444cc18fd9e062082ff",
+    "snapshot_path": "catalog/discoveries/quantconnect_lean_examples/62dbd69c3014f5045a0fe85738a79f4a586d26fd39fe5444cc18fd9e062082ff.json",
+    "identity_keys": [
+      "repo-path:https://github.com/quantconnect/lean:algorithm.python/etfglobalrotationalgorithm.py",
+      "url:https://github.com/quantconnect/lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/algorithm.python/etfglobalrotationalgorithm.py"
+    ],
+    "work_key": null,
+    "source_revision": "88bce0fc6fe282378ee73c54cef1090d0d7a73ee",
+    "repository_url": "https://github.com/QuantConnect/Lean",
+    "source_path": "Algorithm.Python/ETFGlobalRotationAlgorithm.py",
+    "license": "Apache-2.0",
+    "evidence_status": "unverified_discovery",
+    "acknowledged_fingerprints": []
+  },
+  "created_at": "2026-09-23T14:18:09.453603+00:00",
+  "assessment": {
+    "score": 65,
+    "verdict": "eligible_for_evidence_review",
+    "research_lane": "future_market",
+    "reasons": [
+      "Tiene enlace a la fuente primaria.",
+      "La descripción contiene reglas preliminares revisables.",
+      "Los requisitos declarados parecen reproducibles con datos simples.",
+      "La referencia declarada es pública."
+    ],
+    "blockers": [
+      "No coincide todavía con un instrumento o clase habilitada.",
+      "El marco original requiere datos o arquitectura adicional."
+    ]
+  },
+  "review": {
+    "candidate_id": "IDEA-SRC-FB03F670BF78",
+    "decision": "rejected",
+    "reviewer": "Codex",
+    "reason_code": "OUT_OF_SCOPE",
+    "decision_reason": "El codigo es un ejemplo de rotacion mensual entre cinco ETF de crecimiento y dos ETF defensivos, seleccionados por momentum de 30 y 90 dias. Es una cartera multi-activo con rebalanceo mensual, excluida expresamente por CLAUDE.md, y no demuestra el mecanismo en un CFD individual.",
+    "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/ETFGlobalRotationAlgorithm.py",
+    "primary_source_title": "ETFGlobalRotationAlgorithm.py",
+    "primary_source_authors": [
+      "QuantConnect Corporation"
+    ],
+    "evidence_note": "El codigo se identifica como strategy example using a portfolio of ETF Global Rotation y rota cada 30 dias usando momentum de 30 y 90 dias.",
+    "reviewed_at": "2026-09-23T22:50:03.725017+00:00"
+  }
+}

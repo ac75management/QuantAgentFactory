@@ -1,0 +1,11 @@
+{
+  "candidate_id": "IDEA-SRC-8B02334521BC",
+  "decision": "rejected",
+  "reviewer": "Codex",
+  "reason_code": "OUT_OF_SCOPE",
+  "decision_reason": "La fuente optimiza baterias en el mercado electrico intradia continuo usando libro completo de ordenes y reaccion a eventos en milisegundos. El propio resultado depende criticamente de la velocidad; viola el minimo H1 y requiere datos y un activo ajenos al universo QAF.",
+  "primary_source_url": "https://arxiv.org/abs/2504.06932",
+  "primary_source_title": "High-frequency intraday trading for battery storages",
+  "primary_source_authors": ["David Schaurecker", "David Wozabal", "Nils Lohndorf", "Thorsten Staake"],
+  "evidence_note": "El resumen primario especifica mercado electrico continuo, libro de ordenes completo, resolucion de milisegundos y una ventaja que cae al reoptimizar cada hora o minuto."
+}

@@ -72,7 +72,8 @@ def main():
     if args.command=='catalog-add':
         from .catalog import add_candidate
         record,path=add_candidate(read_json(args.path))
-        print(json.dumps({'candidate_id':record['candidate_id'],'score':record['assessment']['score'],'verdict':record['assessment']['verdict'],'path':str(path)},ensure_ascii=False));return 0
+        possible_duplicates=record['assessment'].get('possible_duplicates',[])
+        print(json.dumps({'candidate_id':record['candidate_id'],'score':record['assessment']['score'],'verdict':record['assessment']['verdict'],'possible_duplicates':possible_duplicates,'warning':'Revisa los posibles duplicados antes de investigar.' if possible_duplicates else None,'path':str(path)},ensure_ascii=False));return 0
     if args.command=='catalog-list':
         from .catalog import list_candidates
         rows=[{'candidate_id':r.get('candidate_id'),'name':r.get('name'),'source':r.get('source_name'),'status':r.get('status'),'hypothesis_id':r.get('hypothesis_id'),'score':r.get('assessment',{}).get('score'),'verdict':r.get('assessment',{}).get('verdict')} for r in list_candidates()]

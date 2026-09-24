@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "provider_id": "arxiv_qfin",
+  "retrieved_at": "2026-09-23T14:17:59.445981+00:00",
+  "metadata_sha256": "f0bd85c96e157fb53bf3393de03e195135bf32e5908521f735418d1a269925fb",
+  "record": {
+    "upstream_id": "2608.00761",
+    "arxiv_id": "2608.00761",
+    "version": "v1",
+    "title": "AI and Exchange Rate Predictability",
+    "source_url": "https://arxiv.org/abs/2608.00761",
+    "doi": null,
+    "authors": [
+      "Amin Izadyar"
+    ],
+    "publication_date": "2026-08-01",
+    "categories": [
+      "q-fin.GN",
+      "q-fin.CP",
+      "q-fin.PM",
+      "q-fin.ST",
+      "q-fin.TR"
+    ],
+    "source_revision": "2026-08-01T16:50:04Z",
+    "code_available": false,
+    "access_level": "public",
+    "license": "per_record_review_required"
+  }
+}

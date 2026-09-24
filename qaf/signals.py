@@ -14,6 +14,36 @@ def atr(df, period):
     return result
 
 
+def kama(df, er_len, fast_len, slow_len):
+    """Kaufman Adaptive Moving Average. Adaptive smoothing based on efficiency ratio."""
+    closes = df.close.to_numpy(dtype=float)
+    changes = np.abs(np.diff(closes, prepend=np.nan))
+    volatility = np.full(len(df), np.nan)
+
+    for i in range(er_len, len(df)):
+        abs_change = np.sum(changes[i - er_len + 1:i + 1])
+        net_change = np.abs(closes[i] - closes[i - er_len])
+        if abs_change == 0:
+            volatility[i] = 0
+        else:
+            volatility[i] = net_change / abs_change
+
+    fast_sc = 2.0 / (fast_len + 1)
+    slow_sc = 2.0 / (slow_len + 1)
+    ama = np.full(len(df), np.nan)
+
+    if er_len < len(df):
+        ama[er_len] = closes[er_len]
+        for i in range(er_len + 1, len(df)):
+            if np.isfinite(volatility[i]):
+                smooth = volatility[i] * (fast_sc - slow_sc) + slow_sc
+                ama[i] = ama[i - 1] + smooth * (closes[i] - ama[i - 1])
+            else:
+                ama[i] = ama[i - 1]
+
+    return ama
+
+
 def rsi(df, period):
     """Wilder RSI. Causal: result[i] depends only on bars <= i."""
     delta = df.close.diff().to_numpy()
@@ -50,6 +80,14 @@ def _local_minutes(df, timezone):
 def _clock_minutes(value):
     hour, minute = (int(part) for part in value.split(":"))
     return hour * 60 + minute
+
+
+def _is_entry_business_day(value):
+    """True one weekday before month-end; depends only on the timestamp."""
+    current = pd.Timestamp(value)
+    month_end = current + pd.offsets.BMonthEnd(0)
+    entry_day = month_end - pd.offsets.BDay(1)
+    return current.date() == entry_day.date()
 
 
 def generate(df, spec):
@@ -101,6 +139,60 @@ def generate(df, spec):
             if direction != previous_direction:
                 signal[i] = direction
             previous_direction = direction
+    elif family == "ma_band_breakout":
+        moving_average = df.close.rolling(p["ma_period"]).mean().to_numpy()
+        closes = df.close.to_numpy(dtype=float)
+        upper = moving_average * (1.0 + p["band_fraction"])
+        lower = moving_average * (1.0 - p["band_fraction"])
+        for i in range(1, len(df)):
+            if not all(np.isfinite(value) for value in (upper[i - 1], lower[i - 1], upper[i], lower[i])):
+                continue
+            if closes[i] > upper[i] and closes[i - 1] <= upper[i - 1]:
+                signal[i] = 1
+            elif closes[i] < lower[i] and closes[i - 1] >= lower[i - 1]:
+                signal[i] = -1
+    elif family == "calendar_window":
+        if spec["timeframe"] != "D1":
+            raise ValueError("calendar_window requiere barras D1")
+        times = pd.to_datetime(df["time"])
+        for i, timestamp in enumerate(times):
+            if _is_entry_business_day(timestamp):
+                signal[i] = 1
+    elif family == "volatility_based":
+        atr_vals = atr(df, p["atr_period"])
+        opens = df.open.to_numpy()
+        closes = df.close.to_numpy(dtype=float)
+        for i in range(1, len(df)):
+            if not np.isfinite(atr_vals[i - 1]):
+                continue
+            level = atr_vals[i - 1] * p["atr_multiple"]
+            if closes[i] > opens[i - 1] + level:
+                signal[i] = 1
+            elif closes[i] < opens[i - 1] - level:
+                signal[i] = -1
+    elif family == "kama_turn":
+        ama_vals = kama(df, p["ER_Length"], p["FastMA_Length"], p["SlowMA_Length"])
+        ama_changes = np.diff(ama_vals, prepend=np.nan)
+        ama_change_vol = np.full(len(df), np.nan)
+        for i in range(p["ER_Length"], len(df)):
+            vol_slice = ama_changes[max(0, i - p["ER_Length"] + 1):i + 1]
+            ama_change_vol[i] = np.std(vol_slice)
+
+        filter_threshold = p.get("filter_std_multiplier", 0.01)
+        previous_direction = 0
+
+        for i in range(1, len(df)):
+            if not np.isfinite(ama_vals[i - 1]) or not np.isfinite(ama_vals[i]):
+                continue
+            if not np.isfinite(ama_change_vol[i]):
+                continue
+
+            threshold = filter_threshold * ama_change_vol[i]
+            direction = 1 if ama_vals[i] > ama_vals[i - 1] else -1
+
+            if np.abs(ama_vals[i] - ama_vals[i - 1]) > threshold and direction != previous_direction:
+                signal[i] = direction
+                previous_direction = direction
     if spec.get("direction") == "long":
         signal[signal < 0] = 0
     if spec.get("direction") == "short":

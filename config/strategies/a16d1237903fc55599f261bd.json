@@ -1,0 +1,22 @@
+{
+  "id": "xauusd-d1-kama-tendencial-con-efficiency-ratio",
+  "family": "kama_turn",
+  "symbol": "XAUUSD",
+  "timeframe": "D1",
+  "parameters": {
+    "ER_Length": 10,
+    "FastMA_Length": 2,
+    "SlowMA_Length": 30,
+    "filter_std_multiplier": 0.01,
+    "atr_period": 14,
+    "max_holding": 20,
+    "sl_atr": 6.0,
+    "tp_atr": 3.0
+  },
+  "rationale": "KAMA tendencial adaptativo en XAUUSD D1: el ratio de eficiencia modula la velocidad de suavizado para capturar giros sin fase-lag. Parametros verificados de Kaufman (1995, Smarter Trading). Filtro std_dev confirma giros.",
+  "hypothesis_id": "007",
+  "risk_fraction": 0.005,
+  "initial_equity": 100000,
+  "direction": "both",
+  "version": 1
+}

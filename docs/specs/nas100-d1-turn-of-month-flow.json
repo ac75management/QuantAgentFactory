@@ -1,0 +1,18 @@
+{
+  "id": "nas100-d1-turn-of-month-flow",
+  "family": "calendar_window",
+  "symbol": "NAS100",
+  "timeframe": "D1",
+  "parameters": {
+    "atr_period": 14,
+    "sl_atr": 1.5,
+    "tp_atr": 2.5,
+    "max_holding": 4
+  },
+  "rationale": "Flujos institucionales mecanicos alrededor del cambio de mes pueden concentrar retornos en una ventana breve.",
+  "hypothesis_id": "002",
+  "risk_fraction": 0.005,
+  "initial_equity": 100000,
+  "direction": "long",
+  "version": 1
+}

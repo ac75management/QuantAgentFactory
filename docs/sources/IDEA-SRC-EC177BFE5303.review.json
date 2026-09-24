@@ -1,0 +1,11 @@
+{
+  "candidate_id": "IDEA-SRC-EC177BFE5303",
+  "decision": "rejected",
+  "reviewer": "Codex",
+  "reason_code": "DEMO_NOT_EVIDENCE",
+  "decision_reason": "El archivo se declara explicitamente una demostracion simple del indicador MACD. Opera SPY diario entre 2004 y 2015 con parametros y tolerancia codificados, pero no documenta una hipotesis causal, costos, comparacion estadistica ni robustez; una demo de API no es evidencia primaria de un edge.",
+  "primary_source_url": "https://github.com/QuantConnect/Lean/blob/88bce0fc6fe282378ee73c54cef1090d0d7a73ee/Algorithm.Python/MACDTrendAlgorithm.py",
+  "primary_source_title": "MACDTrendAlgorithm.py",
+  "primary_source_authors": ["QuantConnect Corporation"],
+  "evidence_note": "El codigo lo etiqueta como simple indicator demonstration algorithm of MACD y usa SPY D1, MACD(12,26,9) y una tolerancia fija."
+}
