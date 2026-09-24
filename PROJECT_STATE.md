@@ -359,3 +359,9 @@ Laboratorio anti-engaño operativo; próximo: escalamiento de candidatos + decis
 - **Estado 007:** Corregido de `pending_protocol` (inválido) → `blocked_architecture` (válido). Suite ahora 189/189.
 - **Archivo de síntesis:** `docs/INFRASTRUCTURE_AUDIT.md` con recomendaciones por prioridad.
 - **Próximo paso:** Alexander decide spread/slippage → re-ejecutar si significativo, o proceder a triaje de 19 candidatos.
+
+### 2026-09-24 12:00 UTC — Sync y registry versionado (Codex)
+- Sync origin/master completado; audit Grok presente.
+- Se detectó que data/trials_registry.jsonl (29 trials) estaba ignorado y no viajaba al remoto; se corrigió .gitignore.
+- count-trials confirma 29 ensayos: 001→8, 002→1, 003→4, 004→2, 005→3, 006→2, 007→1, 008→3, 009→3, 010→1, 011→1.
+- Pendiente: commit/push tras suite y preflight; no se ejecutaron nuevos ensayos ni se abrió OOS.
