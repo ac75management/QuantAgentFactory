@@ -12,6 +12,7 @@ from .metrics import summarize
 from .validation import diagnose, screening_gates
 from .reporting import render_run, render_daily
 from .registry import Registry
+from .experiment_registry import append_trial
 
 
 def execute(spec,df,data_info,c,policy,run_id,created,output_root):
@@ -102,6 +103,7 @@ def run_daily(root=ROOT,limit=None,day=None):
             folder=report_root/'runs'/run_id
             try:
                 record,folder=execute(spec,df,info,c,policy,run_id,now.isoformat(),report_root)
+                append_trial(root, record, agent="Codex", campaign=policy.get("campaign_id"))
                 registry.finish(run_id,record['decision'],folder/'result.json')
                 task_status='completed' if record['decision'] not in {'BLOCKED_DATA','TECHNICAL_ERROR'} else ('blocked' if record['decision']=='BLOCKED_DATA' else 'failed')
                 registry.finish_task(task_id,task_status,record['decision'],None,json.dumps([str((folder/'result.json').relative_to(root)),str((folder/'report.html').relative_to(root))],ensure_ascii=False))

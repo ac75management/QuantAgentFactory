@@ -317,6 +317,13 @@ Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover 
 - Suite: 187 pasan, 2 fallan por estado preexistente de 007; preflight conserva ese fallo. Sin cambios de motor/config, OOS, bróker, commit o push.
 - Próximo: Claude audita la entrega; aún faltan artefactos reproducibles del sondeo de operaciones y cierre de reservas de calendario/costos.
 
+### 2026-09-24 06:58 UTC — Experiment Registry mínimo (Codex)
+- Implementado registro JSONL append-only en `data/trials_registry.jsonl`, con hash de spec/costos, gates y métricas.
+- `qaf.cli count-trials [--hypothesis] [--family]` expone conteo total y agrupado; duplicados fallan cerrado.
+- Integrado en el flujo de `qaf.runner` después de cada run IS; no registra sensibilidad aún porque requiere contexto explícito de vecino.
+- Tests nuevos y regresión parcial: 54 pasaron; no se ejecutó ningún ensayo nuevo, OOS ni bróker.
+- Pendiente auditoría de Claude y suite completa; umbrales y config de costos no fueron modificados.
+
 ### 2026-09-24 04:45 UTC — Auditoría de infraestructura completada (Claude)
 - **Reproducibilidad verificada:** `python -m scripts.audit_is_spotcheck` produce exactamente el mismo SHA256.
 - **RSI(2):** ✓ OK, error 1.42e-14. Indicador es correcto.

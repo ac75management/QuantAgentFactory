@@ -38,11 +38,17 @@ def main():
     source_sync.add_argument('--provider',action='append',dest='providers',help='ID de proveedor; se puede repetir')
     source_sync.add_argument('--limit',type=int,default=20,help='Máximo de acciones nuevas por proveedor (1-200)')
     source_sync.add_argument('--dry-run',action='store_true',help='Consultar sin escribir catálogo, tareas, reservas ni cursores')
+    trials=sub.add_parser('count-trials',help='Contar ensayos registrados en el laboratorio')
+    trials.add_argument('--hypothesis')
+    trials.add_argument('--family')
     args=parser.parse_args()
     if args.command=='run':
         summary,folder=run_daily(limit=args.limit)
         print(json.dumps({'executed':summary['executed'],'status':summary['status'],'report':str(folder/'report.html')},ensure_ascii=False))
         return 2 if any(r['decision']=='TECHNICAL_ERROR' for r in summary['runs']) else 0
+    if args.command=='count-trials':
+        from .experiment_registry import count_trials
+        print(json.dumps(count_trials(ROOT, args.hypothesis, args.family), ensure_ascii=False, indent=2)); return 0
     if args.command=='status':
         path=ROOT/'reports/factory/latest.json'
         print(json.dumps(read_json(path) if path.exists() else {'status':'NOT_RUN'},indent=2,ensure_ascii=False));return 0
