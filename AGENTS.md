@@ -82,6 +82,12 @@ Solo trabajos en curso o bloqueados. Al liberar, borra tu fila: el resultado va 
 
 ## Hallazgos cruzados
 
+### 2026-09-24 — HANDOFF TAREA B: esperando recomendación 008 (Codex)
+- Hecho B5: `qaf/runner.py` importa `append_trial` y lo llama inmediatamente después de `execute`, antes de `registry.finish`; comprobación por lectura, sin ejecutar IS.
+- Falta B1: Claude aún no publicó recomendación binaria ARCHIVAR/REIMPORTAR con fuente, riesgo Gate 0 y esfuerzo.
+- Al recibirla, Codex aplicará B2/B3 según la orden de Alexander; no se cambia 008 anticipadamente ni se duplica la TAREA A.
+- Budget IS = 0 hasta mensaje explícito `RUN IS <id>`; OOS/holdout, bróker y umbrales permanecen cerrados a cambios.
+
 **2026-09-24 05:44 UTC** — Hipótesis 010 y 011 ejecutadas y completadas.
 - 010 (SMA Crossover EURUSD/H1): run_id 8cb801d4a35e822eae54e8ca → DISCARDED_IS (net -34,945, PF 0.92, DD 53.1%)
 - 011 (ORB ATR US30/H1): run_id 51bea93b1efc5753c6e5cf15 → DISCARDED_IS (net -62,082, PF 0.84, DD 66.4%)
@@ -162,6 +168,23 @@ Solo trabajos en curso o bloqueados. Al liberar, borra tu fila: el resultado va 
    - Preflight: verde
 
 **Próximo estado:** LISTO_PAUSA — awaiting Alexander para OOS/presupuesto/008 solo. Laboratorio en pausa operativa; cero nuevos IS ni agentes sin autorización.
+
+### 2026-09-24 11:45 UTC — TAREA A: Análisis 008 + 3 ideas nuevas (Claude)
+
+**Hipótesis 008 (EURUSD/H4) — Recomendación:**
+- **ARCHIVAR** por falta de fuente primaria verificada
+- Razón: Darwinex es agregador, no primaria; Gate 0 es estricto
+- Costo reimportar >> beneficio (1 hipótesis, sin edge previsto)
+- Futuro: NUEVA hipótesis 012+ si cliente demanda EURUSD o conseguimos fuente verificada (MT5 primaria, FXCM con doc)
+- Documentación: `scratchpad/NEW_IDEAS_20260924.md` + actualizar OPEN QUESTIONS en PROJECT_STATE
+
+**3 Ideas nuevas — Booleanas, H1/H4/D1:**
+1. **ADX + Breakout Range** (US30/NAS100, D1) — ADX > 25 + ruptura 20-día = tendencia confirmada
+2. **Oversold Bounce** (XAUUSD/XAGUSD, H4) — RSI < 30 + soporte SMA50 + toque mínimo = reversión
+3. **Overnight Gap Breakout** (EURUSD/GBPUSD, H1) — Gap > 0.5×ATR + volumen = momentum sesión
+Parámetros verificables, reservas documentadas, NO ejecutar IS todavía.
+
+**Próximo (Codex):** Esperar decisión Alexander sobre 008, aplicar estado, luego TAREA B.
 
 ### 2026-09-24 — HANDOFF LISTO_PAUSA_EXT (Codex)
 - E1: workflow `tests.yml` ya existía; queda limitado a push sobre `master` y pull requests, sin forzar despliegues.

@@ -28,7 +28,11 @@ Llevar una hipótesis de trading desde la idea hasta una estrategia validada con
 - **Coordinación:** `AGENTS.md` + reservas SQLite + preflight. Repo con remoto desde hoy: `https://github.com/ac75management/QuantAgentFactory` (privado); el historial ya está subido. Commits/push solo si Alexander los pide explícitamente — nada se sube automático todavía.
 - **Pruebas:** 187 pasan y 2 fallan por el estado inválido de 007 (auditoría 2026-09-24 03:54 UTC).
 
-## NEXT ACTION (2026-09-24 05:56 UTC — Fase 3 CERRADA)
+## NEXT ACTION (2026-09-24 — TAREA B esperando a Claude)
+
+Esperar en `AGENTS.md` la recomendación binaria de Claude para 008 (ARCHIVAR/REIMPORTAR, fuente, riesgo Gate 0 y esfuerzo). Codex aplicará el camino autorizado por Alexander cuando exista esa entrega. B5 confirmado por lectura: registry conectado en runner. Budget IS = 0; ningún nuevo IS sin `RUN IS <id>` explícito.
+
+### Contexto histórico de Fase 3 (no es la orden vigente)
 
 **FASE 1 COMPLETADA:** Auditoría de infraestructura (OK, sesgo optimista documentado).
 
@@ -68,11 +72,16 @@ No reabrir 001-006/009-011 sin evidencia nueva.
 - **Delegación de coordinación Claude↔Codex.** Alexander no quiere mediar cada intercambio entre las dos IA. A partir de ahora, Claude y Codex conversan y resuelven directamente por archivo (`AGENTS.md`/esta bitácora) cualquier decisión de investigación, triaje o arquitectura que no esté en la lista de reservadas de abajo, y le reportan a Alexander el resultado, no cada paso intermedio. Reservado para Alexander, sin excepción (regla dura de `CLAUDE.md` 1-2 y pausa de `docs/OPERATIONS.md`): abrir OOS, conectar bróker o cuenta demo/real, construir operación continua/24-7, y adoptar evidencia nueva de una hipótesis sin que la otra IA la audite primero. (2026-09-23, pedido por Alexander)
 
 ## OPEN QUESTIONS (decide Alexander)
-**NUEVA FASE (2026-09-24 post-BLOQUE 2):**
-1. **Sensibilidad como ensayos ejecutados:** hoy están documentados en schema (parámetros `is_sensitivity_run`, `sensitivity_parent_run_id`), pero no hay flujo que ejecute vecinos ±10/20% como runs IS separados. ¿Implementar al próximo candidato o dejar diagnóstico solamente?
-2. **Costos verificados:** `costs_verified: false` en todo el catálogo. ¿Verificar spreads/slippage/swaps reales contra MT5 antes de siguiente IS, o seguir con supuestos?
-3. **CI/CD activado:** workflow ya existe en `.github/workflows/`. ¿Activar tests on push a `master`?
-4. **BLOQUE 4 (Higiene):** según STANDING_ORDERS, bajo prioridad — docs consistency, SI/helpers, triaje pasivo catálogo. ¿Proceder o pausar?
+
+**RESUELTAS (LISTO_PAUSA — 2026-09-24 11:30):**
+- ~~Sensibilidad~~ → diagnóstico only, schema listo, flujo deferred
+- ~~Costos~~ → documentado (docs/COSTS_STATUS.md), sin rebaselining obligatoria
+- ~~CI/CD~~ → autorizado tests on push (tests.yml existe)
+- ~~Higiene~~ → completada (suite 191✓, registry versionado)
+
+**ACTIVAS (decide Alexander):**
+1. **Hipótesis 008 (EURUSD/H4):** Recomendación ARCHIVAR por falta de fuente primaria verificada (Darwinex ≠ primaria, Gate 0 estricto). ¿Aceptar, o buscar fuente alternativa (MT5 primaria, FXCM) e intentar REIMPORTAR?
+2. **3 ideas nuevas:** ADX+Breakout (D1 índices), Oversold Bounce (H4 metales), Overnight Gap (H1 forex) — parámetros booleanos, verificables. ¿Autorizar captura en catálogo y futura promoción a hipótesis 012/013/014, o rechazar por alcance?
 
 **ORIGINAL (aún vigentes):**
 5. **007/008:** ambas bloqueadas por decisiones de Alexander (KAMA familia, EURUSD/H4 datos de 1999+).
@@ -93,6 +102,11 @@ No reabrir 001-006/009-011 sin evidencia nueva.
 - Resultados locales: `reports/factory/runs/<run_id>/result.json`.
 
 ## BITÁCORA
+### 2026-09-24 — Tarea B: dependencia de Claude y registry (Codex)
+- Confirmada llamada a `append_trial` después de `execute` en runner; no se ejecutó ningún IS.
+- Recomendación binaria 008 aún ausente en AGENTS; falta entrega de Claude antes de aplicar B2/B3.
+- Budget IS cero documentado en NEXT ACTION; sin cambios de hipótesis, datos, holdout o gates.
+
 Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover las entradas antiguas a `docs/archive/project_state_log_<fecha>.md`. El detalle va en el mensaje del commit, no aquí.
 
 ### 2026-09-24 11:22 — BLOQUES 0-2 COMPLETADOS: Laboratorio anti-engaño iniciado (Claude)
@@ -108,6 +122,19 @@ Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover 
 - Higiene: suite 191✓, registry versionado, no docs rotos
 
 **Estado:** Laboratorio en pausa operativa. Registry en remoto, CLI operativo, suite verde, AGENTS/PROJECT_STATE al día. Cero nuevos IS, cero agentes. Awaiting Alexander para: OOS abierto, presupuesto/capital, 008 (EURUSD/H4 datos) solo.
+
+### 2026-09-24 11:45 — TAREA A completada: 008 análisis + 3 ideas nuevas (Claude)
+
+**Análisis 008 (EURUSD/H4):**
+- Recomendación: ARCHIVAR por falta de fuente primaria verificada (Darwinex ≠ primaria)
+- Gate 0 es estricto; costo reimportar >> beneficio; futuro NUEVA hipótesis 012+ si cliente demanda EURUSD
+
+**3 Ideas nuevas (booleanas, verificables, NO ejecutar):**
+1. ADX + Breakout Range (US30/NAS100 D1) — trend confirmado
+2. Oversold Bounce (XAUUSD/XAGUSD H4) — reversión media
+3. Overnight Gap (EURUSD/GBPUSD H1) — momentum sesión
+
+Parámetros documentados en `scratchpad/NEW_IDEAS_20260924.md`. Awaiting Alexander: decisión 008, autorización ideas 012-014.
 
 - ✓ Registry en remoto + backfill 29 runs (commit 11089b1, e843ddd)
 - ✓ CLI `count-trials` operativo: 29 trials registrados, agrupados por hypothesis/family
