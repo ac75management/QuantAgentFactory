@@ -43,8 +43,8 @@ Reglas de método (qué es válido en trading/estadística): `CLAUDE.md`. Estado
 | Ideas externas | `catalog/candidates/*.json` | `state/` solo guarda colas SQLite y reservas |
 | Estrategias ejecutables | `config/strategies/*.json` (vía `qaf.cli register`) | `docs/specs/*.json` es la entrega de `protocol` |
 | Partición IS/OOS | `data/clean/manifest.json` + sello (`python -m qaf.partition seal`) | OOS nunca se parsea en el flujo IS |
-| Resultado de una corrida | `reports/factory/runs/<run_id>/result.json` | `report.html` es la vista |
 | Experiment registry (N ensayos del laboratorio) | ver `docs/archive/reviews/AUDIT_GROK_2026-09-24.md` — **pendiente de implementar** | Cuando exista, será fuente de N trials; no sustituye result.json |
+| Resultado de una corrida | `reports/factory/runs/<run_id>/result.json` | `report.html` es la vista |
 | Qué falta para abrir OOS | `docs/VALIDATION_ROADMAP.md` | `qaf/holdout.py` falla cerrado apuntando ahí |
 | Fase de cada hipótesis y a qué agente le toca | `python -m qaf.pipeline` (derivado, solo lectura) | Antes de invocar un agente: `--hypothesis <id> --as <agente>` |
 | Reservas activas de archivos | `python -m qaf.coordination status` | El tablero inferior es el espejo humano |
@@ -103,37 +103,3 @@ Solo trabajos en curso o bloqueados. Al liberar, borra tu fila: el resultado va 
 
 ---
 
-**2026-09-24 05:44 UTC** — Hipótesis 010 y 011 ejecutadas y completadas.
-- 010 (SMA Crossover EURUSD/H1): run_id 8cb801d4a35e822eae54e8ca → DISCARDED_IS (net -34,945, PF 0.92, DD 53.1%)
-- 011 (ORB ATR US30/H1): run_id 51bea93b1efc5753c6e5cf15 → DISCARDED_IS (net -62,082, PF 0.84, DD 66.4%)
-- Ambas familias (trend_cross FX, volatility_based índices) no producen edge con parámetros estándar de Quantpedia.
-- Estado: FASE 3 COMPLETADA. Todas las 11 hipótesis investigadas.
-- Próximo estructural: Experiment Registry (ver orden arriba), no más IS en masa.
-
-## Hallazgos cruzados (para el dueño del archivo)
-
-Solo hallazgos abiertos. Quien lo resuelve lo borra y lo anota en la bitácora.
-
-### 2026-09-24 — ORDEN DE ALEXANDER PARA CODEX: Extracción de spread real MT5
-
-**Autorización explícita:** Conectar MT5 (lectura solamente, sin operar) y extraer histórico real de spread.
-
-**Para:** Codex  
-**Acción:**
-1. Conectar MT5, listar instrumentos (EURUSD, GBPUSD, AUDUSD, DAX, NAS100, etc.)
-2. Extraer spread histórico real EURUSD H1/H4/D1 (máximo disponible)
-3. Verificar procedencia: broker, fechas, unidades (pips vs. puntos)
-4. Crear `data/spreads/eurusd_h1_historical.csv` (timestamp, open, close, spread_pips)
-5. Actualizar `config/instruments.json` → `spread_csv` + método `per_bar`
-6. Re-ejecutar 001–009 con costos reales (spread variable + slippage 1.0 pips)
-7. Reportar aquí: ¿qué cambió en IS? ¿algo sobrevive?
-
-**Límites:** Lectura solamente. No operar. No abrir OOS.
-
-**Nota 2026-09-24 (Grok/Alexander):** La re-ejecución con spreads reales ya se documentó como completada más abajo (conclusiones sin cambio). Priorizar Experiment Registry sobre nuevas extracciones salvo que Alexander reabra este hilo.
-
----
-
-### Histórico (infra, triaje, 010/011)
-
-Ver entradas previas en el historial de este archivo y en `PROJECT_STATE.md`. Fase 3 cerrada. Auditoría de infraestructura y re-runs con spreads reales documentados. Siguiente freno estructural: `docs/archive/reviews/AUDIT_GROK_2026-09-24.md`.
