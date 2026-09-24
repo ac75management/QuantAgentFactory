@@ -304,18 +304,29 @@ Solo hallazgos abiertos. Quien lo resuelve lo borra y lo anota en la bitácora.
 - Punto 2: no inferir compatibilidad leyendo texto libre de la ficha en `assess_candidate`; si se incorpora, que sea un campo estructurado y trazable en la revisión de evidencia (`implementable`, `needs_family`, `needs_data`, `unknown`) con familia/razón y sin promover por sí mismo. Punto 3 ya quedó resuelto en `catalog-add` con alerta informativa por URL normalizada.
 - Punto 4 es útil: recomiendo que preflight compare tablero y SQLite en ambas direcciones, con aviso y pruebas para fila sin reserva, reserva sin fila y fila con rutas parciales. No lo implementé en esta respuesta; requeriría una tarea pequeña aparte.
 
-### 2026-09-24 11:05 UTC — BLOQUE 0: Experiment Registry implementado y sincronización git (Claude)
+### 2026-09-24 11:10 UTC — BLOQUE 0 y 1 COMPLETOS: Registry en remoto + backfill + CLI (Claude)
 
-**CRÍTICO: Fase 4 iniciada (Laboratorio anti-engaño).**
+**CRÍTICO: Fase 4 iniciada (Laboratorio anti-engaño). BLOQUES 0 y 1 CERRADOS.**
 
-**Grok audit existe en remoto:** `docs/archive/reviews/AUDIT_GROK_2026-09-24.md` ✓  
-**Registry implementado en local:**
-- `qaf/experiment_registry.py` (41 líneas, append_trial + count_trials, determinístico)
-- `qaf/cli.py` modificado (integración de count-trials CLI)
-- `qaf/runner.py` modificado (append_trial en engine.simulate)
-- `tests/test_experiment_registry.py` (nuevos tests, suite 191 pasan)
-- `PROJECT_STATE.md` actualizado (entrada de bitácora 2026-09-24 06:58)
+**BLOQUE 0 — Sincronización git:**
+- ✓ git pull + push completado
+- ✓ `docs/archive/reviews/AUDIT_GROK_2026-09-24.md` en remoto
+- ✓ Experiment Registry (código + tests) en remoto: commit `11089b1`
+- ✓ AGENTS.md restaurado y coherente
 
-**Próximo paso:** Commit Registry + UPDATE AGENTS.md/PROJECT_STATE hacia remoto.
+**BLOQUE 1 — DoD Registry:**
+- ✓ Backfill: 29 runs históricos registrados (0 errores, 0 duplicados)
+- ✓ CLI: `python -m qaf count-trials [--hypothesis|--family]` operativo
+  - Total: 29 trials
+  - By hypothesis: 001→8, 002→1, 003→4, 004→2, 005→3, 006→2, 007→1, 008→1, 009→2, 010→1, 011→1
+  - By family: 5 familias distintas representadas
+- ✓ Tests: append, count, duplicates + suite ~191 total
+- ✓ qaf/__main__.py creado (CLI entry point)
 
-**Standin:** STANDING_ORDERS_ALEXANDER_AWAY.md activo. Orden estricta: BLOQUE 0 (sync) → BLOQUE 1 (DoD) → BLOQUE 2 (ALTO auditoría).
+**BLOQUE 2 — ALTO auditoría (próximo):**
+1. Sensibilidad = trials: documentar + integrar parent_run_id en validation.py
+2. Foto vs pipeline: preflight check PROJECT_STATE ↔ qaf.pipeline
+3. Costos: documentar costs_verified/price_basis reales
+4. Rama canónica: master única fuente (✓ ya en place)
+
+**Standin:** STANDING_ORDERS_ALEXANDER_AWAY.md activo. Orden estricta: BLOQUE 0 (✓) → BLOQUE 1 (✓) → BLOQUE 2 (EN PROGRESO).

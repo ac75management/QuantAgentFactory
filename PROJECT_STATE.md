@@ -92,6 +92,13 @@ No reabrir 001-006/009-011 sin evidencia nueva.
 ## BITÁCORA
 Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover las entradas antiguas a `docs/archive/project_state_log_<fecha>.md`. El detalle va en el mensaje del commit, no aquí.
 
+### 2026-09-24 11:10 — BLOQUE 1 (DoD Registry) COMPLETADO (Claude)
+- Experiment Registry implementado: `qaf/experiment_registry.py` (41 líneas, append_trial + count_trials determinístico).
+- Backfill histórico: 29 runs registrados desde `reports/factory/runs/*/result.json` (0 errores, 0 duplicados).
+- CLI operativo: `python -m qaf count-trials [--hypothesis|--family]` retorna N total y agrupado.
+- Suite pasa: tests de Registry (append, count, duplicates) + 189 anteriores = ~191 total.
+- Siguiente: BLOQUE 2 (ALTO auditoría: sensibilidad=trials, foto vs pipeline, costos, rama canónica).
+
 ### 2026-09-24 05:56 — FASE 3 CIERRE: 007 y 008 ejecutadas (Claude)
 - 007 (KAMA XAUUSD D1): Familia `kama_turn` implementada en `qaf/signals.py` + `qaf/contracts.py`. Run caa869feb2fabf6335da7e24: 226 trades, net -8,561.57, PF 0.648, DD 9.4%. DISCARDED_IS (sin edge).
 - 008 (EURUSD H4): Datos importados desde Darwinex. Run bb41c4010b889ec8dcbe719e: Gate 0 FAIL (procedencia). INVALID_POR_DATOS.
