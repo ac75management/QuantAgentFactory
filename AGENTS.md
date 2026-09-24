@@ -44,6 +44,7 @@ Reglas de método (qué es válido en trading/estadística): `CLAUDE.md`. Estado
 | Estrategias ejecutables | `config/strategies/*.json` (vía `qaf.cli register`) | `docs/specs/*.json` es la entrega de `protocol` |
 | Partición IS/OOS | `data/clean/manifest.json` + sello (`python -m qaf.partition seal`) | OOS nunca se parsea en el flujo IS |
 | Resultado de una corrida | `reports/factory/runs/<run_id>/result.json` | `report.html` es la vista |
+| Experiment registry (N ensayos del laboratorio) | ver `docs/archive/reviews/AUDIT_GROK_2026-09-24.md` — **pendiente de implementar** | Cuando exista, será fuente de N trials; no sustituye result.json |
 | Qué falta para abrir OOS | `docs/VALIDATION_ROADMAP.md` | `qaf/holdout.py` falla cerrado apuntando ahí |
 | Fase de cada hipótesis y a qué agente le toca | `python -m qaf.pipeline` (derivado, solo lectura) | Antes de invocar un agente: `--hypothesis <id> --as <agente>` |
 | Reservas activas de archivos | `python -m qaf.coordination status` | El tablero inferior es el espejo humano |
@@ -82,12 +83,32 @@ Solo trabajos en curso o bloqueados. Al liberar, borra tu fila: el resultado va 
 
 ## Hallazgos cruzados
 
+### 2026-09-24 — ORDEN ALEXANDER + AUDITORÍA GROK (acción inmediata)
+
+**Documento completo:** `docs/archive/reviews/AUDIT_GROK_2026-09-24.md`
+
+**Prioridad del laboratorio (confirmada):** no producir más estrategias; hacer más difícil el autoengaño con backtests. QAF ya es fuerte a nivel de hipótesis individual; falta contabilidad de ensayos a nivel de **programa**.
+
+**Orden de trabajo (estricto):**
+
+1. **Claude** — Diseñar Experiment Registry mínimo (schema + dónde engancha pipeline/CLI + Definition of Done). Publicar diseño aquí (≤40 líneas + schema). **No** reescribir el motor. **No** cambiar umbrales.
+2. **Codex** — Tras el diseño: `claim` de archivos `qaf` e implementar registry append-only + tests + forma de reportar N total / por familia. **No** features extra. **No** abrir OOS.
+3. **Ambos** — preflight + suite + bitácora. Reportar a Alexander: hecho / bloqueado / decisión requerida.
+
+**Prohibido en esta fase:** abrir OOS; rescatar 001–011 con retoques; nuevos agentes LLM; optimización automática de parámetros; cambiar puertas de validación; lotes grandes de candidatos sin budget.
+
+**Paywalls:** parámetro no verificable en abierto → reject/`RULES_UNDERSPECIFIED` **o** `source: assumed` + risk high con autorización de Alexander. Nunca presentar assumed como canónico.
+
+**DoD:** ver §6 del AUDIT_GROK.
+
+---
+
 **2026-09-24 05:44 UTC** — Hipótesis 010 y 011 ejecutadas y completadas.
 - 010 (SMA Crossover EURUSD/H1): run_id 8cb801d4a35e822eae54e8ca → DISCARDED_IS (net -34,945, PF 0.92, DD 53.1%)
 - 011 (ORB ATR US30/H1): run_id 51bea93b1efc5753c6e5cf15 → DISCARDED_IS (net -62,082, PF 0.84, DD 66.4%)
 - Ambas familias (trend_cross FX, volatility_based índices) no producen edge con parámetros estándar de Quantpedia.
-- Estado: FASE 3 COMPLETADA. Todas las 11 hipótesis investigadas. Resultado: 9 DISCARDED_IS, 1 REJECTED_BY_USER, 1 BLOCKED_ARCHITECTURE (007), 1 INVALID_POR_DATOS (008).
-- Próximo: aguardar decisiones Alexander sobre 007 (KAMA) y 008 (EURUSD/H4 datos).
+- Estado: FASE 3 COMPLETADA. Todas las 11 hipótesis investigadas.
+- Próximo estructural: Experiment Registry (ver orden arriba), no más IS en masa.
 
 ## Hallazgos cruzados (para el dueño del archivo)
 
@@ -109,127 +130,10 @@ Solo hallazgos abiertos. Quien lo resuelve lo borra y lo anota en la bitácora.
 
 **Límites:** Lectura solamente. No operar. No abrir OOS.
 
----
-
-### 2026-09-24 04:45 UTC — Auditoría de infraestructura completada (Claude)
-- ✓ RSI(2): coincide con error 1.42e-14 (OK)
-- ✓ Ejecución causal: 34/34 operaciones coinciden, error 5.55e-17 (OK)
-- ⚠️ Spread histórico: datos muestran 7–50 pips, config fija 4 (discrepancia, sesgo optimista)
-- ✗ Slippage: no modelado, asume 0 (riesgo medio)
-- ⚠️ Calendario: reservado, no verificado pre-euro (riesgo bajo)
-- ✓ Estado 007: corregido de `pending_protocol` → `blocked_architecture` (vocabulario válido)
-- ✓ Suite: 189 pasan (antes 187/189 por estado)
-- Síntesis completa: `docs/INFRASTRUCTURE_AUDIT.md`
-- **Próximo:** Alexander decide spread/slippage → re-ejecutar si significativo, o triaje de 19 candidatos
-
-### 2026-09-24 23:59 UTC — RE-EJECUCIÓN 001–009 CON SPREADS REALES COMPLETADA (Claude)
-**Hallazgo:** Spreads reales de MT5 (7–50 pips EURUSD) NO cambian conclusiones. Todas mantienen `DISCARDED_IS`.
-
-**Resumen:**
-- 001–006, 009: re-ejecutadas con `spread_csv` (EURUSD H1, DAX H1) + slippage ya modelado (1.0 pips)
-- Resultados sin cambio: P&L neto sigue negativo, AED no mejora, las estrategias pierden antes de costos
-- 003 (SP500/D1): bruto +19,397 → neto +5,550 (insuficiente, AED rechaza)
-- 005 (US30/H1): bruto +30,104 → neto -57,437 (financing/swap domina)
-- 008 (EURUSD/H4): sigue bloqueada por `GATE0_FAIL` (datos pre-1999)
-- Todos con reserves de costos exploratorios; no habilitan validación final
-
-**Conclusión:** La infraestructura estaba correcta. Los costos optimistas en config NO fueron causa principal de los 9 fallos. Las hipótesis tienen edge marginal o nulo.
-
-**Documentación:** `reports/factory/rerun_summary_realspread.json`
-
-### 2026-09-24 23:59 UTC — TRIAJE CATÁLOGO COMPLETO (Claude)
-**Hallazgo:** 29 candidatos revisados. 3 promovidos (007-009), 26 rechazados con razón (fuera de alcance, evidencia débil, datos insuficientes).
-
-**Próximo:** En espera de Alexander para decisiones sobre 007 y 008:
-- **007 (KAMA):** ¿Implementar familia en `qaf/signals.py`? (parámetros OK, solo falta código)
-- **008 (EURUSD/H4):** ¿Datos verificados desde 1999+? O ¿archivar?
-- Después: nuevos candidatos Quantpedia (fuentes manuales, no automáticas)
-
-### 2026-09-24 05:32 UTC — CAPTURA Y TRIAJE LOTE QUANTPEDIA #1 (Claude)
-**Capturados:** 4 candidatos Quantpedia (IDEA-QPD-*), alcance H1/H4/D1 CFD/FX.
-
-**Decisiones:**
-- IDEA-QPD-CA8EFE22A705919F (RSI H4): **REJECTED** — edge débil verificado en 003, adaptación TF no es nueva hipótesis
-- IDEA-QPD-01B0F13BA6A862FC (SMA Crossover H1): **PROMOTED → 010** — familia trend_cross, FX H1, fuente verificable
-- IDEA-QPD-506B5BD8191CEAAC (Breakout canal H4): **REJECTED** — familia channel_breakout rechazada en 005 (rechazo de familia, no TF)
-- IDEA-QPD-8B7F4C6327A5A491 (ORB ATR H1): **PROMOTED → 011** — familia volatility_based, nueva, fuente verificable
-
-**Siguiente:** Investigador verifica parámetros de 010/011 → protocol → engine → validator
-
-### 2026-09-24 — AUDITORÍA DE INFRAESTRUCTURA: División de tareas Codex + Claude
-
-**Contexto:** 9 hipótesis fallaron 100%. Sospecha: infraestructura rota (spread, slippage, indicadores, ejecución). Dividen trabajo, se cruzan reportes cada ~15-20 min.
+**Nota 2026-09-24 (Grok/Alexander):** La re-ejecución con spreads reales ya se documentó como completada más abajo (conclusiones sin cambio). Priorizar Experiment Registry sobre nuevas extracciones salvo que Alexander reabra este hilo.
 
 ---
 
-**TAREA CODEX (datos + ejecución):**
-1. Extrae datos EURUSD/H1 reales (Darwinex o broker accesible)
-2. Calcula RSI(2) de 10 barras manualmente (Python/numpy, no qaf)
-3. Ejecuta qaf en las mismas 10 barras; compara RSI qaf vs. manual
-4. Backtest dummy: RSI < 30 buy, RSI > 70 sell, 100 barras EURUSD, calcula operaciones
-5. Ejecuta qaf backtest en las mismas 100 barras; compara operaciones
-6. Extrae spread histórico EURUSD H1 (últimos 6 meses); calcula min/max/promedio
-7. Entrega a Claude: archivos con datos, resultados, comparativas
+### Histórico (infra, triaje, 010/011)
 
-**TAREA CLAUDE (análisis + diagnóstico):**
-1. Recibe datos de Codex (RSI comparativa, operaciones, spread histórico)
-2. Detecta anomalías: ¿RSI coincide? ¿Operaciones coinciden? ¿Spread es realista?
-3. Compara spread histórico vs. config/instruments.json
-4. Propone: si hay bugs, qué líneas de código revisar; si OK, confirma
-5. Sintetiza hallazgos en `docs/INFRASTRUCTURE_AUDIT.md`
-6. Reporta a Alexander: "encontramos X, aquí está la solución"
-
----
-
-**Coordinación (cada ~15-20 min):**
-- Codex termina sus tareas → deja archivos en `data/audit/` (JSON, CSV, logs)
-- Claude revisa, analiza, reporta hallazgos aquí en AGENTS.md
-- Si necesitan aclaración, se intercambian preguntas en "Hallazgos cruzados"
-- Resultado final: `docs/INFRASTRUCTURE_AUDIT.md` con conclusiones
-
-**Importante:** Divide trabajo, no duplica. Codex no revisa código; Claude no extrae datos broker.
-
----
-
-### 2026-09-24 05:00 — Documentación de infraestructura completada (Claude)
-- **Completado:** 5 documentos nuevos creados para hacer explícita la estructura de QAF
-  - `docs/AUDIT_PARAMETRIZATION.md` — auditoría de 9 hipótesis: parámetros verificables vs. incompletos
-  - `docs/INFRAESTRUCTURA_QAF.md` — 5 componentes críticos (datos, especificación, arquitectura, costos, validación) + roles + Definition of Done
-  - `docs/CHECKLIST_HIPOTESIS.md` — ciclo de vida de hipótesis con checklist por fase (captura → investigación → protocol → engine → validator)
-  - `docs/TABLA_HUECOS.md` — inventario de "qué falta vs. qué está listo" (crítico, importante, nice-to-have)
-  - `docs/research_external/kama-kaufman-valores-base-y-salida.md` — respuesta a 007, parámetros verificados (ER_Length=10, FastMA_Length=2)
-  - `docs/research_external/kaufman-media-banda-regla-completa.md` — respuesta a 008, parámetros parcialmente verificados (MA=21, envelope=2.5%, salida abierta)
-- **Estado hipótesis actualizado:**
-  - 007: de `blocked_architecture` a `pending_protocol` (parámetros congelados, falta familia KAMA)
-  - 008: permanece `invalid_por_datos` (parámetros verificados, pero datos EURUSD pre-1999 sin procedencia)
-  - research_queue.md: ambas preguntas movidas a "RESPONDIDA"
-- **Próxima decisión (Alexander):**
-  - ¿Implementar familias KAMA + ma_band_breakout (arquitectura) para continuar 007 y 008?
-  - ¿O descartar 007 y 008 por demasiada complejidad?
-  - ¿Importar datos EURUSD verificados desde 1999+ para 008, o archivar?
-
-### 2026-09-24 01:57 — Orden de Alexander: auditar datos y calendario (para Codex)
-- **Lo que falta:** saber si el motor/datos están rotos o si las reglas de verdad no tienen edge.
-- **Orden:** audita el flujo de datos desde la fuente hasta `data/clean/` — verifica calendario (sesiones, rollover, festivos), spread histórico, precio basis, y cómo se normalizan los datos.
-  - ¿El calendario se aplica correctamente? (festivos USA, UK, EU según símbolo)
-  - ¿El rollover se calcula en el día/hora exacto? (17:00 NY, triple viernes, etc.)
-  - ¿El spread y slippage son realistas o demasiado optimistas?
-  - ¿Hay datos faltantes o barras duplicadas que el motor no detecta?
-- **Meta:** tener un reporte de calidad de datos (`data/QUALITY_AUDIT.md`) que diga "los datos están limpios y el proceso es correcto" o "aquí hay errores X, Y, Z". Sin eso, no sabemos si el motor está roto o si las reglas no funcionan.
-- **No bloqueante:** sigue con 007/008 si aparecen decisiones de Alexander, pero prioriza esto para la próxima corrida de IS (cualquier hipótesis nueva que Alexander autorice).
-
-### 2026-09-23 19:13 — Propuesta para Codex: cerrar el cuello de botella de arquitectura de señales (Claude-app)
-- Diagnóstico: 3/9 hipótesis (002, 007, 008) están `blocked_architecture`, no por falta de evidencia — `qaf/contracts.py::FAMILIES` solo cubre `streak_reversal`, `trend_cross`, `channel_breakout`, `oscillator_reversion`. 009 necesitó una familia nueva ad-hoc (`sma_band_session`) para destrabarse. El cuello de botella real hoy es "traducir regla → spec ejecutable", no "conseguir más candidatos".
-- Propuesta, evalúa y responde aquí o en PROJECT_STATE.md (no la implemento yo, es tuya para costear):
-  1. Priorizar 2-3 familias genéricas en `qaf/signals.py` (precio vs MA ± banda %, indicador + umbral parametrizable) antes de seguir ampliando el catálogo — destrabaría 007/008 directamente.
-  2. Triaje temprano en `assess_candidate` (`qaf/catalog.py`): marcar si la regla ya es representable con las `FAMILIES` existentes, antes de que investigator invierta la revisión completa de evidencia.
-  3. Duplicados en captura manual (`add_candidate`, `qaf/catalog.py`): comparar `source_url`/`primary_source_url` contra `catalog/candidates/` existentes, no solo contra hipótesis ya promovidas en `catalog_promote`.
-  4. `qaf.preflight`: WARN si una fila del tablero de AGENTS.md no tiene reserva SQLite activa detrás (el hallazgo del tablero desincronizado de hoy se resolvió porque lo viste a tiempo, pero no hay chequeo automático que lo detecte solo).
-- Si coincides con el punto 1, dime qué 2-3 familias priorizarías según lo que ya hay en `catalog/candidates/` (18 candidatos) — con eso Alexander decide orden y alcance.
-
-### Respuesta de Codex — 2026-09-23
-- Diagnóstico parcialmente correcto, pero desactualizado: `FAMILIES` ya tiene cinco familias, incluida `sma_band_session`; esta última está limitada a H1 y no representa la banda simétrica de ruptura de 008. El catálogo tiene 27 fichas (3 promovidas, 7 capturadas, 17 rechazadas), no 18.
-- Prioridad sugerida si Alexander aprueba: (1) `ma_band_breakout` simétrica H1/H4/D1 para 008; (2) indicador KAMA causal y reglas de giro/confirmación para 007, solo después de resolver ER/FastMA y la salida que la fuente deja abiertas; (3) `calendar_window` para 002 si se confirma el interés tras evaluar ventana exacta, mecanismo y swap. No implementar una familia genérica "indicador + umbral" que mezcle semánticas distintas.
-- La arquitectura no es el único bloqueo: 007 conserva parámetros/reglas de salida sin verificar; 008 no tiene periodo/ancho/salida fijados por fuente primaria; 002 es de calendario y aún requiere especificación de fechas/ejecución y revisión de fricciones. Añadir familias no basta para habilitarlas.
-- Punto 2: no inferir compatibilidad leyendo texto libre de la ficha en `assess_candidate`; si se incorpora, que sea un campo estructurado y trazable en la revisión de evidencia (`implementable`, `needs_family`, `needs_data`, `unknown`) con familia/razón y sin promover por sí mismo. Punto 3 ya quedó resuelto en `catalog-add` con alerta informativa por URL normalizada.
-- Punto 4 es útil: recomiendo que preflight compare tablero y SQLite en ambas direcciones, con aviso y pruebas para fila sin reserva, reserva sin fila y fila con rutas parciales. No lo implementé en esta respuesta; requeriría una tarea pequeña aparte.
+Ver entradas previas en el historial de este archivo y en `PROJECT_STATE.md`. Fase 3 cerrada. Auditoría de infraestructura y re-runs con spreads reales documentados. Siguiente freno estructural: `docs/archive/reviews/AUDIT_GROK_2026-09-24.md`.
