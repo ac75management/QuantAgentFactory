@@ -162,6 +162,12 @@ Solo trabajos en curso o bloqueados. Al liberar, borra tu fila: el resultado va 
    - Preflight: verde
 
 **Próximo estado:** LISTO_PAUSA — awaiting Alexander para OOS/presupuesto/008 solo. Laboratorio en pausa operativa; cero nuevos IS ni agentes sin autorización.
+
+### 2026-09-24 — HANDOFF LISTO_PAUSA_EXT (Codex)
+- E1: workflow `tests.yml` ya existía; queda limitado a push sobre `master` y pull requests, sin forzar despliegues.
+- E2: enlaces a `MISSION_LAB`, `STANDING_ORDERS` y `AUDIT_GROK` comprobados; no hay rutas rotas. WARN de bitácora larga documentado, sin archivar por no ser trivial.
+- E3: LISTO_PAUSA_EXT — idle hasta Alexander (OOS/budget/008).
+- No se abrieron OOS/holdout, no hubo bróker, gates, hipótesis ni nuevos ensayos.
 3. Registry no bloquea, solo audita — la decisión de parar/seguir sigue siendo Alexander
 4. Reescrituras de histórico post-sello no se detectarían (segunda fuente pendiente)
 

@@ -375,3 +375,9 @@ Laboratorio anti-engaño operativo; próximo: escalamiento de candidatos + decis
 - Se detectó que data/trials_registry.jsonl (29 trials) estaba ignorado y no viajaba al remoto; se corrigió .gitignore.
 - count-trials confirma 29 ensayos: 001→8, 002→1, 003→4, 004→2, 005→3, 006→2, 007→1, 008→3, 009→3, 010→1, 011→1.
 - Commit `5d4f01b` publicado en `origin/master`; no se ejecutaron nuevos ensayos ni se abrió OOS.
+
+### 2026-09-24 12:30 UTC — E1-E3 y pausa extendida (Codex)
+- CI `tests.yml` limitado a push en `master` y pull requests; no se añadieron workflows nuevos.
+- Enlaces a Mission Lab, Standing Orders y Audit Grok comprobados sin rutas rotas.
+- WARN de bitácora larga queda documentado; archivarlo no es trivial y no se altera el histórico.
+- Estado: **LISTO_PAUSA_EXT — idle hasta Alexander (OOS/budget/008)**.
