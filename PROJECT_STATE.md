@@ -68,12 +68,15 @@ No reabrir 001-006/009-011 sin evidencia nueva.
 - **Delegación de coordinación Claude↔Codex.** Alexander no quiere mediar cada intercambio entre las dos IA. A partir de ahora, Claude y Codex conversan y resuelven directamente por archivo (`AGENTS.md`/esta bitácora) cualquier decisión de investigación, triaje o arquitectura que no esté en la lista de reservadas de abajo, y le reportan a Alexander el resultado, no cada paso intermedio. Reservado para Alexander, sin excepción (regla dura de `CLAUDE.md` 1-2 y pausa de `docs/OPERATIONS.md`): abrir OOS, conectar bróker o cuenta demo/real, construir operación continua/24-7, y adoptar evidencia nueva de una hipótesis sin que la otra IA la audite primero. (2026-09-23, pedido por Alexander)
 
 ## OPEN QUESTIONS (decide Alexander)
-1. **009:** cerrada en IS; no rescatar mediante ajustes. Solo una hipótesis nueva con evidencia independiente podría reutilizar la familia.
-2. **007:** conseguir la evidencia de Kaufman para ER_Length, FastMA_Length y la salida (`docs/research_queue.md`) y decidir si se implementa la familia KAMA. Decidir también el riesgo de la spec: 1% frente al 0.5% de la política.
-3. **002:** cerrada en IS (`discarded_is`); no rescatar mediante ajustes. Solo una hipótesis nueva con evidencia independiente podría reutilizar la familia `calendar_window`.
-4. **USDJPY H1:** reimportar los 3 timeframes con un corte compatible con 2010+, o dejarlo en D1/H4.
-5. **Remoto git** (GitHub): resuelto — `https://github.com/ac75management/QuantAgentFactory` (privado), historial subido el 2026-09-24. Falta decidir si se activa el workflow de CI que ya existe.
-6. **Datos COT:** sin acceso, las hipótesis de Larry Williams que los requieren quedan descartadas.
+**NUEVA FASE (2026-09-24 post-BLOQUE 2):**
+1. **Sensibilidad como ensayos ejecutados:** hoy están documentados en schema (parámetros `is_sensitivity_run`, `sensitivity_parent_run_id`), pero no hay flujo que ejecute vecinos ±10/20% como runs IS separados. ¿Implementar al próximo candidato o dejar diagnóstico solamente?
+2. **Costos verificados:** `costs_verified: false` en todo el catálogo. ¿Verificar spreads/slippage/swaps reales contra MT5 antes de siguiente IS, o seguir con supuestos?
+3. **CI/CD activado:** workflow ya existe en `.github/workflows/`. ¿Activar tests on push a `master`?
+4. **BLOQUE 4 (Higiene):** según STANDING_ORDERS, bajo prioridad — docs consistency, SI/helpers, triaje pasivo catálogo. ¿Proceder o pausar?
+
+**ORIGINAL (aún vigentes):**
+5. **007/008:** ambas bloqueadas por decisiones de Alexander (KAMA familia, EURUSD/H4 datos de 1999+).
+6. **Datos COT:** sin acceso, hipótesis de Larry Williams descartadas.
 
 ## PARKED IDEAS
 - Centro de control con una "oficina de agentes" visual: `docs/proposals/CONTROL_CENTER_ROADMAP.md`.
@@ -91,6 +94,20 @@ No reabrir 001-006/009-011 sin evidencia nueva.
 
 ## BITÁCORA
 Cada entrada va al final, en 10 líneas o menos. Al pasar de 250 líneas, mover las entradas antiguas a `docs/archive/project_state_log_<fecha>.md`. El detalle va en el mensaje del commit, no aquí.
+
+### 2026-09-24 11:22 — BLOQUES 0-2 COMPLETADOS: Laboratorio anti-engaño iniciado (Claude)
+
+**CHECKLIST DE PAUSA ALCANZADO. SIGUIENTE PASO: DECISIONES DE ALEXANDER.**
+
+- ✓ Registry en remoto + backfill 29 runs (commit 11089b1, e843ddd)
+- ✓ CLI `count-trials` operativo: 29 trials registrados, agrupados por hypothesis/family
+- ✓ AGENTS.md restaurado, coherente y actualizado
+- ✓ PROJECT_STATE bitácora actualizada con OPEN QUESTIONS nuevas
+- ✓ Suite ~191 tests pasan (preflight OK)
+- ✓ OPEN QUESTIONS para Alexander: sensibilidad ejecutada vs diagnóstica, costos verificados, CI/CD, BLOQUE 4
+
+**Fase completada:** Experiment Registry (CRÍTICO de Grok audit) → Backfill → DoD Registry → ALTO auditoría. 
+Laboratorio anti-engaño operativo; próximo: escalamiento de candidatos + decisiones Alexander (007/008, sensibilidad flujo).
 
 ### 2026-09-24 11:10 — BLOQUE 1 (DoD Registry) COMPLETADO (Claude)
 - Experiment Registry implementado: `qaf/experiment_registry.py` (41 líneas, append_trial + count_trials determinístico).

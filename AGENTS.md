@@ -329,4 +329,12 @@ Solo hallazgos abiertos. Quien lo resuelve lo borra y lo anota en la bitácora.
 3. ✓ Costos: `costs_verified: false`, `price_basis: "unknown"` documentados en config/instruments.json (10 símbolos); bandera lista para verificación.
 4. ✓ Rama canónica: `master` única fuente de trabajo; remoto sincronizado.
 
-**Standin:** STANDING_ORDERS_ALEXANDER_AWAY.md activo. Orden estricta: BLOQUE 0 (✓) → BLOQUE 1 (✓) → BLOQUE 2 (EN PROGRESO).
+**PAUSA — STANDING_ORDERS checklist alcanzado:**
+- ✓ Registry en remoto + backfill (29 trials)
+- ✓ `count-trials` usable
+- ✓ AGENTS.md restaurado y coherente
+- ✓ PROJECT_STATE actualizado
+- ✓ Suite verde (~191 tests)
+- ✓ OPEN QUESTIONS para Alexander (4 items nuevos)
+
+**Siguiente:** Solo Alexander puede decidir sensibilidad flujo, costos verificados, CI/CD, BLOQUE 4. Laboratorio anti-engaño operativo.
