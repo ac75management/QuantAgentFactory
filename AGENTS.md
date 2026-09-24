@@ -342,6 +342,6 @@ Solo hallazgos abiertos. Quien lo resuelve lo borra y lo anota en la bitácora.
 ### 2026-09-24 — HANDOFF BLOQUE 0/1 (Codex)
 - Sync OK: git pull origin master fast-forward a 8a4c13; el audit Grok está presente.
 - Registry remoto antes de este bloque: no (el JSONL estaba ignorado localmente); se corrige el ignore y se versionan 29 trials.
-- Registry remoto tras este bloque: pendiente de push; backfill local 29/29, sin gaps detectados.
+- Registry remoto tras este bloque: sí, commit `5d4f01b` publicado en `origin/master`; backfill 29/29, sin gaps detectados.
 - count-trials devuelve N=29, agrupado por hipótesis y familia; no se abren OOS ni bróker.
-- Siguiente: ejecutar suite/preflight, push de commit y dejar estado LISTO_PAUSA según standing orders.
+- Siguiente: dejar el laboratorio en LISTO_PAUSA según standing orders; no hay otro bloque autorizado.

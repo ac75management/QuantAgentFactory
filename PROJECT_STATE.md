@@ -364,4 +364,4 @@ Laboratorio anti-engaño operativo; próximo: escalamiento de candidatos + decis
 - Sync origin/master completado; audit Grok presente.
 - Se detectó que data/trials_registry.jsonl (29 trials) estaba ignorado y no viajaba al remoto; se corrigió .gitignore.
 - count-trials confirma 29 ensayos: 001→8, 002→1, 003→4, 004→2, 005→3, 006→2, 007→1, 008→3, 009→3, 010→1, 011→1.
-- Pendiente: commit/push tras suite y preflight; no se ejecutaron nuevos ensayos ni se abrió OOS.
+- Commit `5d4f01b` publicado en `origin/master`; no se ejecutaron nuevos ensayos ni se abrió OOS.
