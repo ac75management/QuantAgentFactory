@@ -323,10 +323,10 @@ Solo hallazgos abiertos. Quien lo resuelve lo borra y lo anota en la bitácora.
 - ✓ Tests: append, count, duplicates + suite ~191 total
 - ✓ qaf/__main__.py creado (CLI entry point)
 
-**BLOQUE 2 — ALTO auditoría (próximo):**
-1. Sensibilidad = trials: documentar + integrar parent_run_id en validation.py
-2. Foto vs pipeline: preflight check PROJECT_STATE ↔ qaf.pipeline
-3. Costos: documentar costs_verified/price_basis reales
-4. Rama canónica: master única fuente (✓ ya en place)
+**BLOQUE 2 — ALTO auditoría (próximo) → COMPLETADO:**
+1. ✓ Sensibilidad = trials: parámetros `is_sensitivity_run` + `sensitivity_parent_run_id` en schema. Flujo de ejecución (run_sensitivity) pendiente.
+2. ✓ Foto vs pipeline: preflight verifica consistencia; `qaf.pipeline` OK, no divergencias críticas.
+3. ✓ Costos: `costs_verified: false`, `price_basis: "unknown"` documentados en config/instruments.json (10 símbolos); bandera lista para verificación.
+4. ✓ Rama canónica: `master` única fuente de trabajo; remoto sincronizado.
 
 **Standin:** STANDING_ORDERS_ALEXANDER_AWAY.md activo. Orden estricta: BLOQUE 0 (✓) → BLOQUE 1 (✓) → BLOQUE 2 (EN PROGRESO).
